@@ -15,7 +15,8 @@
 #include "tcpip_adapter.h"
 #include "esp_smartconfig.h"
 
-EventGroupHandle_t s_wifi_event_group;
+
+extern EventGroupHandle_t s_wifi_event_group;
 
 /* The event group allows multiple bits for each event,
    but we only care about one event - are we connected
@@ -24,11 +25,8 @@ static const int CONNECTED_BIT = BIT0;
 static const int ESPTOUCH_DONE_BIT = BIT1;
 static const int GOTIP_BIT = BIT2;
 
-
-void smartconfig_example_task(void * parm);
-//esp_err_t event_handler(void *ctx, system_event_t *event);
-void initialise_wifi(void);
+void startWifiConfig(void);
 void sc_callback(smartconfig_status_t status, void *pdata);
-void wificonfig_task(void * parm);
+void wificonfig_task(void* param);
 
 #endif

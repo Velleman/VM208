@@ -10,17 +10,17 @@
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 
-#define INT_PIN   4
-#define INT2_PIN  35
+#define INT_PIN   GPIO_NUM_4
+#define INT2_PIN  GPIO_NUM_35
 
-#define ESP_INTR_FLAG_DEFAULT 0
+#define ESP_INTR_FLAG_DEFAULT ESP_INTR_FLAG_LOWMED	
 
 #define RELAY_MAX 12
 #define INPUT_MAX 13
-typedef enum {RELAY_ON=0,RELAY_OFF}relay_state_t;
+typedef enum {RELAY_OFF=0,RELAY_ON}relay_state_t;
 typedef enum {MOSFET_OFF=0,MOSFET_ON}mosfet_state_t;
 typedef enum {LED_ON=0,LED_OFF}led_state_t;
-typedef enum {INPUT_OFF=0,INPUT_ON}input_state_t;
+typedef enum {INPUT_ON=0,INPUT_OFF}input_state_t;
 
 typedef enum{
   LED_1,
@@ -112,4 +112,5 @@ void getCurrentInputState(bool* state);
 mosfet_t* getMosfet(uint8_t index);
 void getMosfets(mosfet_t* m);
 bool isUserInputChanged();
+input_t* getCurrentInputs();
 #endif

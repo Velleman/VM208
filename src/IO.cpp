@@ -6,8 +6,8 @@ Copyright 2019 Velleman nv
 #include "IO.h"
 #include <I2CDev.h>
 #include <TCA6424A.h>
-
-//xQueueHandle int_evt_queue = NULL;
+#include "esp_log.h"
+xQueueHandle int_evt_queue = NULL;
 
 relay_t relays[12];
 mosfet_t mosfets[2];
@@ -21,8 +21,9 @@ bool _userInputChanged = false;
 TCA6424A tca;
 TCA6424A tca_ext;
 
-void IRAM_ATTR isr() {
-    //Serial.println("INTERRUPT TRIGGERED");
+static void gpio_isr_handler(void* arg) {
+    uint32_t gpio_num = (uint32_t) arg;
+    xQueueSendFromISR(int_evt_queue, &gpio_num, NULL);
 }
 
 void Init_IO()
@@ -30,10 +31,11 @@ void Init_IO()
   //TODO: init TCA and interrupt
     //tca.initialize();
   Wire.begin(33,32);
-  tca.setPinDirection(TCA6424A_P00,TCA6424A_OUTPUT);
-  tca.writePin(TCA6424A_P00,TCA6424A_HIGH);
-  
+
+  //specify ADDRESS HIGH
   tca_ext = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
+
+
 
   //init data leds
   for(int i=0;i<4;i++)
@@ -77,7 +79,7 @@ void Init_IO()
 
   for(int i=4;i<12;i++)
   {
-    currentInputs[i].pin = i+TCA6424A_P10 - 4;
+    currentInputs[i].pin = (i+TCA6424A_P10) - 4;
     currentInputs[i].isExtension = true;
     currentInputs[i].state = INPUT_OFF;
   }
@@ -146,14 +148,34 @@ void Init_IO()
   setMOSFET(&mosfets[0]);
   setMOSFET(&mosfets[1]);
   pinMode(4,INPUT);
-    attachInterrupt(4, isr, FALLING);
+
+  //Init Interrupt Pin
+  gpio_config_t io_conf;
+  io_conf.intr_type = GPIO_INTR_NEGEDGE;
+  //bit mask of the pins, use GPIO4/35 here
+  io_conf.pin_bit_mask = (1ULL<<4);
+  //set as input mode
+  io_conf.mode = GPIO_MODE_INPUT;
+  //enable pull-up mode
+  //io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+  //io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  gpio_config(&io_conf);
+
+  gpio_set_direction(GPIO_NUM_35,GPIO_MODE_INPUT);
+  gpio_set_intr_type(GPIO_NUM_35,GPIO_INTR_NEGEDGE);
+
+  //create a queue to handle gpio event from isr
+  int_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+  //install gpio isr service
+  gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+  gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void*) INT_PIN);
   bool connected = IsExtensionConnected();
   if(connected)
   {
-      pinMode(35,INPUT);
-        attachInterrupt(35, isr, FALLING);
-    
+      ESP_LOGI(TAG, "isr PIN 2 ");
+      gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void*) INT2_PIN);    
   }
+  
 }
 
 void setRelays(relay_t* ptrRelays)
@@ -228,8 +250,7 @@ mosfet_t* getMosfet(uint8_t index)
 
 void getMosfets(mosfet_t* m)
 {
-  mosfet_t* mbuf = m;
-  mbuf = mosfets;
+  m = mosfets;
 }
 
 void readButton()
@@ -242,10 +263,10 @@ input_t* readInputs(input_t* inputs){
   {
     if((inputs+i)->isExtension)
     {
-      (inputs+i)->state = tca_ext.readPin((inputs+i)->pin)?INPUT_ON:INPUT_OFF;
+      (inputs+i)->state = tca_ext.readPin((inputs+i)->pin)?INPUT_OFF:INPUT_ON;
     }
     else{
-      (inputs+i)->state = tca.readPin((inputs+i)->pin)?INPUT_ON:INPUT_OFF;
+      (inputs+i)->state = tca.readPin((inputs+i)->pin)?INPUT_OFF:INPUT_ON;
     }
     //printf("read input: %d\r\n",(inputs+i)->state);
   }
@@ -254,6 +275,7 @@ input_t* readInputs(input_t* inputs){
 
 void IO_task(void* arg)
 {
+  
   uint32_t io_num;
   readInputs(currentInputs);
   for(int i=0;i<INPUT_MAX-1;i++)
@@ -265,7 +287,8 @@ void IO_task(void* arg)
   setRelays(relays);
   setLeds(leds);
   while (1) {
-    //if(xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY)) {
+    if(xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY)) {
+      ESP_LOGI(TAG, "interrupt");
       //printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level(io_num));
       readInputs(currentInputs);
       for(int i=0;i<INPUT_MAX;i++)
@@ -286,7 +309,7 @@ void IO_task(void* arg)
       }
       setRelays(relays);
       setLeds(leds);
-    
+    }
     vTaskDelay(100/portTICK_RATE_MS);
   }
 }
@@ -313,7 +336,7 @@ void getRelays(relay_t* pRelays,uint8_t length)
 
 bool IsExtensionConnected()
 {
-    return false;
+    return tca_ext.testConnection();
 }
 
 relay_t* getRelayFromRelayKey(const char* key)
@@ -342,4 +365,9 @@ void getCurrentInputState(bool* state)
 bool isUserInputChanged()
 {
   return _userInputChanged;
+}
+
+input_t* getCurrentInputs()
+{
+  return currentInputs;
 }

@@ -1,9 +1,15 @@
 #include "WifiConfig.h"
 
 static const char *TAG = "WifiConfig";
+EventGroupHandle_t s_wifi_event_group;
+void startWifiConfig()
+{
+    xTaskCreate(wificonfig_task, "wificonfig_task", 4096, NULL, 2, NULL);
+}
 
 void sc_callback(smartconfig_status_t status, void *pdata)
 {
+    wifi_config_t *wifi_config = (wifi_config_t *)pdata;
     switch (status) {
         case SC_STATUS_WAIT:
             ESP_LOGI(TAG, "SC_STATUS_WAIT");
@@ -16,7 +22,6 @@ void sc_callback(smartconfig_status_t status, void *pdata)
             break;
         case SC_STATUS_LINK:
             ESP_LOGI(TAG, "SC_STATUS_LINK");
-            wifi_config_t *wifi_config = pdata;
             ESP_LOGI(TAG, "SSID:%s", wifi_config->sta.ssid);
             ESP_LOGI(TAG, "PASSWORD:%s", wifi_config->sta.password);
             ESP_ERROR_CHECK( esp_wifi_disconnect() );
@@ -37,11 +42,12 @@ void sc_callback(smartconfig_status_t status, void *pdata)
     }
 }
 
-void wificonfig_task(void * parm)
+void wificonfig_task(void* param)
 {
     EventBits_t uxBits;
     ESP_ERROR_CHECK( esp_smartconfig_set_type(SC_TYPE_ESPTOUCH) );
     ESP_ERROR_CHECK( esp_smartconfig_start(sc_callback) );
+    ESP_LOGI(TAG, "WifiConfig Enter Loop");
     while (1) {
         uxBits = xEventGroupWaitBits(s_wifi_event_group, CONNECTED_BIT | ESPTOUCH_DONE_BIT, true, false, portMAX_DELAY);
         if(uxBits & CONNECTED_BIT) {

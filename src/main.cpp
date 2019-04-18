@@ -6,28 +6,38 @@
 #include <ESPmDNS.h>
 #include <ArduinoOTA.h>
 #include <FS.h>
-
+// we need to store long long
 //#include <ESPAsyncTCP.h>
 #include <AsyncTCP.h>
 
-#include <SPIFFS.h>
-//#include <SPIFFSEditor.h>
-//#include <AsyncWebSocket.h>
-#include <ESPAsyncWebServer.h>
+#include "server_VM208.h"
 
 #include "IO.h"
 
+#include "tcpip_adapter.h"
+#include "soc/emac_ex_reg.h"
+#include "driver/periph_ctrl.h"
+#include "WifiConfig.h"
 
 #include "AsyncUDP.h"
-#include "ArduinoJson.h"
 
-// SKETCH BEGIN
-AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
-AsyncEventSource events("/events");
+#include "eth_phy/phy_lan8720.h"
+#define DEFAULT_ETHERNET_PHY_CONFIG phy_lan8720_default_ethernet_config
+#include <SPIFFS.h>
+#include "configuration.h"
 
+static const char *TAG = "VM208_MAIN";
 
-String processor(const String& var)
+extern bool gotETH_IP = false;
+extern bool gotSTA_IP = false;
+
+#define PIN_PHY_POWER GPIO_NUM_5
+#define PIN_SMI_MDC 23
+#define PIN_SMI_MDIO 18
+
+extern Configuration config;
+
+String processor(const String &var)
 {
   /*if(var == "NAME")
     return F("VM208");
@@ -40,313 +50,280 @@ String processor(const String& var)
   return String("test");
 }
 
-void sendIOState(AsyncWebServerRequest* request)
-{
-  AsyncResponseStream *response = request->beginResponseStream("application/json");
-  DynamicJsonBuffer jsonBuffer;
-  JsonObject& root = jsonBuffer.createObject();
-  relay_t relays[4];
-  getRelays(relays,4);
-  
-  root.set("relay1",relays[0].state);
-  root.set("relay2",relays[1].state);
-  root.set("relay3",relays[2].state);
-  root.set("relay4",relays[3].state);
-  
-  //JsonArray& arr = jsonBuffer.createArray();
-  /*arr.add(!tca->readPin(TCA6424A_P00));
-  arr.add(!tca->readPin(TCA6424A_P01));
-  arr.add(!tca->readPin(TCA6424A_P02));
-  arr.add(!tca->readPin(TCA6424A_P03));*/
-  
-  //root["relays"] = arr;
-  root.printTo(*response);
-  request->send(response);
-}
-
-void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
-  if(type == WS_EVT_CONNECT){
-    Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
-    client->printf("Hello Client %u :)", client->id());
-    client->ping();
-  } else if(type == WS_EVT_DISCONNECT){
-    Serial.printf("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
-  } else if(type == WS_EVT_ERROR){
-    Serial.printf("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
-  } else if(type == WS_EVT_PONG){
-    Serial.printf("ws[%s][%u] pong[%u]: %s\n", server->url(), client->id(), len, (len)?(char*)data:"");
-  } else if(type == WS_EVT_DATA){
-    AwsFrameInfo * info = (AwsFrameInfo*)arg;
-    String msg = "";
-    if(info->final && info->index == 0 && info->len == len){
-      //the whole message is in a single frame and we got all of it's data
-      Serial.printf("ws[%s][%u] %s-message[%llu]: ", server->url(), client->id(), (info->opcode == WS_TEXT)?"text":"binary", info->len);
-
-      if(info->opcode == WS_TEXT){
-        for(size_t i=0; i < info->len; i++) {
-          msg += (char) data[i];
-        }
-      } else {
-        char buff[3];
-        for(size_t i=0; i < info->len; i++) {
-          sprintf(buff, "%02x ", (uint8_t) data[i]);
-          msg += buff ;
-        }
-      }
-      Serial.printf("%s\n",msg.c_str());
-
-      if(info->opcode == WS_TEXT)
-        client->text("I got your text message");
-      else
-        client->binary("I got your binary message");
-    } else {
-      //message is comprised of multiple frames or the frame is split into multiple packets
-      if(info->index == 0){
-        if(info->num == 0)
-          Serial.printf("ws[%s][%u] %s-message start\n", server->url(), client->id(), (info->message_opcode == WS_TEXT)?"text":"binary");
-        Serial.printf("ws[%s][%u] frame[%u] start[%llu]\n", server->url(), client->id(), info->num, info->len);
-      }
-
-      Serial.printf("ws[%s][%u] frame[%u] %s[%llu - %llu]: ", server->url(), client->id(), info->num, (info->message_opcode == WS_TEXT)?"text":"binary", info->index, info->index + len);
-
-      if(info->opcode == WS_TEXT){
-        for(size_t i=0; i < info->len; i++) {
-          msg += (char) data[i];
-        }
-      } else {
-        char buff[3];
-        for(size_t i=0; i < info->len; i++) {
-          sprintf(buff, "%02x ", (uint8_t) data[i]);
-          msg += buff ;
-        }
-      }
-      Serial.printf("%s\n",msg.c_str());
-
-      if((info->index + len) == info->len){
-        Serial.printf("ws[%s][%u] frame[%u] end[%llu]\n", server->url(), client->id(), info->num, info->len);
-        if(info->final){
-          Serial.printf("ws[%s][%u] %s-message end\n", server->url(), client->id(), (info->message_opcode == WS_TEXT)?"text":"binary");
-          if(info->message_opcode == WS_TEXT)
-            client->text("I got your text message");
-          else
-            client->binary("I got your binary message");
-        }
-      }
-    }
-  }
-}
-
-
-const char* ssid = "Eminent_RnD";
-const char* password = "2017wifi";
-const char * hostName = "esp-async";
-const char* http_username = "admin";
-const char* http_password = "admin";
+const char *ssid = "Eminent_RnD";
+const char *password = "2017wifi";
+const char *hostName = "esp-async";
 
 AsyncUDP udp;
 
-void setup(){
+Configuration config;
+
+void startWifi();
+
+static void phy_device_power_enable_via_gpio(bool enable)
+{
+  ESP_LOGI(TAG, "PHY USE POWER PIN ENABLED");
+  assert(DEFAULT_ETHERNET_PHY_CONFIG.phy_power_enable);
+
+  if (!enable)
+  {
+    /* Do the PHY-specific power_enable(false) function before powering down */
+    DEFAULT_ETHERNET_PHY_CONFIG.phy_power_enable(false);
+  }
+  if (enable)
+  {
+    gpio_pad_select_gpio(GPIO_NUM_2);
+    gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_2, 1);
+  }
+  ESP_LOGI(TAG, "power pin:%d", PIN_PHY_POWER);
+  gpio_pad_select_gpio(PIN_PHY_POWER);
+  gpio_set_direction(PIN_PHY_POWER, GPIO_MODE_OUTPUT);
+  if (enable == true)
+  {
+    gpio_set_level(PIN_PHY_POWER, 1);
+    ESP_LOGI(TAG, "phy_device_power_enable(TRUE)");
+  }
+  else
+  {
+    gpio_set_level(PIN_PHY_POWER, 0);
+    ESP_LOGI(TAG, "power_enable(FALSE)");
+  }
+
+  // Allow the power up/down to take effect, min 300us
+  vTaskDelay(1);
+
+  if (enable)
+  {
+    /* Run the PHY-specific power on operations now the PHY has power */
+    DEFAULT_ETHERNET_PHY_CONFIG.phy_power_enable(true);
+  }
+}
+
+static void eth_gpio_config_rmii(void)
+{
+  // RMII data pins are fixed:
+  // TXD0 = GPIO19
+  // TXD1 = GPIO22
+  // TX_EN = GPIO21
+  // RXD0 = GPIO25
+  // RXD1 = GPIO26
+  // CLK == GPIO0
+  phy_rmii_configure_data_interface_pins();
+  // MDC is GPIO 23, MDIO is GPIO 18
+  ESP_LOGI(TAG, "MDC pin:%d", PIN_SMI_MDC);
+  ESP_LOGI(TAG, "MDIO pin:%d", PIN_SMI_MDIO);
+  phy_rmii_smi_configure_pins(PIN_SMI_MDC, PIN_SMI_MDIO);
+}
+
+/**
+* @brief event handler for ethernet
+*
+* @param ctx
+* @param event
+* @return esp_err_t
+*/
+static esp_err_t event_handler(void *ctx, system_event_t *event)
+{
+  tcpip_adapter_ip_info_t ip;
+
+  switch (event->event_id)
+  {
+  case SYSTEM_EVENT_ETH_CONNECTED:
+    ESP_LOGI(TAG, "Ethernet Link Up");
+    break;
+  case SYSTEM_EVENT_ETH_DISCONNECTED:
+    gotETH_IP = false;
+    startWifi();
+    ESP_LOGI(TAG, "Ethernet Link Down");
+    break;
+  case SYSTEM_EVENT_ETH_START:
+    ESP_LOGI(TAG, "Ethernet Started");
+    tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_ETH, "VM208");
+    break;
+  case SYSTEM_EVENT_ETH_GOT_IP:
+    memset(&ip, 0, sizeof(tcpip_adapter_ip_info_t));
+    ESP_ERROR_CHECK(tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_ETH, &ip));
+    ESP_LOGI(TAG, "Ethernet Got IP Addr");
+    ESP_LOGI(TAG, "~~~~~~~~~~~");
+    ESP_LOGI(TAG, "ETHIP:" IPSTR, IP2STR(&ip.ip));
+    ESP_LOGI(TAG, "ETHMASK:" IPSTR, IP2STR(&ip.netmask));
+    ESP_LOGI(TAG, "ETHGW:" IPSTR, IP2STR(&ip.gw));
+    ESP_LOGI(TAG, "~~~~~~~~~~~");
+    gotETH_IP = true;
+    xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
+    break;
+  case SYSTEM_EVENT_ETH_STOP:
+    ESP_LOGI(TAG, "Ethernet Stopped");
+    break;
+  case SYSTEM_EVENT_STA_START:
+    tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, "VM208");
+    break;
+  case SYSTEM_EVENT_STA_GOT_IP:
+    gotSTA_IP = true;
+    ESP_LOGI(TAG, "GOT_STA_IP");
+    xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
+    xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
+    break;
+  case SYSTEM_EVENT_STA_DISCONNECTED:
+    esp_wifi_connect();
+    xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT | GOTIP_BIT);
+    gotSTA_IP = false;
+    break;
+  default:
+    break;
+  }
+  return ESP_OK;
+}
+
+static void got_ip_task(void *pvParameter)
+{
+  //tcpip_adapter_ip_info_t ip;
+  //esp_err_t err;
+  while (true)
+  {
+    xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
+    if (gotETH_IP)
+    {
+      esp_wifi_stop();
+    }
+    //ESP_LOGI(TAG, "SMARTCONFIG_STOP");
+    //esp_smartconfig_stop();
+    //ESP_LOGI(TAG, "LOOPTY SWOOPTY");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+}
+
+void startWifi()
+{
+  
+  if (config.getSSID().equals("") || config.getWifiPassword().equals(""))
+  {
+    ESP_LOGI(TAG, "INVALID WIFI CREDENTIALS");
+    char ssid[32];
+    char pw[64];
+    config.getSSID().toCharArray(ssid, 32);
+    config.getWifiPassword().toCharArray(pw, 64);
+    ESP_LOGI(TAG, "SSID: %s", ssid);
+    ESP_LOGI(TAG, "PW: %s", pw); 
+  }
+  else
+  {
+    char ssid[32];
+    char pw[64];
+    config.getSSID().toCharArray(ssid, 32);
+    config.getWifiPassword().toCharArray(pw, 64);
+    ESP_LOGI(TAG, "SSID: %s", ssid);
+    ESP_LOGI(TAG, "PW: %s", pw);
+    wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&init_cfg));
+    wifi_config_t cfg;
+    esp_wifi_get_config(ESP_IF_WIFI_STA,&cfg);
+    strncpy((char *)cfg.ap.password, pw, sizeof(cfg.ap.password));
+    strncpy((char *)cfg.ap.ssid, ssid, sizeof(cfg.ap.ssid));
+    
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg) );
+    ESP_ERROR_CHECK(esp_wifi_start());
+    esp_wifi_connect();
+    //Load Config and connect to Wifi
+  }
+}
+
+void setup()
+{
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   delay(10);
   Serial.printf("START\n");
 
-  Init_IO();  
+  ESP_ERROR_CHECK(nvs_flash_init());
+  ESP_LOGI(TAG, "APP MAIN ENTRY");
+  Init_IO();
 
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP(hostName);
-  WiFi.begin(ssid, password);
-  WiFi.setHostname(hostName);
+  esp_err_t ret = ESP_OK;
+  tcpip_adapter_init();
+  s_wifi_event_group = xEventGroupCreate();
 
-  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.printf("STA: Failed!\n");
-    WiFi.disconnect(false);
-    delay(1000);
-    WiFi.begin(ssid, password);
-  }
-
-  Serial.print ( "IP address: " );
-  Serial.println ( WiFi.localIP() );
-
-  if(udp.listen(30303)) {
-        Serial.print("UDP Listening on IP: ");
-        Serial.println(WiFi.localIP());
-        udp.onPacket([](AsyncUDPPacket packet) {
-            Serial.print("UDP Packet Type: ");
-            Serial.print(packet.isBroadcast()?"Broadcast":packet.isMulticast()?"Multicast":"Unicast");
-            Serial.print(", From: ");
-            Serial.print(packet.remoteIP());
-            Serial.print(":");
-            Serial.print(packet.remotePort());
-            Serial.print(", To: ");
-            Serial.print(packet.localIP());
-            Serial.print(":");
-            Serial.print(packet.localPort());
-            Serial.print(", Length: ");
-            Serial.print(packet.length());
-            Serial.print(", Data: ");
-            Serial.write(packet.data(), packet.length());
-            Serial.println();
-            //reply to the client
-            packet.printf("Got %u bytes of data", packet.length());
-        });
-    }
-
-  //Send OTA events to the browser
-  ArduinoOTA.onStart([]() { events.send("Update Start", "ota"); });
-  ArduinoOTA.onEnd([]() { events.send("Update End", "ota"); });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    char p[32];
-    sprintf(p, "Progress: %u%%\n", (progress/(total/100)));
-    events.send(p, "ota");
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    if(error == OTA_AUTH_ERROR) events.send("Auth Failed", "ota");
-    else if(error == OTA_BEGIN_ERROR) events.send("Begin Failed", "ota");
-    else if(error == OTA_CONNECT_ERROR) events.send("Connect Failed", "ota");
-    else if(error == OTA_RECEIVE_ERROR) events.send("Recieve Failed", "ota");
-    else if(error == OTA_END_ERROR) events.send("End Failed", "ota");
-  });
-  ArduinoOTA.setHostname(hostName);
-  ArduinoOTA.begin();
-
-  MDNS.addService("http","tcp",80);
+  ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
   SPIFFS.begin();
 
-  ws.onEvent(onWsEvent);
-  server.addHandler(&ws);
+  input_t *inputs;
+  inputs = getCurrentInputs();
+  readInputs(inputs);
+  //check if button 1 and 4 is pressed
+  //start AP for WiFi Config
+  ESP_LOGI(TAG, "Check Buttons");
+  if ((inputs[0].state == INPUT_ON) && (inputs[3].state == INPUT_ON))
+  {
+    ESP_LOGI(TAG, "Start AP");
+    WiFi.softAP("VM208_AP", "VellemanForMakers");
+    WiFi.enableSTA(false);
+  }
+  else
+  {
+    xTaskCreate(IO_task, "IO_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    config.load();
+    startWifi();
 
-  events.onConnect([](AsyncEventSourceClient *client){
-    client->send("hello!",NULL,millis(),1000);
-  });
-  server.addHandler(&events);
+    eth_config_t config = DEFAULT_ETHERNET_PHY_CONFIG;
+    /* Set the PHY address in the example configuration */
+    config.phy_addr = PHY0;
+    config.gpio_config = eth_gpio_config_rmii;
+    config.tcpip_input = tcpip_adapter_eth_input;
+    config.clock_mode = ETH_CLOCK_GPIO0_IN;
+    config.phy_power_enable = phy_device_power_enable_via_gpio;
+    ret = esp_eth_init(&config);
 
-  //server.addHandler(new SPIFFSEditor(http_username,http_password));
+    if (ret == ESP_OK)
+    {
+      esp_eth_enable();
+    }
 
-  server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", String(ESP.getFreeHeap()));
-  });
+    xTaskCreate(got_ip_task, "got_ip_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
 
-  server.on("/relay/1/on", HTTP_POST, [](AsyncWebServerRequest *request){
-    Serial.printf("ON\n");
-    setRelay(0,RELAY_ON);
-    sendIOState(request);
-  });
+    //Serial.print ( "IP address: " );
+    //Serial.println ( WiFi.localIP() );
 
-  server.on("/relay/1/off", HTTP_POST, [](AsyncWebServerRequest *request){
-    Serial.printf("OFF\n");
-    setRelay(0,RELAY_OFF);
-    sendIOState(request);
-  });
-
-  server.on("/relay/2/on", HTTP_POST, [](AsyncWebServerRequest *request){
-    Serial.printf("ON\n");
-    setRelay(1,RELAY_ON);
-    sendIOState(request);
-  });
-
-  server.on("/relay/2/off", HTTP_POST, [](AsyncWebServerRequest *request){
-    Serial.printf("OFF\n");
-    setRelay(1,RELAY_OFF);
-    sendIOState(request);
-  });
-
-  server.on("/relay/3/on", HTTP_POST, [](AsyncWebServerRequest *request){
-    Serial.printf("ON\n");
-    setRelay(2,RELAY_ON);
-    sendIOState(request);
-  });
-
-  server.on("/relay/3/off", HTTP_POST, [](AsyncWebServerRequest *request){
-    Serial.printf("OFF\n");
-   setRelay(2,RELAY_OFF);
-    sendIOState(request);
-  });
-
-  server.on("/relay/4/on", HTTP_POST, [](AsyncWebServerRequest *request){
-    Serial.printf("ON\n");
-    relay_t relays[4];
-    getRelays(relays,4);
-    relays[3].state = RELAY_ON;
-    setRelay(3,RELAY_ON);
-    sendIOState(request);
-  });
-
-  server.on("/relay/4/off", HTTP_POST, [](AsyncWebServerRequest *request){
-    Serial.printf("OFF\n");
-    setRelay(3,RELAY_OFF);
-    sendIOState(request);
-  });
-
-  server.serveStatic("/", SPIFFS, "/").setTemplateProcessor(processor).setDefaultFile("index.html").setAuthentication(http_username,http_password);
-
-  server.onNotFound([](AsyncWebServerRequest *request){
-    Serial.printf("NOT_FOUND: ");
-    if(request->method() == HTTP_GET)
-      Serial.printf("GET");
-    else if(request->method() == HTTP_POST)
-      Serial.printf("POST");
-    else if(request->method() == HTTP_DELETE)
-      Serial.printf("DELETE");
-    else if(request->method() == HTTP_PUT)
-      Serial.printf("PUT");
-    else if(request->method() == HTTP_PATCH)
-      Serial.printf("PATCH");
-    else if(request->method() == HTTP_HEAD)
-      Serial.printf("HEAD");
-    else if(request->method() == HTTP_OPTIONS)
-      Serial.printf("OPTIONS");
+    //#region hide
+    if (udp.listen(30303))
+    {
+      udp.onPacket([](AsyncUDPPacket packet) {
+        Serial.print("UDP Packet Type: ");
+        Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
+        Serial.print(", From: ");
+        Serial.print(packet.remoteIP());
+        Serial.print(":");
+        Serial.print(packet.remotePort());
+        Serial.print(", To: ");
+        Serial.print(packet.localIP());
+        Serial.print(":");
+        Serial.print(packet.localPort());
+        Serial.print(", Length: ");
+        Serial.print(packet.length());
+        Serial.print(", Data: ");
+        Serial.write(packet.data(), packet.length());
+        Serial.println();
+        //reply to the client
+        packet.printf("Got %u bytes of data", packet.length());
+      });
+    }
+    if (!MDNS.begin("VM208"))
+    {
+      Serial.println("Error setting up MDNS responder!");
+    }
     else
-      Serial.printf("UNKNOWN");
-    Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
-
-    if(request->contentLength()){
-      Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
-      Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
+    {
+      //#endregion hide
+      MDNS.addService("http", "tcp", 80);
     }
-
-    int headers = request->headers();
-    int i;
-    for(i=0;i<headers;i++){
-      AsyncWebHeader* h = request->getHeader(i);
-      Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
-    }
-
-    int params = request->params();
-    for(i=0;i<params;i++){
-      AsyncWebParameter* p = request->getParam(i);
-      if(p->isFile()){
-        Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-      } else if(p->isPost()){
-        Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-      } else {
-        Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-      }
-    }
-
-    request->send(404);
-  });
-  server.onFileUpload([](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final){
-    if(!index)
-      Serial.printf("UploadStart: %s\n", filename.c_str());
-    Serial.printf("%s", (const char*)data);
-    if(final)
-      Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index+len);
-  });
-  server.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
-    if(!index)
-      Serial.printf("BodyStart: %u\n", total);
-    Serial.printf("%s", (const char*)data);
-    if(index + len == total)
-      Serial.printf("BodyEnd: %u\n", total);
-  });
-  server.begin();
+  }
+  startServer();
 }
 
-
-void loop(){
+void loop()
+{
   ArduinoOTA.handle();
-
 }
-
