@@ -113,4 +113,5 @@ mosfet_t* getMosfet(uint8_t index);
 void getMosfets(mosfet_t* m);
 bool isUserInputChanged();
 input_t* getCurrentInputs();
+void initExtPinDirections();
 #endif

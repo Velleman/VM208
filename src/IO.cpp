@@ -16,8 +16,8 @@ input_t previousInputs[13];
 input_t currentInputs[13];
 bool _inputChanged=false;
 bool _userInputChanged = false;
-//static const char *TAG = "IO";
-
+static const char *TAG = "IO";
+bool previousExtConnectedState = false;
 TCA6424A tca;
 TCA6424A tca_ext;
 
@@ -169,13 +169,20 @@ void Init_IO()
   //install gpio isr service
   gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
   gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void*) INT_PIN);
-  bool connected = IsExtensionConnected();
-  if(connected)
-  {
-      ESP_LOGI(TAG, "isr PIN 2 ");
-      gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void*) INT2_PIN);    
-  }
   
+      ESP_LOGI(TAG, "isr PIN 2 ");
+      gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void*) INT2_PIN);
+  
+}
+
+void initExtPinDirections()
+{
+  for(int i = 4; i<12;i++)
+  {
+    tca_ext.setPinDirection(relays[i].pin,TCA6424A_OUTPUT);
+    tca_ext.setPinDirection(currentInputs[i].pin,TCA6424A_INPUT);
+    tca_ext.setPinDirection(leds[i].pin,TCA6424A_OUTPUT);
+  }
 }
 
 void setRelays(relay_t* ptrRelays)
@@ -289,7 +296,6 @@ void IO_task(void* arg)
   while (1) {
     if(xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY)) {
       ESP_LOGI(TAG, "interrupt");
-      //printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level(io_num));
       readInputs(currentInputs);
       for(int i=0;i<INPUT_MAX;i++)
       {
@@ -336,7 +342,21 @@ void getRelays(relay_t* pRelays,uint8_t length)
 
 bool IsExtensionConnected()
 {
-    return tca_ext.testConnection();
+  bool currentState = tca_ext.testConnection();
+  if(currentState == true && previousExtConnectedState == false)
+  {
+    initExtPinDirections();
+    relay_t* r;
+    getRelays(r,12);
+    setRelays(r);
+    gpio_isr_handler_add(INT2_PIN,gpio_isr_handler,NULL);
+  }
+  if(previousExtConnectedState == true && currentState == false)
+  {
+     gpio_isr_handler_remove(INT2_PIN);
+  }
+  previousExtConnectedState = currentState;
+  return currentState;
 }
 
 relay_t* getRelayFromRelayKey(const char* key)
