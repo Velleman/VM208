@@ -48,8 +48,17 @@ String Configuration::getBoardName() const{
     return _boardName;
 }
 
+void Configuration::setUserName(String username){
+    if(username.length() < MAX_USERNAME_LENGTH){
+        _username = username;
+    }
+}
+
+String Configuration::getUserName() const{
+    return _username;
+}
+
 void Configuration::load(){
-    StaticJsonBuffer<1024> jsonBuffer;
 
     if(SPIFFS.exists(configPath))
     {
