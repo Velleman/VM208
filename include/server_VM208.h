@@ -1,6 +1,6 @@
 #ifndef _SERVER_VM208_H
 #define _SERVER_VM208_H
-
+#define ARDUINOJSON_USE_LONG_LONG 1
 #include <ESPAsyncWebServer.h>
 
 void startServer(void);

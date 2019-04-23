@@ -151,33 +151,19 @@ void startServer()
 void sendBoardInfo(AsyncWebServerRequest *request)
 {
   AsyncResponseStream *response = request->beginResponseStream("application/json");
-  ESP_LOGI(TAG,"create buffer boardinfo");
   Serial.println(config.getBoardName());
   const size_t capacity = JSON_OBJECT_SIZE(5);
   DynamicJsonBuffer jsonBuffer(capacity);
-  ESP_LOGI(TAG,"created buffer boardinfo");
   JsonObject &root = jsonBuffer.createObject();
-  ESP_LOGI(TAG,"debug");
   root.set("time", (uint64_t)esp_timer_get_time());
-  ESP_LOGI(TAG,"debug");
   root.set("firmware", "0.1.0");
-  ESP_LOGI(TAG,"debug");
   root.set("name", config.getBoardName());
-  ESP_LOGI(TAG,"debug");
   uint8_t mac[6];
-  ESP_LOGI(TAG,"debug");
   esp_read_mac(mac, ESP_MAC_ETH);
-  ESP_LOGI(TAG,"debug");
   root.set("MAC_ETH", getMacAsString(mac));
-  ESP_LOGI(TAG,"debug");
   esp_read_mac(mac, ESP_MAC_WIFI_STA);
-  ESP_LOGI(TAG,"debug");
   root.set("MAC_WIFI", getMacAsString(mac));
-  ESP_LOGI(TAG,"debug");
-  ESP_LOGI(TAG,"print buffer boardinfo");
-  ESP_LOGI(TAG,"debug");
   root.printTo(*response);
-  ESP_LOGI(TAG,"printed buffer boardinfo");
   request->send(response);
 }
 
