@@ -162,6 +162,8 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
   case SYSTEM_EVENT_STA_GOT_IP:
     gotSTA_IP = true;
     ESP_LOGI(TAG, "GOT_STA_IP");
+    ESP_LOGI(TAG, "got ip:%s",
+                 ip4addr_ntoa(&event->event_info.got_ip.ip_info.ip));
     xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;
