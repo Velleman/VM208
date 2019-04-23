@@ -23,7 +23,7 @@
         <div id="menu">
             <div class="pure-menu pure-menu-open">
                 <ul class="pure-menu-list">
-                    <li class="pure-menu-item"><a class="pure-menu-link" href="index.shtml">Control</a> </li>
+                    <li class="pure-menu-item"><a class="pure-menu-link" href="index.html">Control</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#authentication">Authentication</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#network">Network</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#email">E-mail</a> </li>
@@ -171,33 +171,6 @@
                         <div class="pure-control-group">
                             <label for="name_input1">Input 1:</label>
                             <input type="text" maxlength="32" name="name_input1" id="name_input1" value="Input 1"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_input2">Input 2:</label>
-                            <input type="text" maxlength="32" name="name_input2" id="name_input2" value="Input 2"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_input3">Input 3:</label>
-                            <input type="text" maxlength="32" name="name_input3" id="name_input3" value="Input 3"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_input4">Input 4:</label>
-                            <input type="text" maxlength="32" name="name_input4" id="name_input4" value="Input 4"> </div>
-                    </fieldset>
-                    <fieldset>
-                        <legend>Analog</legend>
-                        <div class="pure-control-group">
-                            <label for="name_analog">Analog:</label>
-                            <input type="text" maxlength="32" name="name_analog" id="name_analog" value="ANALOG"> </div>
-                    </fieldset>
-                    <fieldset>
-                        <legend>Javascript/JQuery</legend>
-                        <div class="pure-control-group">
-                            <label for="name_custom_js">Custom js:</label>
-                            <input type="text" maxlength="128" name="name_custom_js" id="name_custom_js" value="must be a url"> </div>
-                    </fieldset>
-                    <fieldset>
-                        <legend>CSS</legend>
-                        <div class="pure-control-group">
-                            <label for="name_custom_css">Custom css:</label>
-                            <input type="text" maxlength="128" name="name_custom_css" id="name_custom_css" value="must be a url"> </div>
                     </fieldset>
                     <div class="pure-controls">
                         <button type="submit" id="sendNameSettingsButton" class="pure-button pure-button-primary">Save</button>
@@ -263,24 +236,15 @@
             <h2>Device information</h2> </div>
         <div class="content">
             <dl><dt>Board name</dt>
-               <dd>
-                    
-                </dd><dt>MAC address</dt>
-                <dd>
-                    
-                </dd><dt>System up-time</dt>
-                <dd>
-                    
-                </dd><dt>Firmware version</dt>
-                <dd>
-                    
-                </dd><dt>Analog max. value</dt>
-                <dd>
-                    
-                </dd> <dt>Analog min. value</dt>
-                <dd>
-                    
-                </dd>
+                  <dd><div id="boardname">name</div></dd>
+                  <dt>MAC address Wifi</dt>
+                  <dd><div id="mac_wifi">mac</div></dd>
+                  <dt>MAC address Ethernet</dt>
+                  <dd><div id="mac_eth">mac</div></dd>
+                  <dt>System up-time</dt>
+                  <dd><div id="uptime">uptime</div></dd>
+                  <dt>Firmware version</dt>
+                  <dd><div id="version">version</div></dd>
             </dl>
         </div>
     </div>
