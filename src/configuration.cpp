@@ -3,66 +3,88 @@
 #include "SPIFFS.h"
 #include "ArduinoJson.h"
 
-static const char * TAG = "CONFIGURATION";
+static const char *TAG = "CONFIGURATION";
 
-Configuration::Configuration(){
+Configuration::Configuration()
+{
     _boardName = "VM208";
 }
 
-Configuration::~Configuration(){
-
+Configuration::~Configuration()
+{
 }
 
 void Configuration::setSSID(String ssid)
 {
-    if(ssid.length() < MAX_SSID_LENGTH)
+    if (ssid.length() < MAX_SSID_LENGTH)
     {
         _ssid = ssid;
     }
 }
 
-String Configuration::getSSID() const{
+String Configuration::getSSID() const
+{
     return _ssid;
 }
 
-void Configuration::setWifiPassword(String password){
-    if(password.length() < MAX_WIFI_PASSWORD_LENGTH)
+void Configuration::setWifiPassword(String password)
+{
+    if (password.length() < MAX_WIFI_PASSWORD_LENGTH)
     {
         _wifi_pw = password;
     }
-
 }
 
-String Configuration::getWifiPassword() const{
+String Configuration::getWifiPassword() const
+{
     return _wifi_pw;
 }
 
-void Configuration::setBoardName(String boardName){
-    if(boardName.length() < MAX_BOARDNAME_LENGTH)
+void Configuration::setBoardName(String boardName)
+{
+    if (boardName.length() < MAX_BOARDNAME_LENGTH)
     {
         _boardName = boardName;
     }
 }
 
-String Configuration::getBoardName() const{
+String Configuration::getBoardName() const
+{
     return _boardName;
 }
 
-void Configuration::setUserName(String username){
-    if(username.length() < MAX_USERNAME_LENGTH){
+void Configuration::setUserName(String username)
+{
+    if (username.length() < MAX_USERNAME_LENGTH)
+    {
         _username = username;
     }
 }
 
-String Configuration::getUserName() const{
+String Configuration::getUserName() const
+{
     return _username;
 }
 
-void Configuration::load(){
-
-    if(SPIFFS.exists(configPath))
+void Configuration::setUserPw(String pw)
+{
+    if (pw.length() < MAX_USERNAME_LENGTH)
     {
-        ESP_LOGI(TAG,"file exist");
+        _userPW = pw;
+    }
+}
+
+String Configuration::getUserPw() const
+{
+    return _userPW;
+}
+
+void Configuration::load()
+{
+
+    if (SPIFFS.exists(configPath))
+    {
+        ESP_LOGI(TAG, "file exist");
         File file = loadFile(configPath);
         JsonObject &root = jsonBuffer.parseObject(file);
         _ssid = root[SSID_KEY].as<String>();
@@ -72,32 +94,34 @@ void Configuration::load(){
         Serial.println(_wifi_pw);
         Serial.println(_boardName);
     }
-    else{
-        ESP_LOGI(TAG,"file doesnt exist");
+    else
+    {
+        ESP_LOGI(TAG, "file doesnt exist");
     }
 }
 
 void Configuration::save()
 {
-   writeFile(configPath);
+    writeFile(configPath);
 }
 
-void Configuration::writeFile(const char * path){
-    if(SPIFFS.exists(configPath))
+void Configuration::writeFile(const char *path)
+{
+    if (SPIFFS.exists(configPath))
     {
-        ESP_LOGI(TAG,"remove file");
+        ESP_LOGI(TAG, "remove file");
         SPIFFS.remove(path);
     }
-    JsonObject& root = jsonBuffer.createObject();
+    JsonObject &root = jsonBuffer.createObject();
     root[SSID_KEY] = _ssid;
     root[WIFI_PW_KEY] = _wifi_pw;
     root[BOARDNAME_KEY] = _boardName;
-    File file = SPIFFS.open(path,"w");
+    File file = SPIFFS.open(path, "w");
     root.printTo(file);
     file.close();
 }
 
-File Configuration::loadFile(const char * path)
+File Configuration::loadFile(const char *path)
 {
     return SPIFFS.open(path);
 }
