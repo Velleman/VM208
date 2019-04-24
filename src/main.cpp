@@ -163,7 +163,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     gotSTA_IP = true;
     ESP_LOGI(TAG, "GOT_STA_IP");
     ESP_LOGI(TAG, "got ip:%s",
-                 ip4addr_ntoa(&event->event_info.got_ip.ip_info.ip));
+             ip4addr_ntoa(&event->event_info.got_ip.ip_info.ip));
     xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;
@@ -198,7 +198,7 @@ static void got_ip_task(void *pvParameter)
 
 void startWifi()
 {
-  
+
   if (config.getSSID().equals("") || config.getWifiPassword().equals(""))
   {
     ESP_LOGI(TAG, "INVALID WIFI CREDENTIALS");
@@ -207,7 +207,7 @@ void startWifi()
     config.getSSID().toCharArray(ssid, 32);
     config.getWifiPassword().toCharArray(pw, 64);
     ESP_LOGI(TAG, "SSID: %s", ssid);
-    ESP_LOGI(TAG, "PW: %s", pw); 
+    ESP_LOGI(TAG, "PW: %s", pw);
   }
   else
   {
@@ -220,12 +220,12 @@ void startWifi()
     wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&init_cfg));
     wifi_config_t cfg;
-    esp_wifi_get_config(ESP_IF_WIFI_STA,&cfg);
+    esp_wifi_get_config(ESP_IF_WIFI_STA, &cfg);
     strncpy((char *)cfg.ap.password, pw, sizeof(cfg.ap.password));
     strncpy((char *)cfg.ap.ssid, ssid, sizeof(cfg.ap.ssid));
-    
+
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg) );
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg));
     ESP_ERROR_CHECK(esp_wifi_start());
     esp_wifi_connect();
     //Load Config and connect to Wifi

@@ -15,7 +15,6 @@ const char *TAG = "SERVER";
 // SKETCH BEGIN
 AsyncWebServer server(80);
 
-
 void sendBoardInfo(AsyncWebServerRequest *request);
 void sendIOState(AsyncWebServerRequest *request);
 String getMacAsString(uint8_t *mac);
@@ -27,7 +26,7 @@ extern Configuration config;
 
 void startServer()
 {
-  
+
   //#region server
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
@@ -41,7 +40,17 @@ void startServer()
     sendIOState(request);
   });
 
-  server.on("/relay", HTTP_POST, [](AsyncWebServerRequest *request){
+  server.on("/auth_settings", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->params() == 2)
+    {
+      config.setUserName(request->getParam(0)->value());
+      config.setUserPw(request->getParam(1)->value());
+      config.save();
+      ESP.restart();
+    }
+  });
+
+  server.on("/relay", HTTP_POST, [](AsyncWebServerRequest *request) {
     String relay;
     String state;
     AsyncWebParameter *p = request->getParam(0);
@@ -51,27 +60,20 @@ void startServer()
 
     Serial.println(relay);
     Serial.println(state);
-    setRelay(relay.toInt()-1, state.toInt()? RELAY_ON: RELAY_OFF);
+    setRelay(relay.toInt() - 1, state.toInt() ? RELAY_ON : RELAY_OFF);
     sendIOState(request);
   });
 
   server.on("/wifisave", HTTP_POST, [](AsyncWebServerRequest *request) {
     Serial.printf("WifiSave\n");
-    String ssid;
-    String pw;
-    String name;
-
-    AsyncWebParameter *p = request->getParam(0);
-    ssid = p->value();
-    p = request->getParam(1);
-    pw = p->value();
-    p = request->getParam(2);
-    name = p->value();
-    config.setSSID(ssid);
-    config.setWifiPassword(pw);
-    config.setBoardName(name);
-    ESP_LOGI(TAG,"TEST1");
-    xTaskCreate(saveConfig,"saveconfig",4096,NULL,tskIDLE_PRIORITY+2,NULL);
+    if (request->params() == 3)
+    {
+      config.setSSID(request->getParam(0)->value());
+      config.setWifiPassword(request->getParam(1)->value());
+      config.setBoardName(request->getParam(2)->value());
+      config.save();
+      Serial.printf("Wifi Saved\n");
+    }
   });
 
   server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setAuthentication(http_username, http_password).setFilter(ON_STA_VM208_FILTER);
@@ -214,26 +216,27 @@ void sendIOState(AsyncWebServerRequest *request)
 bool ON_AP_VM208_FILTER(AsyncWebServerRequest *request)
 {
   wifi_mode_t mode = WiFi.getMode();
-  if(mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA){
+  if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
+  {
     return true;
   }
   else
   {
     return false;
   }
-  
 }
 
 bool ON_STA_VM208_FILTER(AsyncWebServerRequest *request)
 {
-  
+
   wifi_mode_t mode = WiFi.getMode();
-  if(mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA){
+  if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
+  {
     return false;
   }
   else
   {
-    if(tcpip_adapter_is_netif_up(TCPIP_ADAPTER_IF_ETH) && gotETH_IP)
+    if (tcpip_adapter_is_netif_up(TCPIP_ADAPTER_IF_ETH) && gotETH_IP)
     {
       return true;
     }
@@ -242,14 +245,5 @@ bool ON_STA_VM208_FILTER(AsyncWebServerRequest *request)
       return true;
     }
   }
-  
-  
-}
-
-void saveConfig( void *pvParameters )
-{
-  ESP_LOGI(TAG,"TEST1");
-  config.save();
-  vTaskDelete( NULL );
 }
 //#endregion server
