@@ -2,7 +2,7 @@ function requestSettings() {
     var e = new Object;
     e = $.ajax({
         type: "GET",
-        url: "/cgi/settings_json.shtml",
+        url: "/settings",
         dataType: "text",
         data: $(this).serialize(),
         success: function(e) {
@@ -99,14 +99,34 @@ function sendRelay(e, t) {
     })
 }
 
-function sendPulse(e) {
-    {
-        var t = "/" + e;
+function sendMosfet(e, t) {
+    relaysettings = "TURN OFF" == $(t).html() ? "/" + e + "/off" : "/" + e + "/on";
+    var payload = {
+        index: e,
+        state: "TURN OFF" == $(t).html() ? "0" : "1"
+    };
+    $.ajax({
+        type: "POST",
+        url: "/mosfet",
+        dataType: "text",
+        data: payload,
+        success: function(e) {
+            try {
+                updateIO(e)
+            } catch (t) {
+                console.log(t)
+            }
+        }
+    })
+}
+
+function sendPulse(i,t) {
+
         $.ajax({
             type: "POST",
-            url: "/relay" + t + "/pulse",
+            url: "pulse",
             dataType: "text",
-            data: "pulse",
+            data: {index : i,time:t},
             success: function(e) {
                 try {
                     updateIO(e)
@@ -115,7 +135,23 @@ function sendPulse(e) {
                 }
             }
         })
-    }
+}
+
+function sendTimer(i,t) {
+
+        $.ajax({
+            type: "POST",
+            url: "timer",
+            dataType: "text",
+            data: {index : i,time:t},
+            success: function(e) {
+                try {
+                    updateIO(e)
+                } catch (t) {
+                    console.log(t)
+                }
+            }
+        })
 }
 
 function timerClearEvent() {
@@ -240,12 +276,11 @@ function ValidateIPaddress(e) {
     return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(e) ? !0 : (alert("You have entered an invalid IP address!"), !1)
 }
 
-function sendNetworkSettings() {
+function sendEthNetworkSettings() {
     if (ValidateIPaddress($("#value_ipaddress").val()) && ValidateIPaddress($("#value_gateway").val()) && ValidateIPaddress($("#value_subnetmask").val()) && ValidateIPaddress($("#value_primarydns").val()) && ValidateIPaddress($("#value_secondarydns").val())) {
 		if($("#value_webserverport").val() > 0)
 		{
 			var e = {
-				webserverport: $("#value_webserverport").val(),
 				dhcpenable: $("#dhcp_enabled_checkbox").is(":checked") ? 1 : 0,
 				ipaddress: $("#value_ipaddress").val(),
 				gateway: $("#value_gateway").val(),
@@ -257,7 +292,43 @@ function sendNetworkSettings() {
 			$("#sendNetworkSettingsButton").html("SAVING..."); {
 				$.ajax({
 					type: "POST",
-					url: "/network_settings",
+					url: "/eth_ip_save",
+					dataType: "text",
+					data: e,
+					success: function(e) {
+						try {
+							"OK" == e ? ($("#sendNetworkSettingsButton").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE NETWORKSETTINGS")
+						} catch (t) {
+							console.log(t)
+						}
+					}
+				})
+			}
+		}
+		else
+		{
+			$("#sendNetworkSettingsButton").html("INVALID PORT NUMBER");
+		}
+    } else $("#sendNetworkSettingsButton").html("INVALID IP ADDRESSES")
+}
+
+function sendWifiNetworkSettings() {
+    if (ValidateIPaddress($("#value_ipaddress").val()) && ValidateIPaddress($("#value_gateway").val()) && ValidateIPaddress($("#value_subnetmask").val()) && ValidateIPaddress($("#value_primarydns").val()) && ValidateIPaddress($("#value_secondarydns").val())) {
+		if($("#value_webserverport").val() > 0)
+		{
+			var e = {
+				dhcpenable: $("#dhcp_enabled_checkbox").is(":checked") ? 1 : 0,
+				ipaddress: $("#value_ipaddress").val(),
+				gateway: $("#value_gateway").val(),
+				subnetmask: $("#value_subnetmask").val(),
+				primarydns: $("#value_primarydns").val(),
+				secondarydns: $("#value_secondarydns").val()
+			};
+			
+			$("#sendNetworkSettingsButton").html("SAVING..."); {
+				$.ajax({
+					type: "POST",
+					url: "/eth_ip_save",
 					dataType: "text",
 					data: e,
 					success: function(e) {
@@ -360,6 +431,9 @@ function updateIO(e) {
         $("#relay11Status").html(t.relay11 ? "TURN OFF" : "TURN ON");
         $("#relay12Status").html(t.relay12 ? "TURN OFF" : "TURN ON");
         t.isExtConnected ?  $("#extRelay").show():$("#extRelay").hide();
+        $("#mosfet1Status").html(t.mosfet1 ? "TURN OFF" : "TURN ON");
+        $("#mosfet2Status").html(t.mosfet2 ? "TURN OFF" : "TURN ON");
+        $("#inputStatus").html(t.input ? "CLOSED" : "OPEN");
     } catch (s) {
         console.log(s)
     }
@@ -421,11 +495,11 @@ function updateBoardInfo(e)
 
 function enableButtons() {
     var e;
-    for (e = 1; 12 >= e; e++) $("#relay" + e + "Status").removeClass("pure-button-disabled"), $("#pulse" + e + "Status").removeClass("pure-button-disabled")
+    for (e = 1; 12 >= e; e++) $("#relay" + e + "Status").removeClass("pure-button-disabled"), $("#mosfet" + e + "Status").removeClass("pure-button-disabled"), $("#pulse" + e + "Start").removeClass("pure-button-disabled"), $("#timer" + e + "Start").removeClass("pure-button-disabled")
 }
 var json, notif_select = new Object;
 $(document).ready(function() {
-    requestBoardInfo(), notif_select = $("#notification_select"), notif_select.change(update_notif_settings), $("#splashscreen").delay(750).fadeOut(500), enableButtons()
+    requestBoardInfo(),requestSettings(), notif_select = $("#notification_select"), notif_select.change(update_notif_settings), $("#splashscreen").delay(750).fadeOut(500), enableButtons()
 });
 var current_slide = 0;
 $(function() {
@@ -453,18 +527,64 @@ $(function() {
         sendRelay(11, this)
     }), $("#relay12Status").click(function() {
         sendRelay(12, this)
-    }), $("#pulse1Status").click(function() {
-        sendPulse(1, this)
-    }), $("#pulse2Status").click(function() {
-        sendPulse(2, this)
-    }), $("#pulse3Status").click(function() {
-        sendPulse(3, this)
-    }), $("#pulse4Status").click(function() {
-        sendPulse(4, this)
+    }), $("#mosfet1Status").click(function() {
+        sendMosfet(1, this)
+    }), $("#mosfet2Status").click(function() {
+        sendMosfet(2, this)
+    }), $("#pulse1Start").click(function() {
+        sendPulse(1,$("#value_pulse1").val(), this)
+    }), $("#pulse2Start").click(function() {
+        sendPulse(2,$("#value_pulse1").val(), this)
+    }), $("#pulse3Start").click(function() {
+        sendPulse(3,$("#value_pulse1").val(), this)
+    }), $("#pulse4Start").click(function() {
+        sendPulse(4,$("#value_pulse1").val(), this)
+    }), $("#pulse5Start").click(function() {
+        sendPulse(5,$("#value_pulse1").val(), this)
+    }), $("#pulse6Start").click(function() {
+        sendPulse(6,$("#value_pulse1").val(), this)
+    }), $("#pulse7Start").click(function() {
+        sendPulse(7,$("#value_pulse1").val(), this)
+    }), $("#pulse8Start").click(function() {
+        sendPulse(8,$("#value_pulse1").val(), this)
+    }), $("#pulse9Start").click(function() {
+        sendPulse(9,$("#value_pulse1").val(), this)
+    }), $("#pulse10Start").click(function() {
+        sendPulse(10,$("#value_pulse1").val(), this)
+    }), $("#pulse11Start").click(function() {
+        sendPulse(11,$("#value_pulse1").val(), this)
+    }), $("#pulse12Start").click(function() {
+        sendPulse(12,$("#value_pulse1").val(), this)
+    }), $("#timer1Start").click(function() {
+        sendTimer(1,$("#value_timer1").val(), this)
+    }), $("#timer2Start").click(function() {
+        sendTimer(2,$("#value_timer1").val(), this)
+    }), $("#timer3Start").click(function() {
+        sendTimer(3,$("#value_timer1").val(), this)
+    }), $("#timer4Start").click(function() {
+        sendTimer(4,$("#value_timer1").val(), this)
+    }), $("#timer5Start").click(function() {
+        sendTimer(5,$("#value_timer1").val(), this)
+    }), $("#timer6Start").click(function() {
+        sendTimer(6,$("#value_timer1").val(), this)
+    }), $("#timer7Start").click(function() {
+        sendTimer(7,$("#value_timer1").val(), this)
+    }), $("#timer8Start").click(function() {
+        sendTimer(8,$("#value_timer1").val(), this)
+    }), $("#timer9Start").click(function() {
+        sendTimer(9,$("#value_timer1").val(), this)
+    }), $("#timer1Start").click(function() {
+        sendTimer(10,$("#value_timer1").val(), this)
+    }), $("#timer1Start").click(function() {
+        sendTimer(11,$("#value_timer1").val(), this)
+    }), $("#timer12Start").click(function() {
+        sendTimer(12,$("#value_timer1").val(), this)
     }), $("#sendAuthSettingsButton").click(function() {
         return sendAuthSettings(), !1
-    }), $("#sendNetworkSettingsButton").click(function() {
-        return sendNetworkSettings(), !1
+    }), $("#sendWifiNetworkSettingsButton").click(function() {
+        return sendWifiNetworkSettings(), !1
+    }), $("#sendEthNetworkSettingsButton").click(function() {
+        return sendEthNetworkSettings(), !1
     }), $("#sendMailSettingsButton").click(function() {
         return sendEmailSettings(), !1
     }), $("#sendNameSettingsButton").click(function() {

@@ -51,7 +51,7 @@ img.splashimage:empty
 .status-table
 {
 	/* full width with 1em margin (left, right and top) */
-	table-layout: fixed;
+	table-layout: auto;
 	margin: auto;
 	margin-top: 1em;
 	width: calc(100% - 2em);
@@ -59,7 +59,7 @@ img.splashimage:empty
 .status-table td
 {
 	/* status tables nicely split in half */
-	width: 50%;
+	/*width: 50%;*/
 }
  .button-custom-disabled
  {
@@ -75,9 +75,11 @@ img.splashimage:empty
 	cursor: not-allowed;
 }
 
-.relayButton
+td
 {
-	width:100%;
+	width:1px;
+    white-space:nowrap;
 }
+
 	
 							

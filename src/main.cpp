@@ -1,3 +1,4 @@
+#include "global.hpp"
 #include <Arduino.h>
 //#include <Hash.h>
 //#include <ESP8266WiFi.h>
@@ -12,7 +13,7 @@
 
 #include "server_VM208.h"
 
-#include "IO.h"
+#include "IO.hpp"
 
 #include "tcpip_adapter.h"
 #include "soc/emac_ex_reg.h"
@@ -24,18 +25,26 @@
 #include "eth_phy/phy_lan8720.h"
 #define DEFAULT_ETHERNET_PHY_CONFIG phy_lan8720_default_ethernet_config
 #include <SPIFFS.h>
-#include "configuration.h"
-
+#include "configuration.hpp"
+//#include "time.h"
+#include "input.hpp"
+#include "output.hpp"
+//#include "NtpClientLib.h"
 static const char *TAG = "VM208_MAIN";
 
-extern bool gotETH_IP = false;
-extern bool gotSTA_IP = false;
+AsyncUDP udp;
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+Configuration config;
+bool gotETH_IP;
+bool gotSTA_IP;
+void startWifi();
 
 #define PIN_PHY_POWER GPIO_NUM_5
 #define PIN_SMI_MDC 23
 #define PIN_SMI_MDIO 18
 
-extern Configuration config;
+SemaphoreHandle_t g_Mutex;
 
 String processor(const String &var)
 {
@@ -50,15 +59,10 @@ String processor(const String &var)
   return String("test");
 }
 
-const char *ssid = "Eminent_RnD";
-const char *password = "2017wifi";
-const char *hostName = "esp-async";
-
-AsyncUDP udp;
-
-Configuration config;
-
-void startWifi();
+int8_t timeZone = 1;
+int8_t minutesTimeZone = 0;
+const PROGMEM char *ntpServer = "pool.ntp.org";
+bool wifiFirstConnected = false;
 
 static void phy_device_power_enable_via_gpio(bool enable)
 {
@@ -211,19 +215,45 @@ void startWifi()
   }
   else
   {
-    char ssid[32];
+
+    if (!config.getWIFI_DHCPEnable())
+    {
+      tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_STA);
+      //static ip
+      tcpip_adapter_ip_info_t info;
+      char ip[15];
+      char gw[15];
+      char subnet[15];
+      config.getWIFI_IPAddress().toCharArray(ip, 15);
+      config.getWIFI_Gateway().toCharArray(gw, 15);
+      config.getWIFI_SubnetMask().toCharArray(subnet, 15);
+      info.ip.addr = ipaddr_addr(ip);
+      info.gw.addr = ipaddr_addr(gw);
+      info.netmask.addr = ipaddr_addr(subnet);
+      tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_STA, &info);
+      tcpip_adapter_dns_info_t info_dns;
+      char dns[15];
+      config.getWIFI_PrimaryDNS().toCharArray(dns, 15);
+      info_dns.ip.type = IPADDR_TYPE_V4;
+      info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
+      tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_STA, TCPIP_ADAPTER_DNS_MAIN, &info_dns);
+      config.getWIFI_SecondaryDNS().toCharArray(dns, 15);
+      info_dns.ip.type = IPADDR_TYPE_V4;
+      info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
+      tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_STA, TCPIP_ADAPTER_DNS_BACKUP, &info_dns);
+    }
+    char ssid_arr[32];
     char pw[64];
-    config.getSSID().toCharArray(ssid, 32);
+    config.getSSID().toCharArray(ssid_arr, 32);
     config.getWifiPassword().toCharArray(pw, 64);
-    ESP_LOGI(TAG, "SSID: %s", ssid);
+    ESP_LOGI(TAG, "SSID: %s", ssid_arr);
     ESP_LOGI(TAG, "PW: %s", pw);
     wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&init_cfg));
     wifi_config_t cfg;
     esp_wifi_get_config(ESP_IF_WIFI_STA, &cfg);
-    strncpy((char *)cfg.ap.password, pw, sizeof(cfg.ap.password));
-    strncpy((char *)cfg.ap.ssid, ssid, sizeof(cfg.ap.ssid));
-
+    strncpy((char *)cfg.sta.password, pw, sizeof(cfg.sta.password));
+    strncpy((char *)cfg.sta.ssid, ssid_arr, sizeof(cfg.sta.ssid));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg));
     ESP_ERROR_CHECK(esp_wifi_start());
@@ -232,8 +262,34 @@ void startWifi()
   }
 }
 
+void startEth()
+{
+  esp_err_t ret;
+  if (config.getETH_DHCPEnable())
+  {
+
+    eth_config_t eth_config = DEFAULT_ETHERNET_PHY_CONFIG;
+    /* Set the PHY address in the example configuration */
+    eth_config.phy_addr = PHY0;
+    eth_config.gpio_config = eth_gpio_config_rmii;
+    eth_config.tcpip_input = tcpip_adapter_eth_input;
+    eth_config.clock_mode = ETH_CLOCK_GPIO0_IN;
+    eth_config.phy_power_enable = phy_device_power_enable_via_gpio;
+    ret = esp_eth_init(&eth_config);
+
+    if (ret == ESP_OK)
+    {
+      esp_eth_enable();
+    }
+  }
+  else
+  {
+  }
+}
+
 void setup()
 {
+  g_Mutex = xSemaphoreCreateMutex();
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   delay(10);
@@ -251,13 +307,13 @@ void setup()
 
   SPIFFS.begin();
 
-  input_t *inputs;
+  Input *inputs;
   inputs = getCurrentInputs();
-  readInputs(inputs);
+  //readInputs(inputs);
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
   ESP_LOGI(TAG, "Check Buttons");
-  if ((inputs[0].state == INPUT_ON) && (inputs[3].state == INPUT_ON))
+  if ((inputs[0].read() == false) && (inputs[3].read() == false))
   {
     ESP_LOGI(TAG, "Start AP");
     WiFi.softAP("VM208_AP", "VellemanForMakers");
@@ -268,26 +324,10 @@ void setup()
     xTaskCreate(IO_task, "IO_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
     config.load();
     startWifi();
-
-    eth_config_t config = DEFAULT_ETHERNET_PHY_CONFIG;
-    /* Set the PHY address in the example configuration */
-    config.phy_addr = PHY0;
-    config.gpio_config = eth_gpio_config_rmii;
-    config.tcpip_input = tcpip_adapter_eth_input;
-    config.clock_mode = ETH_CLOCK_GPIO0_IN;
-    config.phy_power_enable = phy_device_power_enable_via_gpio;
-    ret = esp_eth_init(&config);
-
-    if (ret == ESP_OK)
-    {
-      esp_eth_enable();
-    }
+    startEth();
 
     xTaskCreate(got_ip_task, "got_ip_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
-
-    //Serial.print ( "IP address: " );
-    //Serial.println ( WiFi.localIP() );
 
     //#region hide
     if (udp.listen(30303))
@@ -309,12 +349,12 @@ void setup()
         Serial.write(packet.data(), packet.length());
         Serial.println();
         //reply to the client
-        packet.printf("Got %u bytes of data", packet.length());
+        packet.printf("Aloha, My Name is:%s", config.getBoardName());
       });
     }
     if (!MDNS.begin("VM208"))
     {
-      Serial.println("Error setting up MDNS responder!");
+      ESP_LOGI(TAG, "Error setting up MDNS responder!");
     }
     else
     {
@@ -328,4 +368,5 @@ void setup()
 void loop()
 {
   ArduinoOTA.handle();
+  //Serial.println("loop");
 }

@@ -4,8 +4,8 @@
 <head>
     <meta charset="ISO-8859-1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="The VM204 main page">
-    <title>VM204 Control Page</title>
+    <meta name="description" content="The VM208 settings page">
+    <title>VM208 Settings Page</title>
     <link rel="stylesheet" href="css/pure-min.css">
     <link rel="stylesheet" href="css/layouts/side-menu.css">
     <link rel="stylesheet" href="css/grids.css">
@@ -29,8 +29,6 @@
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#email">E-mail</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#customize">Customize</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#notifications">Notifications</a> </li>
-                    <li class="pure-menu-item"><a class="pure-menu-link" href="#api">API</a> </li>
-                    <li class="pure-menu-item"><a class="pure-menu-link" href="api_reference.html">API Reference</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#about">About</a> </li>
                 </ul>
             </div>
@@ -57,38 +55,62 @@
             </div>
             <div class="header" id="network">
                 <h1>Network</h1>
-                <h2>Network configuration</h2> </div>
+                <h2>Network Ethernet configuration</h2> </div>
             <div class="content">
                 <form id="networkSettingsForm" class="pure-form pure-form-aligned">
-                    <fieldset>
-                        <legend>Web interface</legend>
-                        <div class="pure-control-group">
-                            <label for="value_webserverport">Port:</label>
-                            <input type="number" maxlength="64" name="value_webserverport" id="value_webserverport" value="80" min="1"> </div>
-                    </fieldset>
                     <fieldset>
                         <legend>DHCP</legend>
                         <div class="pure-control-group">
                             <input type="checkbox" id="dhcp_enabled_checkbox">Enable DHCP</input>
                         </div>
                         <div class="pure-control-group">
-                            <label for="value_ipaddress">IP address:</label>
-                            <input type="text" maxlength="64" name="value_ipaddress" id="value_ipaddress" value="0.0.0.0"> </div>
+                            <label for="value_eth_ipaddress">IP address:</label>
+                            <input type="text" maxlength="64" name="value_eth_ipaddress" id="value_eth_ipaddress" value="0.0.0.0"> </div>
                         <div class="pure-control-group">
-                            <label for="value_gateway">Gateway:</label>
-                            <input type="text" maxlength="64" name="value_gateway" id="value_gateway" value="0.0.0.0"> </div>
+                            <label for="value_eth_gateway">Gateway:</label>
+                            <input type="text" maxlength="64" name="value_eth_gateway" id="value_eth_gateway" value="0.0.0.0"> </div>
                         <div class="pure-control-group">
-                            <label for="value_subnetmask">Subnet mask:</label>
-                            <input type="text" maxlength="64" name="value_subnetmask" id="value_subnetmask" value="0.0.0.0"> </div>
+                            <label for="value_eth_subnetmask">Subnet mask:</label>
+                            <input type="text" maxlength="64" name="value_eth_subnetmask" id="value_eth_subnetmask" value="0.0.0.0"> </div>
                         <div class="pure-control-group">
-                            <label for="value_primarydns">Primary DNS:</label>
-                            <input type="text" maxlength="64" name="value_primarydns" id="value_primarydns" value="0.0.0.0"> </div>
+                            <label for="value_eth_primarydns">Primary DNS:</label>
+                            <input type="text" maxlength="64" name="value_eth_primarydns" id="value_eth_primarydns" value="0.0.0.0"> </div>
                         <div class="pure-control-group">
-                            <label for="value_secondarydns">Secondary DNS:</label>
-                            <input type="text" maxlength="64" name="value_secondarydns" id="value_secondarydns" value="0.0.0.0"> </div>
+                            <label for="value_eth_secondarydns">Secondary DNS:</label>
+                            <input type="text" maxlength="64" name="value_eth_secondarydns" id="value_eth_secondarydns" value="0.0.0.0"> </div>
                     </fieldset>
                     <div class="pure-controls">
-                        <button type="submit" id="sendNetworkSettingsButton" class="pure-button pure-button-primary">Save and reboot</button>
+                        <button type="submit" id="sendEthNetworkSettingsButton" class="pure-button pure-button-primary">Save and reboot</button>
+                    </div>
+                </form>
+            </div>
+            <div class="header" id="network">
+                <h2>Network WLAN configuration</h2> </div>
+            <div class="content">
+                <form id="networkSettingsForm" class="pure-form pure-form-aligned">
+                    <fieldset>
+                        <legend>DHCP</legend>
+                        <div class="pure-control-group">
+                            <input type="checkbox" id="dhcp_enabled_checkbox">Enable DHCP</input>
+                        </div>
+                        <div class="pure-control-group">
+                            <label for="value_wifi_ipaddress">IP address:</label>
+                            <input type="text" maxlength="64" name="value_wifi_ipaddress" id="value_wifi_ipaddress" value="0.0.0.0"> </div>
+                        <div class="pure-control-group">
+                            <label for="value_wifi_gateway">Gateway:</label>
+                            <input type="text" maxlength="64" name="value_wifi_gateway" id="value_wifi_gateway" value="0.0.0.0"> </div>
+                        <div class="pure-control-group">
+                            <label for="value_wifi_subnetmask">Subnet mask:</label>
+                            <input type="text" maxlength="64" name="value_wifi_subnetmask" id="value_wifi_subnetmask" value="0.0.0.0"> </div>
+                        <div class="pure-control-group">
+                            <label for="value_wifi_primarydns">Primary DNS:</label>
+                            <input type="text" maxlength="64" name="value_wifi_primarydns" id="value_wifi_primarydns" value="0.0.0.0"> </div>
+                        <div class="pure-control-group">
+                            <label for="value_wifi_secondarydns">Secondary DNS:</label>
+                            <input type="text" maxlength="64" name="value_wifi_secondarydns" id="value_wifi_secondarydns" value="0.0.0.0"> </div>
+                    </fieldset>
+                    <div class="pure-controls">
+                        <button type="submit" id="sendWifiNetworkSettingsButton" class="pure-button pure-button-primary">Save and reboot</button>
                     </div>
                 </form>
             </div>
@@ -134,7 +156,7 @@
                         <legend>Cardname</legend>
                         <div class="pure-control-group">
                             <label for="name_card">Cardname:</label>
-                            <input type="text" maxlength="32" name="name_card" id="name_card" value="VM204"> </div>
+                            <input type="text" maxlength="32" name="name_card" id="name_card" value="VM208"> </div>
                     </fieldset>
                     <fieldset>
                         <legend>Relays</legend>
@@ -188,15 +210,10 @@
                             <label for="notification_select">Notification</label>
                             <select id="notification_select" name="inputs">
                                 <option value="0">Input 1 rising</option>
-                                <option value="1">Input 2 rising</option>
-                                <option value="2">Input 3 rising</option>
-                                <option value="3">Input 4 rising</option>
-                                <option value="4">Input 1 falling</option>
-                                <option value="5">Input 2 falling</option>
-                                <option value="6">Input 3 falling</option>
-                                <option value="7">Input 4 falling</option>
-                                <option value="8">Boot</option>
-                                <option value="9">Analog</option>
+                                <option value="1">Input 1 falling</option> 
+                                <option value="2">Boot</option>
+                                <option value="3">Extension Connected</option>
+                                <option value="4">Extension Disconnected</option>
                             </select>
                         </div>
                         <div class="pure-control-group">
@@ -215,21 +232,6 @@
                         </div>
                 </form>
             </div>
-        </div>
-        <div class="header" id="api">
-            <h1>API</h1>
-            <h2>Get or generate a new API key</h2> </div>
-        <div class="content">
-            <form class="pure-form pure-form-aligned">
-                <fieldset>
-                    <legend>API</legend>
-                    <div class="pure-control-group">
-                        <label for="api_key">API Key:</label>
-                        <input class="pure-input-1-2" type="text" name="api_key" id="api_key" maxlength="32" value="" readonly>
-                        <button type="submit" id="regeneratekeyButton" class="pure-button pure-button-primary">Regenerate</button>
-                    </div>
-                </fieldset>
-            </form>
         </div>
         <div class="header" id="about">
             <h1>About</h1>
@@ -251,6 +253,6 @@
     </div>
     <script src="js/jquery.min.js"></script>
     <script src="js/ui.js"></script>
-    <script src="js/vm204.js"></script>
+    <script src="js/vm208.js"></script>
 </body>
 </html>

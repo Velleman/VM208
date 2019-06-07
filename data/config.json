@@ -1,5 +1,19 @@
 {
-    ssid:"",
-    wifi_pw:"",
-    boardname:""
+    "SSID":"Eminent_RnD",
+    "WiFi_PW":"2017wifi",
+    "BOARDNAME":"VM208",
+    "USERNAME":"ADMIN",
+    "USERPW":"TEST",
+    "ETH_DHCPEN":true,
+    "ETH_IPADDR":"0.0.0.0",
+    "ETH_GATEWAY":"0.0.0.0",
+    "ETH_SUBNET":"0.0.0.0",
+    "ETH_PRIMARYDNS":"0.0.0.0",
+    "ETH_SECONDARYDNS":"0.0.0.0",
+    "WIFI_DHCPEN":true,
+    "WIFI_IPADDR":"0.0.0.0",
+    "WIFI_GATEWAY":"0.0.0.0",
+    "WIFI_SUBNET":"0.0.0.0",
+    "WIFI_PRIMARYDNS":"0.0.0.0",
+    "WIFI_SECONDARYDNS":"0.0.0.0"
 }

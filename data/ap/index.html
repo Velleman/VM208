@@ -50,21 +50,21 @@ var name = document.getElementById("name").value;
 return true;
 }
 
-function wifisave() {
+function save() {
 
 	if(wifiInputValidation()) {
 		var ssid = document.getElementById("SSID").value;
-		var pw = document.getElementById("password").value;
+		var wifipw = document.getElementById("wifipassword").value;
 		var name = document.getElementById("name").value;
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'wifisave?ssid=' + ssid + '&password=' + pw+ '&name=' + name);
+		xhr.open('POST', 'wifisave?ssid=' + ssid + '&password=' + wifipw+ '&name=' + name);
 		xhr.onload = function() {
 		  if (xhr.status === 200) {
-			  alert("WIFI settings saved and attempting to connect. Connect this device to your wireless network. When using an IOS device go to 'name of device'.local to control to the clock. When using another device use the discover application to find the clock on your network.");
+			  alert("WIFI settings saved and attempting to connect.");
 		 }
 		 else {
-			 alert("ERROR - Please reset the clock and try again.");
+			 alert("ERROR");
 		 }
 		};
 		xhr.send();
@@ -77,12 +77,14 @@ function wifisave() {
 <body>
 
 <div class="propertycontainer">
-	<p>Connect to WLAN</p>
+	<div class="textcontainer">
+		<span class="smalltext" >WLAN Credentials: </span>
+	</div>
     <div class="textboxcontainer">
     	<input type="text" class="textbox" id="SSID" placeholder="Enter SSID" />
     </div>
     <div class="textboxcontainer">
-    	<input type="password" class="textbox" id="password" placeholder="Enter PASSWORD"/>
+    	<input type="password" class="textbox" id="wifipassword" placeholder="Enter WLAN password"/>
     </div>
 	<div class="textcontainer">
 		<span class="smalltext" >Name of your device: </span>
@@ -90,8 +92,17 @@ function wifisave() {
 	<div class="textboxcontainer">
     	<input type="text" class="textbox" id="name" value="VM208"/>
     </div>
+    <div class="textcontainer">
+		<span class="smalltext" >Credentials: </span>
+	</div>
+	<div class="textboxcontainer">
+    	<input type="text" class="textbox" id="username" value="Enter username"/>
+    </div>
+    <div class="textboxcontainer">
+    	<input type="password" class="textbox" id="userpw" placeholder="Enter User password"/>
+    </div>
 	<div class="buttoncontainer">
-        <button class="btn" onClick="wifisave()" type="button">SAVE</button> 
+        <button class="btn" onClick="save()" type="button">SAVE</button> 
     </div>
 </div>
 <div class="disclaimer">

@@ -7,4 +7,5 @@ void startServer(void);
 bool ON_AP_VM208_FILTER(AsyncWebServerRequest *request);
 bool ON_STA_VM208_FILTER(AsyncWebServerRequest *request);
 void saveConfig( void *pvParameters );
+void sendSettings(AsyncWebServerRequest *request);
 #endif

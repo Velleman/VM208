@@ -2,14 +2,16 @@
 
 #define ARDUINOJSON_USE_LONG_LONG 1
 
-#include "IO.h"
+#include "IO.hpp"
 
 #include "ArduinoJson.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "esp_eth.h"
-#include "configuration.h"
+#include "configuration.hpp"
 #include <SPIFFS.h>
+#include "global.hpp"
+#include "configuration.hpp"
 const char *TAG = "SERVER";
 
 // SKETCH BEGIN
@@ -18,11 +20,7 @@ AsyncWebServer server(80);
 void sendBoardInfo(AsyncWebServerRequest *request);
 void sendIOState(AsyncWebServerRequest *request);
 String getMacAsString(uint8_t *mac);
-const char *http_username = "admin";
-const char *http_password = "admin";
 
-extern int gotETH_IP;
-extern Configuration config;
 
 void startServer()
 {
@@ -36,6 +34,10 @@ void startServer()
     sendBoardInfo(request);
   });
 
+  server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+    sendSettings(request);
+  });
+
   server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
     sendIOState(request);
   });
@@ -46,7 +48,6 @@ void startServer()
       config.setUserName(request->getParam(0)->value());
       config.setUserPw(request->getParam(1)->value());
       config.save();
-      ESP.restart();
     }
   });
 
@@ -60,23 +61,119 @@ void startServer()
 
     Serial.println(relay);
     Serial.println(state);
-    setRelay(relay.toInt() - 1, state.toInt() ? RELAY_ON : RELAY_OFF);
+    Relay *r = getRelayById(relay.toInt());
+    Led *l = getLedById(relay.toInt());
+    if (state == "0")
+    {
+      r->turnOff();
+      l->turnOff();
+    }
+    else
+    {
+      r->turnOn();
+      l->turnOn();
+    }
+
+    sendIOState(request);
+  });
+
+  server.on("/mosfet", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String relay;
+    String state;
+    AsyncWebParameter *p = request->getParam(0);
+    relay = p->value();
+    p = request->getParam(1);
+    state = p->value();
+    Mosfet *m = getMosfetById(relay.toInt());
+    if (state == "0")
+    {
+      m->turnOff();
+      
+    }
+    else
+    {
+      m->turnOn();
+    }
+
+    sendIOState(request);
+  });
+
+  server.on("/pulse", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String relay;
+    String time;
+    AsyncWebParameter *p = request->getParam(0);
+    relay = p->value();
+    p = request->getParam(1);
+    time = p->value();
+    Relay *r = getRelayById(relay.toInt());
+    r->activatePulse(time.toInt());
+    sendIOState(request);
+  });
+
+  server.on("/timer", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String relay;
+    String time;
+    AsyncWebParameter *p = request->getParam(0);
+    relay = p->value();
+    p = request->getParam(1);
+    time = p->value();
+    Relay *r = getRelayById(relay.toInt());
+    r->activateTimer(time.toInt());
     sendIOState(request);
   });
 
   server.on("/wifisave", HTTP_POST, [](AsyncWebServerRequest *request) {
     Serial.printf("WifiSave\n");
-    if (request->params() == 3)
+    if (request->params() == 5 )
     {
       config.setSSID(request->getParam(0)->value());
       config.setWifiPassword(request->getParam(1)->value());
       config.setBoardName(request->getParam(2)->value());
+      config.setUserName(request->getParam(3)->value());
+      config.setUserPw(request->getParam(4)->value());
       config.save();
       Serial.printf("Wifi Saved\n");
+      ESP.restart();
     }
   });
 
-  server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setAuthentication(http_username, http_password).setFilter(ON_STA_VM208_FILTER);
+  server.on("/eth_ip_save", HTTP_POST, [](AsyncWebServerRequest *request) {
+    Serial.printf("eth_ip_save\n");
+    if (request->params() == 6)
+    {
+      config.setETH_DHCPEnable(request->getParam(0)->value());
+      config.setETH_IPAddress(request->getParam(1)->value());
+      config.setETH_Gateway(request->getParam(1)->value());
+      config.setETH_SubnetMask(request->getParam(1)->value());
+      config.setETH_PrimaryDNS(request->getParam(1)->value());
+      config.setETH_SecondaryDNS(request->getParam(1)->value());
+      config.save();
+    }
+  });
+
+  server.on("/wifi_ip_save", HTTP_POST, [](AsyncWebServerRequest *request) {
+    Serial.printf("wifi_ip_save\n");
+    if (request->params() == 6)
+    {
+      config.setWIFI_DHCPEnable(request->getParam(0)->value());
+      config.setWIFI_IPAddress(request->getParam(1)->value());
+      config.setWIFI_Gateway(request->getParam(1)->value());
+      config.setWIFI_SubnetMask(request->getParam(1)->value());
+      config.setWIFI_PrimaryDNS(request->getParam(1)->value());
+      config.setWIFI_SecondaryDNS(request->getParam(1)->value());
+      config.save();
+    }
+  });
+
+  char user[32];
+  char userpw[32];
+  memset(user,0,32);
+  memset(userpw,0,32);
+  config.getUserName().toCharArray(user,32);
+  config.getUserPw().toCharArray(userpw,32);
+  Serial.println(user);
+  Serial.println(userpw);
+  server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setAuthentication(user, userpw).setFilter(ON_STA_VM208_FILTER);
   server.serveStatic("/", SPIFFS, "/ap/").setDefaultFile("index.html").setFilter(ON_AP_VM208_FILTER);
 
   server.onNotFound([](AsyncWebServerRequest *request) {
@@ -184,32 +281,60 @@ String getMacAsString(uint8_t *mac)
 
 void sendIOState(AsyncWebServerRequest *request)
 {
-  //ESP_LOGI(TAG,"enter state");
+  
   AsyncResponseStream *response = request->beginResponseStream("application/json");
-  //ESP_LOGI(TAG,"create buffer send state");
-  const size_t capacity = JSON_OBJECT_SIZE(13) + 190;
+  const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
   DynamicJsonBuffer jsonBuffer(capacity);
-  //ESP_LOGI(TAG,"buffer created send state");
   JsonObject &root = jsonBuffer.createObject();
-  relay_t relays[12];
-  getRelays(relays, 12);
-
-  root.set("relay1", relays[0].state);
-  root.set("relay2", relays[1].state);
-  root.set("relay3", relays[2].state);
-  root.set("relay4", relays[3].state);
-  root.set("relay5", relays[4].state);
-  root.set("relay6", relays[5].state);
-  root.set("relay7", relays[6].state);
-  root.set("relay8", relays[7].state);
-  root.set("relay9", relays[8].state);
-  root.set("relay10", relays[9].state);
-  root.set("relay11", relays[10].state);
-  root.set("relay12", relays[11].state);
+  Relay relays[12];
+  getRelays(relays);
+  Input* inputs;
+  inputs = getCurrentInputs();
+  Mosfet* m1 = getMosfetById(1);
+  Mosfet* m2 = getMosfetById(2);
+  root.set("relay1", relays[0].getState());
+  root.set("relay2", relays[1].getState());
+  root.set("relay3", relays[2].getState());
+  root.set("relay4", relays[3].getState());
+  root.set("relay5", relays[4].getState());
+  root.set("relay6", relays[5].getState());
+  root.set("relay7", relays[6].getState());
+  root.set("relay8", relays[7].getState());
+  root.set("relay9", relays[8].getState());
+  root.set("relay10", relays[9].getState());
+  root.set("relay11", relays[10].getState());
+  root.set("relay12", relays[11].getState());
   root.set("isExtConnected", IsExtensionConnected());
-  //ESP_LOGI(TAG,"printto json send state");
+  root.set("input",inputs[12].read());
+  root.set("mosfet1",m1->getState());
+  root.set("mosfet2",m2->getState());
   root.printTo(*response);
-  //ESP_LOGI(TAG,"printto json done send state");
+  request->send(response);
+}
+
+void sendSettings(AsyncWebServerRequest *request)
+{
+  
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject &root = jsonBuffer.createObject();
+  
+  root.set(config.USERNAME_KEY,         config.getUserName());
+  root.set(config.BOARDNAME_KEY,        config.getBoardName());
+  root.set(config.ETH_DHCPEN_KEY,       config.getETH_DHCPEnable());
+  root.set(config.ETH_IPADDR_KEY,       config.getETH_IPAddress());//TODO: change to interface settings
+  root.set(config.ETH_GATEWAY_KEY,      config.getETH_Gateway());//TODO: change to interface settings
+  root.set(config.ETH_SUBNETMASK_KEY,   config.getETH_SubnetMask());//TODO: change to interface settings
+  root.set(config.ETH_PRIMARYDNS_KEY,   config.getETH_PrimaryDNS());//TODO: change to interface settings
+  root.set(config.ETH_SECONDARYDNS_KEY, config.getETH_SecondaryDNS());//TODO: change to interface settings
+  root.set(config.WIFI_DHCPEN_KEY,       config.getWIFI_DHCPEnable());
+  root.set(config.WIFI_IPADDR_KEY,       config.getWIFI_IPAddress());//TODO: change to interface settings
+  root.set(config.WIFI_GATEWAY_KEY,      config.getWIFI_Gateway());//TODO: change to interface settings
+  root.set(config.WIFI_SUBNETMASK_KEY,   config.getWIFI_SubnetMask());//TODO: change to interface settings
+  root.set(config.WIFI_PRIMARYDNS_KEY,   config.getWIFI_PrimaryDNS());//TODO: change to interface settings
+  root.set(config.WIFI_SECONDARYDNS_KEY, config.getWIFI_SecondaryDNS());//TODO: change to interface settings
+  root.printTo(*response);
   request->send(response);
 }
 

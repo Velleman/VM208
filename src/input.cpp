@@ -1,26 +1,32 @@
-#include "input.h"
+#include "input.hpp"
 
-Input::Input(uint8_t id,uint16_t pin,bool isExtension,TCA6424A *tca):
-m_id(id),
-m_pin(pin),
-m_isExtension(isExtension),
-m_tca(tca)
+Input::Input(uint8_t id, uint16_t pin, TCA6424A_TS *tca) : m_id(id),
+                                                        m_pin(pin),
+                                                        m_tca(tca)
 {
     initPin();
+    m_state = false;
 }
 
-uint8_t Input::getId(){
+uint8_t Input::getId()
+{
     return m_id;
 }
 
-void Input::initPin(){
-    
+bool Input::read()
+{
+    readTCA();
+    return m_state;
 }
 
-void Input::readTCA(){
-    m_state = m_tca->readPin(m_pin);
+void Input::readTCA()
+{
+    if (m_tca != nullptr)
+        m_state = m_tca->readPin(m_pin);
 }
 
-void Input::initPin(){
-    m_tca->setPinDirection(m_pin,TCA6424A_INPUT);
+void Input::initPin()
+{
+    if (m_tca != nullptr)
+        m_tca->setPinDirection(m_pin, TCA6424A_INPUT);
 }
