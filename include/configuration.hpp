@@ -31,6 +31,7 @@ class Configuration
     String _WIFI_SubnetMask;
     String _WIFI_PrimaryDNS;
     String _WIFI_SecondaryDNS;
+    String _version = "0.1.1";
     const char* configPath = "/config.json";
     void writeFile(const char * path);
     File loadFile(const char * path);
@@ -54,6 +55,11 @@ class Configuration
     static const char *WIFI_SUBNETMASK_KEY;
     static const char *WIFI_PRIMARYDNS_KEY;
     static const char *WIFI_SECONDARYDNS_KEY;
+    static const char *VERSION_KEY;
+
+    //getter setter SSID
+    String getVersion() const;
+
     //getter setter SSID
     String getSSID() const;
     void setSSID(String ssid);

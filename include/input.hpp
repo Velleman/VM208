@@ -10,8 +10,8 @@ class Input
     uint8_t m_id;
     uint16_t m_pin;
     TCA6424A_TS * m_tca;
-    void updateTCA(void);    
-      
+    bool m_isAccessible; 
+    void updateTCA(void);       
     void readTCA();
   public:
     Input(uint8_t id = 0,uint16_t pin = 0,TCA6424A_TS* tca = nullptr);

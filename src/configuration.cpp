@@ -14,6 +14,12 @@ Configuration::~Configuration()
 {
 }
 
+String Configuration::getVersion() const
+{
+    return _version;
+}
+
+
 void Configuration::setSSID(String ssid)
 {
     if (ssid.length() < MAX_SSID_LENGTH)
@@ -92,8 +98,18 @@ void Configuration::load()
         _boardName = root[BOARDNAME_KEY].as<String>();
         _username = root[USERNAME_KEY].as<String>();
         _userPW = root[USERPW_KEY].as<String>();
-        _WIFI_DHCPEnable = root[WIFI_DHCPEN_KEY].as<bool>();
-        _ETH_DHCPEnable = root[ETH_DHCPEN_KEY].as<bool>();
+        _WIFI_DHCPEnable =      root[WIFI_DHCPEN_KEY].as<bool>();
+        _WIFI_IPAddress =       root[WIFI_IPADDR_KEY].as<String>();
+        _WIFI_Gateway =         root[WIFI_GATEWAY_KEY].as<String>();
+        _WIFI_SubnetMask =      root[WIFI_SUBNETMASK_KEY].as<String>();
+        _WIFI_PrimaryDNS =      root[WIFI_PRIMARYDNS_KEY].as<String>();
+        _WIFI_SecondaryDNS =    root[WIFI_SECONDARYDNS_KEY].as<String>();
+        _ETH_DHCPEnable =       root[ETH_DHCPEN_KEY].as<bool>();
+        _ETH_IPAddress =        root[ETH_IPADDR_KEY].as<String>();
+        _ETH_Gateway =          root[ETH_GATEWAY_KEY].as<String>();
+        _ETH_SubnetMask =       root[ETH_SUBNETMASK_KEY].as<String>();
+        _ETH_PrimaryDNS =       root[ETH_PRIMARYDNS_KEY].as<String>();
+        _ETH_SecondaryDNS =     root[ETH_SECONDARYDNS_KEY].as<String>();        
     }
     else
     {
@@ -119,8 +135,18 @@ void Configuration::writeFile(const char *path)
     root[BOARDNAME_KEY] = _boardName;
     root[USERNAME_KEY] = _username;
     root[USERPW_KEY] = _userPW;
-    root[ETH_DHCPEN_KEY] = _ETH_DHCPEnable;
-    root[WIFI_DHCPEN_KEY] = _WIFI_DHCPEnable;
+    root[ETH_DHCPEN_KEY] =           _ETH_DHCPEnable;
+    root[ETH_IPADDR_KEY] =           _ETH_IPAddress;
+    root[ETH_GATEWAY_KEY] =          _ETH_Gateway;
+    root[ETH_SUBNETMASK_KEY] =       _ETH_SubnetMask;
+    root[ETH_PRIMARYDNS_KEY] =       _ETH_PrimaryDNS;
+    root[ETH_SECONDARYDNS_KEY] =     _ETH_SecondaryDNS;
+    root[WIFI_DHCPEN_KEY] =          _WIFI_DHCPEnable;
+    root[WIFI_IPADDR_KEY] =          _WIFI_IPAddress;
+    root[WIFI_GATEWAY_KEY] =         _WIFI_Gateway;
+    root[WIFI_SUBNETMASK_KEY] =      _WIFI_SubnetMask;
+    root[WIFI_PRIMARYDNS_KEY] =      _WIFI_PrimaryDNS;
+    root[WIFI_SECONDARYDNS_KEY] =    _WIFI_SecondaryDNS;
     File file = SPIFFS.open(path, "w");
     root.printTo(file);
     file.close();
@@ -268,3 +294,4 @@ const char* Configuration::WIFI_GATEWAY_KEY =       "WIFI_GATEWAY";
 const char* Configuration::WIFI_SUBNETMASK_KEY =    "WIFI_SUBNET";
 const char* Configuration::WIFI_PRIMARYDNS_KEY =    "WIFI_PRIMARYDNS";
 const char* Configuration::WIFI_SECONDARYDNS_KEY =  "WIFI_SECONDARYDNS";
+const char* Configuration::VERSION_KEY =  "VERSION";

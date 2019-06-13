@@ -86,7 +86,6 @@ void Init_IO()
 
   //ESP_LOGI(TAG, "isr PIN 2 ");
   gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
-  
 }
 
 void initExtPinDirections()

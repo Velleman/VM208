@@ -1,21 +1,22 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <html lang="en">
 
 <head>
-    <meta charset="ISO-8859-1">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="The VM208 settings page">
     <title>VM208 Settings Page</title>
     <link rel="stylesheet" href="css/pure-min.css">
     <link rel="stylesheet" href="css/layouts/side-menu.css">
     <link rel="stylesheet" href="css/grids.css">
-</head>
-<style>
+    <style>
     table {
         table-layout: fixed;
         width: 190px;
     }
-</style>
+    </style>
+</head>
+
 
 <body>
     <div id="layout">
@@ -38,7 +39,7 @@
                 <h1>Authentication</h1>
                 <h2>Manage access</h2> </div>
             <div class="content">
-                <form id="networkSettingsForm" class="pure-form pure-form-aligned">
+                <form id="authForm" class="pure-form pure-form-aligned">
                     <fieldset>
                         <legend>Credentials</legend>
                         <div class="pure-control-group">
@@ -53,15 +54,15 @@
                     </fieldset>
                 </form>
             </div>
-            <div class="header" id="network">
+            <div class="header" id="ethernet">
                 <h1>Network</h1>
                 <h2>Network Ethernet configuration</h2> </div>
             <div class="content">
-                <form id="networkSettingsForm" class="pure-form pure-form-aligned">
+                <form id="ethSettingsForm" class="pure-form pure-form-aligned">
                     <fieldset>
                         <legend>DHCP</legend>
                         <div class="pure-control-group">
-                            <input type="checkbox" id="dhcp_enabled_checkbox">Enable DHCP</input>
+                            <input type="checkbox" id="dhcp_enabled_eth_checkbox">Enable DHCP
                         </div>
                         <div class="pure-control-group">
                             <label for="value_eth_ipaddress">IP address:</label>
@@ -84,14 +85,14 @@
                     </div>
                 </form>
             </div>
-            <div class="header" id="network">
+            <div class="header" id="wlan">
                 <h2>Network WLAN configuration</h2> </div>
             <div class="content">
-                <form id="networkSettingsForm" class="pure-form pure-form-aligned">
+                <form id="wlanSettingsForm" class="pure-form pure-form-aligned">
                     <fieldset>
                         <legend>DHCP</legend>
                         <div class="pure-control-group">
-                            <input type="checkbox" id="dhcp_enabled_checkbox">Enable DHCP</input>
+                            <input type="checkbox" id="dhcp_enabled_wifi_checkbox"> Enable DHCP
                         </div>
                         <div class="pure-control-group">
                             <label for="value_wifi_ipaddress">IP address:</label>
@@ -143,7 +144,7 @@
                     </fieldset>
                     <div class="pure-controls">
                         <button type="submit" id="sendMailSettingsButton" class="pure-button pure-button-primary">Save</button>
-						<button type="button" id="testMailSettingsButton" class="pure-button pure-button-primary">Test mail settings</button>
+                        <button type="button" id="testMailSettingsButton" class="pure-button pure-button-primary">Test mail settings</button>
                     </div>
                 </form>
             </div>
@@ -177,16 +178,16 @@
                         <legend>Pulse</legend>
                         <div class="pure-control-group">
                             <label for="pulse_relay1">Relay 1:</label>
-                            <input type="number" maxlength="32" name="pulse_relay1" id="pulse_relay1" min="1" max="4000000" value="1"> seconds </div>
+                            <input type="number" name="pulse_relay1" id="pulse_relay1" min="1" max="4000000" value="1"> seconds </div>
                         <div class="pure-control-group">
                             <label for="pulse_relay2">Relay 2:</label>
-                            <input type="number" maxlength="32" name="pulse_relay2" id="pulse_relay2" min="1" max="4000000" value="1"> seconds </div>
+                            <input type="number" name="pulse_relay2" id="pulse_relay2" min="1" max="4000000" value="1"> seconds </div>
                         <div class="pure-control-group">
                             <label for="pulse_relay3">Relay 3:</label>
-                            <input type="number" maxlength="32" name="pulse_relay3" id="pulse_relay3" min="1" max="4000000" value="1"> seconds </div>
+                            <input type="number" name="pulse_relay3" id="pulse_relay3" min="1" max="4000000" value="1"> seconds </div>
                         <div class="pure-control-group">
                             <label for="pulse_relay4">Relay 4:</label>
-                            <input type="number" maxlength="32" name="pulse_relay4" id="pulse_relay4" min="1" max="4000000" value="1"> seconds </div>
+                            <input type="number" name="pulse_relay4" id="pulse_relay4" min="1" max="4000000" value="1"> seconds </div>
                     </fieldset>
                     <fieldset>
                         <legend>Inputs</legend>
@@ -210,7 +211,7 @@
                             <label for="notification_select">Notification</label>
                             <select id="notification_select" name="inputs">
                                 <option value="0">Input 1 rising</option>
-                                <option value="1">Input 1 falling</option> 
+                                <option value="1">Input 1 falling</option>
                                 <option value="2">Boot</option>
                                 <option value="3">Extension Connected</option>
                                 <option value="4">Extension Disconnected</option>
@@ -222,34 +223,58 @@
                         <div class="pure-control-group" id="alarmvalue_div">
                             <label for="alarmvalue_field">Alarm value:</label>
                             <input type="number" name="recipient" id="alarmvalue_field" value="128"> </div>
-						<div class="pure-controls">
-							<label for="notif_enabled_checkbox" class="pure-checkbox">
+                        <div class="pure-controls">
+                            <label for="notif_enabled_checkbox" class="pure-checkbox">
                                 <input type="checkbox" id="notif_enabled_checkbox">Enabled
-							</label>
-						</div>
+                            </label>
+                        </div>
                         <div class="pure-controls">
                             <button type="button" id="sendAlarmButton" class="pure-button pure-button-primary">Save</button>
                         </div>
+                    </fieldset>
                 </form>
             </div>
         </div>
+        <div class="header" id="firmware">
+            <h1>Update</h1>
+            <h2>Upload new Firmware</h2>
+        </div>
+        <div class="content">
+            <form id="Update" method="POST" action='/doUpdate' class="pure-form pure-form-aligned" enctype='multipart/form-data'>
+                <fieldset>
+                    <legend>Update</legend>
+                    <input type='file' name='update'>
+                    <input type='submit' value='Update' class="pure-button pure-button-primary">
+                </fieldset>
+            </form>
+        </div>
         <div class="header" id="about">
             <h1>About</h1>
-            <h2>Device information</h2> </div>
+            <h2>Device information</h2>
+        </div>
         <div class="content">
             <dl><dt>Board name</dt>
-                  <dd><div id="boardname">name</div></dd>
-                  <dt>MAC address Wifi</dt>
-                  <dd><div id="mac_wifi">mac</div></dd>
-                  <dt>MAC address Ethernet</dt>
-                  <dd><div id="mac_eth">mac</div></dd>
-                  <dt>System up-time</dt>
-                  <dd><div id="uptime">uptime</div></dd>
-                  <dt>Firmware version</dt>
-                  <dd><div id="version">version</div></dd>
+                <dd>
+                    <div id="boardname">name</div>
+                </dd>
+                <dt>MAC address Wifi</dt>
+                <dd>
+                    <div id="mac_wifi">mac</div>
+                </dd>
+                <dt>MAC address Ethernet</dt>
+                <dd>
+                    <div id="mac_eth">mac</div>
+                </dd>
+                <dt>System up-time</dt>
+                <dd>
+                    <div id="uptime">uptime</div>
+                </dd>
+                <dt>Firmware version</dt>
+                <dd>
+                    <div id="version">version</div>
+                </dd>
             </dl>
         </div>
-    </div>
     </div>
     <script src="js/jquery.min.js"></script>
     <script src="js/ui.js"></script>

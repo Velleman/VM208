@@ -26,10 +26,10 @@
 #define DEFAULT_ETHERNET_PHY_CONFIG phy_lan8720_default_ethernet_config
 #include <SPIFFS.h>
 #include "configuration.hpp"
-//#include "time.h"
+
 #include "input.hpp"
 #include "output.hpp"
-//#include "NtpClientLib.h"
+#include "esp_log.h"
 static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
@@ -45,19 +45,6 @@ void startWifi();
 #define PIN_SMI_MDIO 18
 
 SemaphoreHandle_t g_Mutex;
-
-String processor(const String &var)
-{
-  /*if(var == "NAME")
-    return F("VM208");
-  if(var == "MAC")
-    return F("MACDonals");
-  if(var == "UPTIME")
-    return F("tis al lang");
-  if(var == "FIRMWAREVERSION")
-    return F("V0.0.1");*/
-  return String("test");
-}
 
 int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
@@ -182,6 +169,16 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
   return ESP_OK;
 }
 
+static void printLocalTime()
+{
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
+
 static void got_ip_task(void *pvParameter)
 {
   //tcpip_adapter_ip_info_t ip;
@@ -193,31 +190,30 @@ static void got_ip_task(void *pvParameter)
     {
       esp_wifi_stop();
     }
-    //ESP_LOGI(TAG, "SMARTCONFIG_STOP");
-    //esp_smartconfig_stop();
-    //ESP_LOGI(TAG, "LOOPTY SWOOPTY");
+    const char* ntpServer = "pool.ntp.org";
+    long gmtOffset_sec = 0;
+    int daylightOffset_sec= 3600;
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    printLocalTime();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
-void startWifi()
+void  startWifi()
 {
 
   if (config.getSSID().equals("") || config.getWifiPassword().equals(""))
   {
     ESP_LOGI(TAG, "INVALID WIFI CREDENTIALS");
-    char ssid[32];
-    char pw[64];
-    config.getSSID().toCharArray(ssid, 32);
-    config.getWifiPassword().toCharArray(pw, 64);
-    ESP_LOGI(TAG, "SSID: %s", ssid);
-    ESP_LOGI(TAG, "PW: %s", pw);
   }
   else
   {
-
     if (!config.getWIFI_DHCPEnable())
     {
+      ESP_LOGI(TAG,"WIFI DHCP DISABLED");
+      Serial.println(config.getWIFI_IPAddress());
+      Serial.println(config.getWIFI_Gateway());
+      Serial.println(config.getWIFI_SubnetMask());
       tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_STA);
       //static ip
       tcpip_adapter_ip_info_t info;
@@ -261,29 +257,62 @@ void startWifi()
     //Load Config and connect to Wifi
   }
 }
+static void applyEthNetworkSettings()
+{
+  if (!config.getETH_DHCPEnable())
+  {
+      Serial.println("ETH DHCP DISABLED");
+      Serial.println(config.getETH_IPAddress());
+      Serial.println(config.getETH_Gateway());
+      Serial.println(config.getETH_SubnetMask());
+      tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_ETH);
+      //static ip
+      tcpip_adapter_ip_info_t info;
+      char ip[15];
+      char gw[15];
+      char subnet[15];
+      config.getETH_IPAddress().toCharArray(ip, 15);
+      config.getETH_Gateway().toCharArray(gw, 15);
+      config.getETH_SubnetMask().toCharArray(subnet, 15);
+      info.ip.addr = ipaddr_addr(ip);
+      info.gw.addr = ipaddr_addr(gw);
+      info.netmask.addr = ipaddr_addr(subnet);
+      tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_ETH, &info);
+      //set primnary DNS
+      tcpip_adapter_dns_info_t info_dns;
+      char dns[15];
+      config.getETH_PrimaryDNS().toCharArray(dns, 15);
+      info_dns.ip.type = IPADDR_TYPE_V4;
+      info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
+      tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_ETH, TCPIP_ADAPTER_DNS_MAIN, &info_dns);
+      //set secondary DNS
+      config.getETH_SecondaryDNS().toCharArray(dns, 15);
+      info_dns.ip.type = IPADDR_TYPE_V4;
+      info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
+      tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_ETH, TCPIP_ADAPTER_DNS_BACKUP, &info_dns);
+  }
+  else{
+    Serial.println("ETH DHCP ENABLED");
+    tcpip_adapter_dhcpc_start(TCPIP_ADAPTER_IF_ETH);
+  }
+}
 
 void startEth()
 {
   esp_err_t ret;
-  if (config.getETH_DHCPEnable())
-  {
+  applyEthNetworkSettings();
+  eth_config_t eth_config = DEFAULT_ETHERNET_PHY_CONFIG;
+  /* Set the PHY address in the example configuration */
+  eth_config.phy_addr = PHY0;
+  eth_config.gpio_config = eth_gpio_config_rmii;
+  eth_config.tcpip_input = tcpip_adapter_eth_input;
+  eth_config.clock_mode = ETH_CLOCK_GPIO0_IN;
+  eth_config.phy_power_enable = phy_device_power_enable_via_gpio;
+  ret = esp_eth_init(&eth_config);
 
-    eth_config_t eth_config = DEFAULT_ETHERNET_PHY_CONFIG;
-    /* Set the PHY address in the example configuration */
-    eth_config.phy_addr = PHY0;
-    eth_config.gpio_config = eth_gpio_config_rmii;
-    eth_config.tcpip_input = tcpip_adapter_eth_input;
-    eth_config.clock_mode = ETH_CLOCK_GPIO0_IN;
-    eth_config.phy_power_enable = phy_device_power_enable_via_gpio;
-    ret = esp_eth_init(&eth_config);
-
-    if (ret == ESP_OK)
-    {
-      esp_eth_enable();
-    }
-  }
-  else
+  if (ret == ESP_OK)
   {
+    esp_eth_enable();
   }
 }
 
@@ -309,7 +338,7 @@ void setup()
 
   Input *inputs;
   inputs = getCurrentInputs();
-  //readInputs(inputs);
+  readInputs(inputs);
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
   ESP_LOGI(TAG, "Check Buttons");
@@ -323,8 +352,9 @@ void setup()
   {
     xTaskCreate(IO_task, "IO_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
     config.load();
-    startWifi();
     startEth();
+    startWifi();
+    
 
     xTaskCreate(got_ip_task, "got_ip_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
@@ -368,5 +398,13 @@ void setup()
 void loop()
 {
   ArduinoOTA.handle();
-  //Serial.println("loop");
+  //delay(5000);
+  //printLocalTime();
 }
+
+
+/*
+void applyWifiNetworkSettings()
+{
+
+}*/

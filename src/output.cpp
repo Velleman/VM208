@@ -1,5 +1,17 @@
 #include "output.hpp"
+#include "esp_timer.h"
+#include "esp_err.h"
+#include "IO.hpp"
 
+extern "C"
+{
+static void timerCallback(void* arg)
+{
+    OutputId_t* oID = (OutputId_t*)arg;
+    Relay* r = getRelayById(oID->id);
+    r->toggle();
+}
+}
 Output::Output(uint8_t id, uint16_t pin, bool initState, TCA6424A_TS *tca) : m_id(id),
                                                                           m_pin(pin),
                                                                           m_state(initState),
@@ -10,6 +22,7 @@ Output::Output(uint8_t id, uint16_t pin, bool initState, TCA6424A_TS *tca) : m_i
 {
     initPin();
     updateTCA();
+    Serial.println(m_id);
 }
 
 uint8_t Output::getId()
@@ -72,22 +85,33 @@ bool Output::getState()
 
 void Output::setPulseTime(uint16_t time)
 {
-    m_pulseTime = (time <= 6000) ? time : 6000;
+    time *= 1000;
+    m_pulseTime = (time <= 60000000) ? time : 60000000;
 }
 
 void Output::activatePulse()
 {
     toggle();
-    delay(m_pulseTime);
-    toggle();
+    ESP_ERROR_CHECK(esp_timer_start_once(oneshot_timer, m_pulseTime));
 }
 
 void Output::activatePulse(uint16_t time)
 {
-    uint16_t pulseTime = (time <= 6000) ? time : 6000;
+    Serial.print("PULSE");
+    Serial.println(m_id);
+    uint64_t t = time * 1000;
+    uint16_t pulseTime = (t <= 60000000) ? t : 60000000;
     toggle();
-    delay(pulseTime);
-    toggle();
+    oID.id = m_id;
+    const esp_timer_create_args_t oneshot_timer_args = {
+            .callback = &timerCallback,
+            .arg = &oID,
+            .dispatch_method = ESP_TIMER_TASK,
+            /* argument specified here will be passed to timer callback function */
+            .name = "one-shot"
+    };
+    ESP_ERROR_CHECK(esp_timer_create(&oneshot_timer_args, &oneshot_timer));
+    ESP_ERROR_CHECK(esp_timer_start_once(oneshot_timer, pulseTime));
 }
 
 void Output::setTimerTime(uint16_t time)
@@ -111,3 +135,4 @@ void Output::activateTimer(uint16_t time)
     delay(time_ms);
     toggle();
 }
+

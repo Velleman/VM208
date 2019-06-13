@@ -29,7 +29,7 @@ function update_content() {
 function update_auth_settings() {
     var e = $("#login_field"),
         t = $("#password_field");
-    e.val(json.authentication.login), t.val(json.authentication.password)
+    e.val(json.USERNAME);
 }
 
 function update_email_settings() {
@@ -38,19 +38,24 @@ function update_email_settings() {
         a = $("#smtp_user"),
         n = $("#smtp_pass"),
         s = $("#smtp_tls");
-    e.val(json.email.smtpserver), t.val(json.email.smtpport), a.val(json.email.username), n.val(json.email.password), s.prop("checked", json.email.usessltls)
+    //e.val(json.email.smtpserver), t.val(json.email.smtpport), a.val(json.email.username), n.val(json.email.password), s.prop("checked", json.email.usessltls)
 }
 
 function update_network_settings() {
-    var e = $("#value_terminalport"),
-        t = $("#value_webserverport"),
-        a = $("#dhcp_enabled_checkbox"),
-        n = $("#value_ipaddress"),
-        s = $("#value_gateway"),
-        l = $("#value_subnetmask"),
-        o = $("#value_primarydns"),
-        i = $("#value_secondarydns");
-    e.val(json.network.terminalport), t.val(json.network.webserverport), a.prop("checked", json.network.dhcpenable), n.val(json.network.ipaddress), s.val(json.network.gateway), l.val(json.network.subnetmask), o.val(json.network.primarydns), i.val(json.network.secondarydns)
+    var a = $("#dhcp_enabled_eth_checkbox"),
+        n = $("#value_eth_ipaddress"),
+        s = $("#value_eth_gateway"),
+        l = $("#value_eth_subnetmask"),
+        o = $("#value_eth_primarydns"),
+        i = $("#value_eth_secondarydns"),
+        b = $("#dhcp_enabled_wifi_checkbox"),
+        c = $("#value_wifi_ipaddress"),
+        d = $("#value_wifi_gateway"),
+        e = $("#value_wifi_subnetmask"),
+        f = $("#value_wifi_primarydns"),
+        g = $("#value_wifi_secondarydns");
+        a.prop("checked", json.ETH_DHCPEN), n.val(json.ETH_IPADDR), s.val(json.ETH_GATEWAY), l.val(json.ETH_SUBNET), o.val(json.ETH_PRIMARYDNS), i.val(json.ETH_SECONDARYDNS),
+        b.prop("checked", json.WIFI_DHCPEN), c.val(json.WIFI_IPADDR), d.val(json.WIFI_GATEWAY), e.val(json.WIFI_SUBNET), f.val(json.WIFI_PRIMARYDNS), g.val(json.WIFI_SECONDARYDNS);
 }
 
 function update_names() {
@@ -70,12 +75,12 @@ function update_names() {
         p = $("#name_analog"),
         v = $("#name_custom_js"),
         _ = $("#name_custom_css");
-    t.val(json.io.relays[0].name), a.val(json.io.relays[1].name), n.val(json.io.relays[2].name), s.val(json.io.relays[3].name), $(".r1Name").html(json.io.relays[0].name), $(".r2Name").html(json.io.relays[1].name), $(".r3Name").html(json.io.relays[2].name), $(".r4Name").html(json.io.relays[3].name), u.val(json.io.inputs[0].name), c.val(json.io.inputs[1].name), d.val(json.io.inputs[2].name), m.val(json.io.inputs[3].name), l.val(json.io.relays[0].time), o.val(json.io.relays[1].time), i.val(json.io.relays[2].time), r.val(json.io.relays[3].time), $("#i1Name").html(json.io.inputs[0].name), $("#i2Name").html(json.io.inputs[1].name), $("#i3Name").html(json.io.inputs[2].name), $("#i4Name").html(json.io.inputs[3].name), p.val(json.io.analog.name), v.val(json.customjs), _.val(json.customcss), e.val(json.cardname)
+    //t.val(json.io.relays[0].name), a.val(json.io.relays[1].name), n.val(json.io.relays[2].name), s.val(json.io.relays[3].name), $(".r1Name").html(json.io.relays[0].name), $(".r2Name").html(json.io.relays[1].name), $(".r3Name").html(json.io.relays[2].name), $(".r4Name").html(json.io.relays[3].name), u.val(json.io.inputs[0].name), c.val(json.io.inputs[1].name), d.val(json.io.inputs[2].name), m.val(json.io.inputs[3].name), l.val(json.io.relays[0].time), o.val(json.io.relays[1].time), i.val(json.io.relays[2].time), r.val(json.io.relays[3].time), $("#i1Name").html(json.io.inputs[0].name), $("#i2Name").html(json.io.inputs[1].name), $("#i3Name").html(json.io.inputs[2].name), $("#i4Name").html(json.io.inputs[3].name), p.val(json.io.analog.name), v.val(json.customjs), _.val(json.customcss), e.val(json.cardname)
 }
 
 function update_notif_settings() {
     var e, t = notif_select.val();
-    t || (t = 0), e = json.notifications[t], $("#notif_enabled_checkbox").prop("checked", e.enable), $("#recipient_field").val(e.recipients), $("#alarmvalue_field").val(json.io.analog.alarmvalue), 9 == notif_select.val() ? $("#alarmvalue_div").show() : $("#alarmvalue_div").hide()
+    //t || (t = 0), e = json.notifications[t], $("#notif_enabled_checkbox").prop("checked", e.enable), $("#recipient_field").val(e.recipients), $("#alarmvalue_field").val(json.io.analog.alarmvalue), 9 == notif_select.val() ? $("#alarmvalue_div").show() : $("#alarmvalue_div").hide()
 }
 
 function sendRelay(e, t) {
@@ -277,16 +282,14 @@ function ValidateIPaddress(e) {
 }
 
 function sendEthNetworkSettings() {
-    if (ValidateIPaddress($("#value_ipaddress").val()) && ValidateIPaddress($("#value_gateway").val()) && ValidateIPaddress($("#value_subnetmask").val()) && ValidateIPaddress($("#value_primarydns").val()) && ValidateIPaddress($("#value_secondarydns").val())) {
-		if($("#value_webserverport").val() > 0)
-		{
+    if (ValidateIPaddress($("#value_eth_ipaddress").val()) && ValidateIPaddress($("#value_eth_gateway").val()) && ValidateIPaddress($("#value_eth_subnetmask").val()) && ValidateIPaddress($("#value_eth_primarydns").val()) && ValidateIPaddress($("#value_eth_secondarydns").val())) {
 			var e = {
-				dhcpenable: $("#dhcp_enabled_checkbox").is(":checked") ? 1 : 0,
-				ipaddress: $("#value_ipaddress").val(),
-				gateway: $("#value_gateway").val(),
-				subnetmask: $("#value_subnetmask").val(),
-				primarydns: $("#value_primarydns").val(),
-				secondarydns: $("#value_secondarydns").val()
+				dhcpenable: $("#dhcp_enabled_eth_checkbox").is(":checked") ? true : false,
+				ipaddress: $("#value_eth_ipaddress").val(),
+				gateway: $("#value_eth_gateway").val(),
+				subnetmask: $("#value_eth_subnetmask").val(),
+				primarydns: $("#value_eth_primarydns").val(),
+				secondarydns: $("#value_eth_secondarydns").val()
 			};
 			
 			$("#sendNetworkSettingsButton").html("SAVING..."); {
@@ -297,38 +300,35 @@ function sendEthNetworkSettings() {
 					data: e,
 					success: function(e) {
 						try {
-							"OK" == e ? ($("#sendNetworkSettingsButton").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE NETWORKSETTINGS")
+                            $("#sendNetworkSettingsButton").html("SAVED");
+                            requestSettings(); 
 						} catch (t) {
 							console.log(t)
 						}
 					}
-				})
+				}).fail(function(data){
+                    console.log("FAILED TO SAVE NETWORKSETTINGS");
+                })
 			}
-		}
-		else
-		{
-			$("#sendNetworkSettingsButton").html("INVALID PORT NUMBER");
-		}
     } else $("#sendNetworkSettingsButton").html("INVALID IP ADDRESSES")
 }
 
 function sendWifiNetworkSettings() {
-    if (ValidateIPaddress($("#value_ipaddress").val()) && ValidateIPaddress($("#value_gateway").val()) && ValidateIPaddress($("#value_subnetmask").val()) && ValidateIPaddress($("#value_primarydns").val()) && ValidateIPaddress($("#value_secondarydns").val())) {
-		if($("#value_webserverport").val() > 0)
-		{
+    if (ValidateIPaddress($("#value_wifi_ipaddress").val()) && ValidateIPaddress($("#value_wifi_gateway").val()) && ValidateIPaddress($("#value_wifi_subnetmask").val()) && ValidateIPaddress($("#value_wifi_primarydns").val()) && ValidateIPaddress($("#value_wifi_secondarydns").val())) {
+
 			var e = {
-				dhcpenable: $("#dhcp_enabled_checkbox").is(":checked") ? 1 : 0,
-				ipaddress: $("#value_ipaddress").val(),
-				gateway: $("#value_gateway").val(),
-				subnetmask: $("#value_subnetmask").val(),
-				primarydns: $("#value_primarydns").val(),
-				secondarydns: $("#value_secondarydns").val()
+				dhcpenable: $("#dhcp_enabled_wifi_checkbox").is(":checked") ? true : false,
+				ipaddress: $("#value_wifi_ipaddress").val(),
+				gateway: $("#value_wifi_gateway").val(),
+				subnetmask: $("#value_wifi_subnetmask").val(),
+				primarydns: $("#value_wifi_primarydns").val(),
+				secondarydns: $("#value_wifi_secondarydns").val()
 			};
 			
 			$("#sendNetworkSettingsButton").html("SAVING..."); {
 				$.ajax({
 					type: "POST",
-					url: "/eth_ip_save",
+					url: "/wifi_ip_save",
 					dataType: "text",
 					data: e,
 					success: function(e) {
@@ -340,11 +340,6 @@ function sendWifiNetworkSettings() {
 					}
 				})
 			}
-		}
-		else
-		{
-			$("#sendNetworkSettingsButton").html("INVALID PORT NUMBER");
-		}
     } else $("#sendNetworkSettingsButton").html("INVALID IP ADDRESSES")
 }
 
