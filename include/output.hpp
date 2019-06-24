@@ -19,8 +19,9 @@ protected:
   bool m_isAccessible;
   uint64_t m_pulseTime;
   uint64_t m_timerTime;
-  esp_timer_handle_t oneshot_timer;
+  
   void TaskTimer(void *pvParameters);
+  void startSheduler();
 public:
   Output(uint8_t id = 0, uint16_t pin = 0, bool initState = 0, TCA6424A_TS *tca = nullptr);
 
@@ -38,14 +39,18 @@ public:
 
   void activatePulse();
 
-  void activatePulse(uint16_t time);
+  void activatePulse(uint64_t time);
+
+  void clearPulse();
 
   void setTimerTime(uint16_t time);
 
   void activateTimer();
 
-  void activateTimer(uint16_t time);
+  void activateTimer(uint64_t time);
 
+  void clearTimer();
+  
   void setSchedule(tm start_date, tm end_date);
 
   bool getState();

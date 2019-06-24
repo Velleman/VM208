@@ -1,11 +1,12 @@
-#ifndef _CONFIGURATION_H
-#define _CONFIGURATION_H
+#ifndef _CONFIG_VM208_HPP
+#define _CONFIG_VM208_HPP
 
 #include "stdint.h"
 #include "Arduino.h"
 #include "FS.h"
 #define ARDUINOJSON_USE_LONG_LONG 1
 #include "ArduinoJson.h"
+#include "channel.hpp"
 class Configuration
 {
   private:
@@ -32,10 +33,13 @@ class Configuration
     String _WIFI_PrimaryDNS;
     String _WIFI_SecondaryDNS;
     String _version = "0.1.1";
+    long _timezoneSeconds;
+    int _DSTseconds;
     const char* configPath = "/config.json";
     void writeFile(const char * path);
     File loadFile(const char * path);
     DynamicJsonBuffer jsonBuffer;
+    String m_channelNames[14];
   public:
     Configuration();
     static const char *SSID_KEY;
@@ -56,6 +60,8 @@ class Configuration
     static const char *WIFI_PRIMARYDNS_KEY;
     static const char *WIFI_SECONDARYDNS_KEY;
     static const char *VERSION_KEY;
+    static const char *TIMEZONE_KEY;
+    static const char *DST_KEY;
 
     //getter setter SSID
     String getVersion() const;
@@ -127,7 +133,18 @@ class Configuration
     //getter setter userpw
     String getWIFI_SecondaryDNS() const;
     void setWIFI_SecondaryDNS(String enable);
+
+    void setTimezone(long seconds);
+    long getTimezone();
+
+    void getAlarm(uint8_t channel,uint8_t index);
+
+    String getChannelNameById(uint8_t id);
     
+    Channel createChannel(uint8_t id,Relay* r,Led* l);
+
+    void setDST(int seconds);
+    int getDST();
     void load();
     void save();
 

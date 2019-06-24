@@ -25,11 +25,12 @@
 #include "eth_phy/phy_lan8720.h"
 #define DEFAULT_ETHERNET_PHY_CONFIG phy_lan8720_default_ethernet_config
 #include <SPIFFS.h>
-#include "configuration.hpp"
+#include "config_vm208.hpp"
 
 #include "input.hpp"
 #include "output.hpp"
 #include "esp_log.h"
+#include "FreeRTOS.h"
 static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
@@ -45,7 +46,7 @@ void startWifi();
 #define PIN_SMI_MDIO 18
 
 SemaphoreHandle_t g_Mutex;
-
+SemaphoreHandle_t g_MutexChannel;
 int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
 const PROGMEM char *ntpServer = "pool.ntp.org";
@@ -172,7 +173,8 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
 static void printLocalTime()
 {
   struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
+  if (!getLocalTime(&timeinfo))
+  {
     Serial.println("Failed to obtain time");
     return;
   }
@@ -190,16 +192,43 @@ static void got_ip_task(void *pvParameter)
     {
       esp_wifi_stop();
     }
-    const char* ntpServer = "pool.ntp.org";
-    long gmtOffset_sec = 0;
-    int daylightOffset_sec= 3600;
+    const char *ntpServer = "pool.ntp.org";
+    long gmtOffset_sec = config.getTimezone();
+    int daylightOffset_sec = config.getDST();
+    Serial.print("GMT OFFSET: ");
+    Serial.println(gmtOffset_sec);
+    Serial.print("DST OFFSET: ");
+    Serial.println(daylightOffset_sec);
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
     printLocalTime();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
-void  startWifi()
+static void time_keeping_task(void *pvParameter)
+{
+  while (true)
+  {
+    time_t now;
+    struct tm *timeInfo;
+    now = time(nullptr);
+    timeInfo = localtime(&now);
+    if (timeInfo->tm_hour == 3 && timeInfo->tm_min == 0 && timeInfo->tm_min == 0)
+    {
+      Serial.println("Daily Time Check");
+      struct tm timeinfo;
+      if (!getLocalTime(&timeinfo))
+      {
+        Serial.println("Failed to obtain time");
+        return;
+      }
+    }
+    delay(500);
+  }
+  vTaskDelete(NULL);
+}
+
+void startWifi()
 {
 
   if (config.getSSID().equals("") || config.getWifiPassword().equals(""))
@@ -210,7 +239,7 @@ void  startWifi()
   {
     if (!config.getWIFI_DHCPEnable())
     {
-      ESP_LOGI(TAG,"WIFI DHCP DISABLED");
+      ESP_LOGI(TAG, "WIFI DHCP DISABLED");
       Serial.println(config.getWIFI_IPAddress());
       Serial.println(config.getWIFI_Gateway());
       Serial.println(config.getWIFI_SubnetMask());
@@ -261,37 +290,38 @@ static void applyEthNetworkSettings()
 {
   if (!config.getETH_DHCPEnable())
   {
-      Serial.println("ETH DHCP DISABLED");
-      Serial.println(config.getETH_IPAddress());
-      Serial.println(config.getETH_Gateway());
-      Serial.println(config.getETH_SubnetMask());
-      tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_ETH);
-      //static ip
-      tcpip_adapter_ip_info_t info;
-      char ip[15];
-      char gw[15];
-      char subnet[15];
-      config.getETH_IPAddress().toCharArray(ip, 15);
-      config.getETH_Gateway().toCharArray(gw, 15);
-      config.getETH_SubnetMask().toCharArray(subnet, 15);
-      info.ip.addr = ipaddr_addr(ip);
-      info.gw.addr = ipaddr_addr(gw);
-      info.netmask.addr = ipaddr_addr(subnet);
-      tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_ETH, &info);
-      //set primnary DNS
-      tcpip_adapter_dns_info_t info_dns;
-      char dns[15];
-      config.getETH_PrimaryDNS().toCharArray(dns, 15);
-      info_dns.ip.type = IPADDR_TYPE_V4;
-      info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
-      tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_ETH, TCPIP_ADAPTER_DNS_MAIN, &info_dns);
-      //set secondary DNS
-      config.getETH_SecondaryDNS().toCharArray(dns, 15);
-      info_dns.ip.type = IPADDR_TYPE_V4;
-      info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
-      tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_ETH, TCPIP_ADAPTER_DNS_BACKUP, &info_dns);
+    Serial.println("ETH DHCP DISABLED");
+    Serial.println(config.getETH_IPAddress());
+    Serial.println(config.getETH_Gateway());
+    Serial.println(config.getETH_SubnetMask());
+    tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_ETH);
+    //static ip
+    tcpip_adapter_ip_info_t info;
+    char ip[15];
+    char gw[15];
+    char subnet[15];
+    config.getETH_IPAddress().toCharArray(ip, 15);
+    config.getETH_Gateway().toCharArray(gw, 15);
+    config.getETH_SubnetMask().toCharArray(subnet, 15);
+    info.ip.addr = ipaddr_addr(ip);
+    info.gw.addr = ipaddr_addr(gw);
+    info.netmask.addr = ipaddr_addr(subnet);
+    tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_ETH, &info);
+    //set primnary DNS
+    tcpip_adapter_dns_info_t info_dns;
+    char dns[15];
+    config.getETH_PrimaryDNS().toCharArray(dns, 15);
+    info_dns.ip.type = IPADDR_TYPE_V4;
+    info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
+    tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_ETH, TCPIP_ADAPTER_DNS_MAIN, &info_dns);
+    //set secondary DNS
+    config.getETH_SecondaryDNS().toCharArray(dns, 15);
+    info_dns.ip.type = IPADDR_TYPE_V4;
+    info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
+    tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_ETH, TCPIP_ADAPTER_DNS_BACKUP, &info_dns);
   }
-  else{
+  else
+  {
     Serial.println("ETH DHCP ENABLED");
     tcpip_adapter_dhcpc_start(TCPIP_ADAPTER_IF_ETH);
   }
@@ -319,6 +349,7 @@ void startEth()
 void setup()
 {
   g_Mutex = xSemaphoreCreateMutex();
+  g_MutexChannel = xSemaphoreCreateMutex();
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   delay(10);
@@ -326,15 +357,15 @@ void setup()
 
   ESP_ERROR_CHECK(nvs_flash_init());
   ESP_LOGI(TAG, "APP MAIN ENTRY");
+  SPIFFS.begin();
   Init_IO();
 
-  esp_err_t ret = ESP_OK;
   tcpip_adapter_init();
   s_wifi_event_group = xEventGroupCreate();
 
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
-  SPIFFS.begin();
+  
 
   Input *inputs;
   inputs = getCurrentInputs();
@@ -354,10 +385,10 @@ void setup()
     config.load();
     startEth();
     startWifi();
-    
 
     xTaskCreate(got_ip_task, "got_ip_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
+    xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
     //#region hide
     if (udp.listen(30303))
@@ -401,7 +432,6 @@ void loop()
   //delay(5000);
   //printLocalTime();
 }
-
 
 /*
 void applyWifiNetworkSettings()

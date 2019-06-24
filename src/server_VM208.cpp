@@ -8,10 +8,10 @@
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "esp_eth.h"
-#include "configuration.hpp"
+#include "config_vm208.hpp"
 #include <SPIFFS.h>
 #include "global.hpp"
-#include "configuration.hpp"
+#include "config_vm208.hpp"
 #include <Update.h>
 const char *TAG = "SERVER";
 
@@ -61,17 +61,15 @@ void startServer()
 
     Serial.println(relay);
     Serial.println(state);
-    Relay *r = getRelayById(relay.toInt());
-    Led *l = getLedById(relay.toInt());
+    Channel *c = getChannelById(relay.toInt());
+    
     if (state == "0")
     {
-      r->turnOff();
-      l->turnOff();
+      c->turnOff();
     }
     else
     {
-      r->turnOn();
-      l->turnOn();
+      c->turnOn();
     }
 
     sendIOState(request);
@@ -104,8 +102,8 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     time = p->value();
-    Relay *r = getRelayById(relay.toInt());
-    r->activatePulse(time.toInt());
+    Channel *c = getChannelById(relay.toInt());
+    c->activatePulse(time.toInt());
     sendIOState(request);
   });
 
@@ -116,8 +114,8 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     time = p->value();
-    Relay *r = getRelayById(relay.toInt());
-    r->activateTimer(time.toInt());
+    Channel *c = getChannelById(relay.toInt());
+    c->activateTimer(time.toInt());
     sendIOState(request);
   });
 
@@ -343,8 +341,7 @@ void sendIOState(AsyncWebServerRequest *request)
   const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
   DynamicJsonBuffer jsonBuffer(capacity);
   JsonObject &root = jsonBuffer.createObject();
-  Relay relays[12];
-  getRelays(relays);
+  Relay *relays = getRelays();
   Input *inputs;
   inputs = getCurrentInputs();
   Mosfet *m1 = getMosfetById(1);

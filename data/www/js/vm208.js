@@ -385,7 +385,7 @@ function sliderOnInitialized() {
 
 function timerRelayEvent() {
 
-	if(location.pathname == "/index.shtml" || location.pathname =="/")
+	if(location.pathname == "/index.html" || location.pathname =="/")
 	{
 		$.ajax({
 			type: "GET",
@@ -529,51 +529,51 @@ $(function() {
     }), $("#pulse1Start").click(function() {
         sendPulse(1,$("#value_pulse1").val(), this)
     }), $("#pulse2Start").click(function() {
-        sendPulse(2,$("#value_pulse1").val(), this)
+        sendPulse(2,$("#value_pulse2").val(), this)
     }), $("#pulse3Start").click(function() {
-        sendPulse(3,$("#value_pulse1").val(), this)
+        sendPulse(3,$("#value_pulse3").val(), this)
     }), $("#pulse4Start").click(function() {
-        sendPulse(4,$("#value_pulse1").val(), this)
+        sendPulse(4,$("#value_pulse4").val(), this)
     }), $("#pulse5Start").click(function() {
-        sendPulse(5,$("#value_pulse1").val(), this)
+        sendPulse(5,$("#value_pulse5").val(), this)
     }), $("#pulse6Start").click(function() {
-        sendPulse(6,$("#value_pulse1").val(), this)
+        sendPulse(6,$("#value_pulse6").val(), this)
     }), $("#pulse7Start").click(function() {
-        sendPulse(7,$("#value_pulse1").val(), this)
+        sendPulse(7,$("#value_pulse7").val(), this)
     }), $("#pulse8Start").click(function() {
-        sendPulse(8,$("#value_pulse1").val(), this)
+        sendPulse(8,$("#value_pulse8").val(), this)
     }), $("#pulse9Start").click(function() {
-        sendPulse(9,$("#value_pulse1").val(), this)
+        sendPulse(9,$("#value_pulse9").val(), this)
     }), $("#pulse10Start").click(function() {
-        sendPulse(10,$("#value_pulse1").val(), this)
+        sendPulse(10,$("#value_pulse10").val(), this)
     }), $("#pulse11Start").click(function() {
-        sendPulse(11,$("#value_pulse1").val(), this)
+        sendPulse(11,$("#value_pulse11").val(), this)
     }), $("#pulse12Start").click(function() {
-        sendPulse(12,$("#value_pulse1").val(), this)
+        sendPulse(12,$("#value_pulse12").val(), this)
     }), $("#timer1Start").click(function() {
         sendTimer(1,$("#value_timer1").val(), this)
     }), $("#timer2Start").click(function() {
-        sendTimer(2,$("#value_timer1").val(), this)
+        sendTimer(2,$("#value_timer2").val(), this)
     }), $("#timer3Start").click(function() {
-        sendTimer(3,$("#value_timer1").val(), this)
+        sendTimer(3,$("#value_timer3").val(), this)
     }), $("#timer4Start").click(function() {
-        sendTimer(4,$("#value_timer1").val(), this)
+        sendTimer(4,$("#value_timer4").val(), this)
     }), $("#timer5Start").click(function() {
-        sendTimer(5,$("#value_timer1").val(), this)
+        sendTimer(5,$("#value_timer5").val(), this)
     }), $("#timer6Start").click(function() {
-        sendTimer(6,$("#value_timer1").val(), this)
+        sendTimer(6,$("#value_timer6").val(), this)
     }), $("#timer7Start").click(function() {
-        sendTimer(7,$("#value_timer1").val(), this)
+        sendTimer(7,$("#value_timer7").val(), this)
     }), $("#timer8Start").click(function() {
-        sendTimer(8,$("#value_timer1").val(), this)
+        sendTimer(8,$("#value_timer8").val(), this)
     }), $("#timer9Start").click(function() {
-        sendTimer(9,$("#value_timer1").val(), this)
-    }), $("#timer1Start").click(function() {
-        sendTimer(10,$("#value_timer1").val(), this)
-    }), $("#timer1Start").click(function() {
-        sendTimer(11,$("#value_timer1").val(), this)
+        sendTimer(9,$("#value_timer9").val(), this)
+    }), $("#timer10Start").click(function() {
+        sendTimer(10,$("#value_timer10").val(), this)
+    }), $("#timer11Start").click(function() {
+        sendTimer(11,$("#value_timer11").val(), this)
     }), $("#timer12Start").click(function() {
-        sendTimer(12,$("#value_timer1").val(), this)
+        sendTimer(12,$("#value_timer12").val(), this)
     }), $("#sendAuthSettingsButton").click(function() {
         return sendAuthSettings(), !1
     }), $("#sendWifiNetworkSettingsButton").click(function() {
@@ -609,3 +609,24 @@ $(function() {
     })
     })
 });
+
+function timerRelayEvent() {
+
+	if(location.pathname == "/index.html" || location.pathname =="/")
+	{
+		$.ajax({
+			type: "GET",
+			url: "/status",
+			dataType: "text",
+			success: function(e) {
+				try {
+					updateIO(e), setTimeout(function() {
+						timerRelayEvent()
+					}, 500)
+				} catch (t) {
+					console.log(t)
+				}
+			}
+		})
+	}
+}

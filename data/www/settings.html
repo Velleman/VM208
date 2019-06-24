@@ -234,6 +234,46 @@
                     </fieldset>
                 </form>
             </div>
+            <div class="header" id="Time">
+                <h1>Time</h1>
+                <h2>Configure time settings</h2> </div>
+                <div class="content">
+                <form id="TimeForm" class="pure-form pure-form-aligned">
+                    <fieldset>
+                        <legend>Time</legend>
+                        <div class="pure-control-group">
+                            <label for="notification_select">Notification</label>
+                            <select id="notification_select" name="inputs">
+                                <option value="0">0</option>
+                                <option value="0">0</option>
+                                <option value="0">0</option>
+                                <option value="0">0</option>
+                                <option value="0">0</option>
+                                <option value="0">0</option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="pure-control-group">
+                            <label for="recipient_field">To:</label>
+                            <input type="text" name="recipient" id="recipient_field" maxlength="64" value="recipient@example.com"> </div>
+                        <div class="pure-control-group" id="alarmvalue_div">
+                            <label for="alarmvalue_field">Alarm value:</label>
+                            <input type="number" name="recipient" id="alarmvalue_field" value="128"> </div>
+                        <div class="pure-controls">
+                            <label for="notif_enabled_checkbox" class="pure-checkbox">
+                                <input type="checkbox" id="notif_enabled_checkbox">Enabled
+                            </label>
+                        </div>
+                        <div class="pure-controls">
+                            <button type="button" id="sendAlarmButton" class="pure-button pure-button-primary">Save</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
         </div>
         <div class="header" id="firmware">
             <h1>Update</h1>

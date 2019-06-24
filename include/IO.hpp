@@ -13,6 +13,7 @@
 #include "input.hpp"
 #include "mosfet.hpp"
 #include "led.hpp"
+#include "channel.hpp"
 #define INT_PIN   GPIO_NUM_4
 #define INT2_PIN  GPIO_NUM_35
 
@@ -44,6 +45,7 @@ void copyStateRelaysToLeds();
 Mosfet* getMosfetById(int id);
 Relay* getRelayById(int id);
 Led* getLedById(int id);
-void getRelays(Relay* relays);
+Relay* getRelays();
 void getLeds(Led* leds);
+Channel* getChannelById(int id);
 #endif

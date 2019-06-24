@@ -7,8 +7,10 @@ Copyright 2019 Velleman nv
 #include <I2CDev.h>
 #include "tca_thread_safe.hpp"
 #include "esp_log.h"
+#include "global.hpp"
 xQueueHandle int_evt_queue = NULL;
 
+Channel channels[12];
 Relay relays[12];
 Mosfet mosfets[2];
 Led leds[12];
@@ -29,28 +31,32 @@ static void gpio_isr_handler(void *arg)
 
 void Init_IO()
 {
-  
+
   Wire.begin(33, 32);
-  
+
   //init relays,leds and buttons
-  for(int i=0;i<4;i++)
+  for (uint8_t i = 0; i < 4; i++)
   {
-    relays[i] = Relay(i+1,i,false,&tca);
-    leds[i] = Led(i+1,TCA6424A_P14+i,true,&tca);
-    currentInputs[i] = Input(i+1,TCA6424A_P10+i,&tca);
-    ESP_LOGI(TAG,"init index %d",i);
+    relays[i] = Relay(i + 1, i, false, &tca);
+    leds[i] = Led(i + 1, TCA6424A_P14 + i, true, &tca);
+    currentInputs[i] = Input(i + 1, TCA6424A_P10 + i, &tca);
+
+    channels[i] = config.createChannel(i+1,relays + i,leds +i);
+    channels[i].startSheduler();
+    //ESP_LOGI(TAG,"init index %d",i);
   }
-  for(int i=4;i<12;i++)
+  for (int i = 4; i < 12; i++)
   {
-    relays[i] = Relay(i+1,TCA6424A_P00 + (i - 4),false,&tca_ext);
-    leds[i] = Led(i+1,TCA6424A_P20+(i - 4),true,&tca_ext);
-    currentInputs[i] = Input(i+1,TCA6424A_P10+(i - 4),&tca_ext);
+    relays[i] = Relay(i + 1, TCA6424A_P00 + (i - 4), false, &tca_ext);
+    leds[i] = Led(i + 1, TCA6424A_P20 + (i - 4), true, &tca_ext);
+    currentInputs[i] = Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
+    channels[i] = config.createChannel(i+1,relays + i,leds +i);
+    channels[i].startSheduler();
   }
 
-  mosfets[0] = Mosfet(1,TCA6424A_P04,false,&tca);
-  mosfets[0].turnOff();
-  mosfets[1] = Mosfet(2,TCA6424A_P05,false,&tca);
-  currentInputs[12] = Input(13,TCA6424A_P06,&tca);
+  mosfets[0] = Mosfet(1, TCA6424A_P04, false, &tca);
+  mosfets[1] = Mosfet(2, TCA6424A_P05, false, &tca);
+  currentInputs[12] = Input(13, TCA6424A_P06, &tca);
 
   //set floating pins as output
   tca.setPinDirection(TCA6424A_P07, TCA6424A_OUTPUT);
@@ -59,7 +65,7 @@ void Init_IO()
     tca.setPinDirection(TCA6424A_P20 + i, TCA6424A_OUTPUT);
     tca.writePin(TCA6424A_P20 + i, TCA6424A_LOW);
   }
-  
+
   pinMode(4, INPUT);
 
   //Init Interrupt Pin
@@ -83,15 +89,17 @@ void Init_IO()
   //install gpio isr service
   gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
   gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
-
-  //ESP_LOGI(TAG, "isr PIN 2 ");
-  gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
+  if (tca_ext.testConnection())
+  {
+    ESP_LOGI(TAG, "EXTENSION CONNECTED");
+    gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
+  }
 }
 
 void initExtPinDirections()
 {
-  ESP_LOGI(TAG,"initExtPinDirections");
-  for(int i=4;i<12;i++)
+  ESP_LOGI(TAG, "initExtPinDirections");
+  for (int i = 4; i < 12; i++)
   {
     relays[i].initPin();
     leds[i].initPin();
@@ -99,8 +107,7 @@ void initExtPinDirections()
   }
 }
 
-
-Input* readInputs(Input *inputs)
+Input *readInputs(Input *inputs)
 {
   for (int i = 0; i < INPUT_MAX; i++)
   {
@@ -111,7 +118,7 @@ Input* readInputs(Input *inputs)
 
 void IO_task(void *arg)
 {
-  
+
   uint32_t io_num;
   for (int i = 0; i < 12; i++)
   {
@@ -121,7 +128,7 @@ void IO_task(void *arg)
   }
   while (1)
   {
-    
+
     if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY))
     {
       //ESP_LOGI(TAG, "interrupt %i",io_num);
@@ -135,14 +142,14 @@ void IO_task(void *arg)
           {
             if (currentState == false)
             {
-              relays[i].toggle(); //toggle state
-              leds[i].setState(!relays[i].getState());       //reflect state in leds;
+              relays[i].toggle();                      //toggle state
+              leds[i].setState(!relays[i].getState()); //reflect state in leds;
             }
           }
           else
           {
             _userInputChanged = true;
-            ESP_LOGI(TAG,"Input has changed");
+            ESP_LOGI(TAG, "Input has changed");
           }
           previousInputs[i] = currentState;
           _inputChanged = true;
@@ -166,20 +173,14 @@ bool convertInputToRelay(Input input)
   }
 }
 
-void getRelays(Relay* pRelays)
+Relay *getRelays()
 {
-  for (int i = 0; i < 12; i++)
-  {
-    *(pRelays + i) = relays[i];
-  }
+  return relays;
 }
 
-void getLeds(Led* pLeds)
+void getLeds(Led *pLeds)
 {
-  for (int i = 0; i < 12; i++)
-  {
-    *(pLeds + i) = leds[i];
-  }
+  pLeds = leds;
 }
 
 bool IsExtensionConnected()
@@ -199,12 +200,12 @@ bool IsExtensionConnected()
   return currentState;
 }
 
-Mosfet* getMosfetById(int id)
+Mosfet *getMosfetById(int id)
 {
-  return &mosfets[id -1];
+  return &mosfets[id - 1];
 }
 
-Relay* getRelayById(int id)
+Relay *getRelayById(int id)
 {
   //asume relay is the key
   //int index = atoi(key + 5);
@@ -212,7 +213,23 @@ Relay* getRelayById(int id)
   return &relays[id - 1];
 }
 
-Led* getLedById(int id)
+Channel *getChannelById(int id)
+{
+  xSemaphoreTake(g_MutexChannel, portMAX_DELAY);
+  if (id <= 12)
+  {
+    xSemaphoreGive(g_MutexChannel);
+    return channels + (id - 1);
+  }
+  else
+  {
+    ESP_LOGE("IO", "Channel ID is invalid: id is %i", id);
+    xSemaphoreGive(g_MutexChannel);
+    return nullptr;
+  }  
+}
+
+Led *getLedById(int id)
 {
   return &leds[id - 1];
 }
@@ -232,7 +249,7 @@ bool isUserInputChanged()
   return _userInputChanged;
 }
 
-Input* getCurrentInputs()
+Input *getCurrentInputs()
 {
   return currentInputs;
 }
