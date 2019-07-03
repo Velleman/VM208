@@ -1,6 +1,6 @@
 #include "alarm.hpp"
 
-Alarm::Alarm(uint8_t weekday, uint8_t hour, uint8_t minute, bool state,bool isEnabled)
+Alarm::Alarm(uint8_t weekday, uint8_t hour, uint8_t minute, bool state,bool isEnabled):m_weekday(weekday),m_hour(hour),m_minute(minute),m_state(state),m_enabled(isEnabled)
 {
 }
 

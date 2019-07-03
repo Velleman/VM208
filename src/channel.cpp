@@ -8,56 +8,57 @@
 extern "C"
 {
 
-    static void timerCallback(void *arg)
+    static void timerTask(void *arg)
     {
-        OutputId_t *oID = (OutputId_t *)arg;
-        Channel *c = getChannelById(oID->id);
+        uint32_t id = (uint32_t)arg;
+        Channel *c = getChannelById(id);
+        unsigned long startTime = millis();
         if (c != nullptr)
         {
             c->toggle();
+            uint64_t timerTime = c->getTimerTime();
+            timerTime /= 1000; // go to miliseconds;
+            while ((millis() - startTime) < timerTime)
+            {
+                c->toggleLed();
+                delay(1000);
+            }
+            c->toggle();
         }
+        c->clearTimer();
     }
 
-    static void checkSheduler(void *pvParameter)
+    static void pulseTask(void *arg)
     {
-        delay(500); // wait to load all channels
-        uint8_t *id = (uint8_t *)pvParameter;
-        Serial.print("Shedule channel id");
-        Serial.println(*id);
-        Channel *c = getChannelById(*id);
-        while (true)
+        uint32_t id = (uint32_t)arg;
+        Channel *c = getChannelById(id);
+        unsigned long startTime = millis();
+        if (c != nullptr)
         {
-            time_t t = time(NULL);
-            struct tm *time = localtime(&t);
-            for (int i = 0; i < 14; i++)
+            c->toggle();
+            uint64_t pulseTime = c->getPulseTime();
+            pulseTime /= 1000; // go to miliseconds;
+            while ((millis() - startTime) < pulseTime)
             {
-                Alarm* a = c->getAlarm(i);
-                if (a->isEnabled())
-                {
-                    if (time->tm_hour == a->getHour() && time->tm_min == a->getMinute && time->tm_wday == a->getWeekday())
-                    {
-                        a->getState() ? c->turnOn() : c->turnOff();
-                    }
-                }
+                c->toggleLed();
+                delay(50);
             }
-            delay(500);
+            c->toggle();
         }
-        vTaskDelete(NULL);
+        c->clearPulse();
     }
 }
 
-Channel::Channel(String name, Relay *relay, Led *led, uint8_t id) : m_name(name), m_relay(relay), m_led(led), m_id(id)
+Channel::Channel(String name, Relay *relay, Led *led, uint8_t id) : m_name(name), m_relay(relay), m_led(led), m_id(id), m_isTimerActive(false), m_isPulseActive(false)
 {
 }
 
 void Channel::loadShedule()
 {
-    //config.
 }
 
 void Channel::startSheduler()
 {
-    xTaskCreate(checkSheduler, "Sheduler", 2048, &m_id, (tskIDLE_PRIORITY + 2), NULL);
 }
 
 void Channel::turnOn()
@@ -78,7 +79,7 @@ void Channel::toggle()
 {
     m_relay->toggle();
     if (m_led != nullptr)
-        m_led->toggle();
+        m_relay->getState() ? m_led->turnOn() : m_led->turnOff();
 }
 
 void Channel::setName(String name)
@@ -86,20 +87,36 @@ void Channel::setName(String name)
     m_name = name;
 }
 
+String Channel::getName()
+{
+    return m_name;
+}
+/**
+ * returns the time in microseconds
+ */
+uint64_t Channel::getPulseTime()
+{
+    return m_pulseTime;
+}
+/**
+ * returns the time in microseconds
+ */
+uint64_t Channel::getTimerTime()
+{
+    return m_timerTime;
+}
+
 void Channel::activateTimer(uint16_t timertime)
 {
-    toggle();
     unsigned long time_us = timertime * 60000000UL; //1 = 1min => 60000ms;
-    const esp_timer_create_args_t oneshot_timer_args = {
-        .callback = &timerCallback,
-        .arg = &m_id,
-        .dispatch_method = ESP_TIMER_TASK,
-        /* argument specified here will be passed to timer callback function */
-        .name = "one-shot"};
-    ESP_ERROR_CHECK(esp_timer_create(&oneshot_timer_args, &oneshot_timer_timer));
-    Serial.print("Pulse Time:");
-    Serial.println(time_us);
-    ESP_ERROR_CHECK(esp_timer_start_once(oneshot_timer_timer, time_us));
+    //Serial.print("Pulse Time:");
+    //Serial.println(time_us);
+    m_timerTime = time_us;
+    if (!m_isTimerActive)
+    {
+        xTaskCreate(timerTask, "timer", 2048, (void *)m_id, (tskIDLE_PRIORITY + 2), &timerTaskHandle);
+        m_isTimerActive = true;
+    }
 }
 
 void Channel::activatePulse(uint64_t pulsetime)
@@ -107,17 +124,12 @@ void Channel::activatePulse(uint64_t pulsetime)
 
     uint32_t t = ((uint32_t)pulsetime) * ((uint32_t)1000);
     uint32_t pulseTime = (t <= 60000000) ? t : 60000000;
-    toggle();
-    const esp_timer_create_args_t oneshot_timer_args = {
-        .callback = &timerCallback,
-        .arg = &m_id,
-        .dispatch_method = ESP_TIMER_TASK,
-        /* argument specified here will be passed to timer callback function */
-        .name = "one-shot"};
-    Serial.print("Pulse Time:");
-    Serial.println(pulseTime);
-    ESP_ERROR_CHECK(esp_timer_create(&oneshot_timer_args, &oneshot_pulse_timer));
-    ESP_ERROR_CHECK(esp_timer_start_once(oneshot_pulse_timer, pulseTime));
+    m_pulseTime = pulseTime;
+    if (!m_isPulseActive)
+    {
+        xTaskCreate(pulseTask, "pulse", 2048, (void *)m_id, (tskIDLE_PRIORITY + 2), &pulseTaskHandle);
+        m_isPulseActive = true;
+    }
 }
 
 void Channel::setAlarm(Alarm a, uint8_t index)
@@ -128,7 +140,48 @@ void Channel::setAlarm(Alarm a, uint8_t index)
     }
 }
 
-Alarm* Channel::getAlarm(uint8_t index)
+Alarm *Channel::getAlarm(uint8_t index)
 {
     return alarms + index;
+}
+
+bool Channel::getState()
+{
+    return m_relay->getState();
+}
+
+void Channel::clearTimerAndPulse()
+{
+}
+
+bool Channel::isTimerActive()
+{
+    return m_isTimerActive;
+}
+
+bool Channel::isPulseActive()
+{
+    return m_isPulseActive;
+}
+
+void Channel::updateLed()
+{
+    m_relay->getState() ? m_led->turnOn() : m_led->turnOff();
+}
+
+void Channel::toggleLed()
+{
+    m_led->toggle();
+}
+
+void Channel::clearPulse()
+{
+    m_isPulseActive = false;
+    vTaskDelete(pulseTaskHandle);
+}
+
+void Channel::clearTimer()
+{
+    m_isTimerActive = false;
+    vTaskDelete(timerTaskHandle);
 }

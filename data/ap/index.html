@@ -28,7 +28,7 @@
 function wifiInputValidation() {
 
 var ssid = document.getElementById("SSID").value;
-var pw = document.getElementById("password").value;
+var pw = document.getElementById("wifipassword").value;
 var name = document.getElementById("name").value;
 
 	if ((ssid == "") || (pw == "") || (name == "")) {
@@ -56,9 +56,11 @@ function save() {
 		var ssid = document.getElementById("SSID").value;
 		var wifipw = document.getElementById("wifipassword").value;
 		var name = document.getElementById("name").value;
+        var username = document.getElementById("username").value;
+        var userpw = document.getElementById("userpw").value;
 
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', 'wifisave?ssid=' + ssid + '&password=' + wifipw+ '&name=' + name);
+		xhr.open('POST', 'wifisave?ssid=' + ssid + '&password=' + wifipw+ '&name=' + name + '&username=' + username + '&userpw=' + userpw);
 		xhr.onload = function() {
 		  if (xhr.status === 200) {
 			  alert("WIFI settings saved and attempting to connect.");

@@ -20,7 +20,6 @@ Output::Output(uint8_t id, uint16_t pin, bool initState, TCA6424A_TS *tca) : m_i
 {
     initPin();
     updateTCA();
-    startSheduler();
 }
 
 uint8_t Output::getId()
@@ -79,42 +78,4 @@ void Output::initPin()
 bool Output::getState()
 {
     return m_state;
-}
-
-void Output::setPulseTime(uint16_t time)
-{
-    time *= 1000;
-    m_pulseTime = (time <= 60000000) ? time : 60000000;
-}
-
-void Output::activatePulse()
-{
-    toggle();
-    activatePulse(m_pulseTime);
-}
-
-void Output::activatePulse(uint64_t time)
-{
-    
-}
-
-void Output::setTimerTime(uint16_t time)
-{
-    m_timerTime = (time <= 720) ? time : 720;
-}
-
-void Output::activateTimer()
-{
-    toggle();
-    activateTimer(m_timerTime);
-}
-
-void Output::activateTimer(uint64_t time)
-{
-
-}
-
-void Output::startSheduler()
-{
-    
 }

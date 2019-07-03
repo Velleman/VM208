@@ -41,7 +41,7 @@ void Init_IO()
     leds[i] = Led(i + 1, TCA6424A_P14 + i, true, &tca);
     currentInputs[i] = Input(i + 1, TCA6424A_P10 + i, &tca);
 
-    channels[i] = config.createChannel(i+1,relays + i,leds +i);
+    channels[i] = config.createChannel(i + 1, relays + i, leds + i);
     channels[i].startSheduler();
     //ESP_LOGI(TAG,"init index %d",i);
   }
@@ -50,7 +50,7 @@ void Init_IO()
     relays[i] = Relay(i + 1, TCA6424A_P00 + (i - 4), false, &tca_ext);
     leds[i] = Led(i + 1, TCA6424A_P20 + (i - 4), true, &tca_ext);
     currentInputs[i] = Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
-    channels[i] = config.createChannel(i+1,relays + i,leds +i);
+    channels[i] = config.createChannel(i + 1, relays + i, leds + i);
     channels[i].startSheduler();
   }
 
@@ -140,10 +140,11 @@ void IO_task(void *arg)
         {
           if (i < 12)
           {
+
             if (currentState == false)
             {
-              relays[i].toggle();                      //toggle state
-              leds[i].setState(!relays[i].getState()); //reflect state in leds;
+              channels[i].toggle(); //toggle state
+              channels[i].clearTimerAndPulse();
             }
           }
           else
@@ -207,16 +208,13 @@ Mosfet *getMosfetById(int id)
 
 Relay *getRelayById(int id)
 {
-  //asume relay is the key
-  //int index = atoi(key + 5);
-  //ESP_LOGI(TAG, "%d", index);
   return &relays[id - 1];
 }
 
 Channel *getChannelById(int id)
 {
   xSemaphoreTake(g_MutexChannel, portMAX_DELAY);
-  if (id <= 12)
+  if (id <= 12 && id > 0)
   {
     xSemaphoreGive(g_MutexChannel);
     return channels + (id - 1);
@@ -226,7 +224,7 @@ Channel *getChannelById(int id)
     ESP_LOGE("IO", "Channel ID is invalid: id is %i", id);
     xSemaphoreGive(g_MutexChannel);
     return nullptr;
-  }  
+  }
 }
 
 Led *getLedById(int id)

@@ -3,7 +3,7 @@
 #define ARDUINOJSON_USE_LONG_LONG 1
 
 #include "IO.hpp"
-
+#include "AsyncJson.h"
 #include "ArduinoJson.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
@@ -62,7 +62,7 @@ void startServer()
     Serial.println(relay);
     Serial.println(state);
     Channel *c = getChannelById(relay.toInt());
-    
+
     if (state == "0")
     {
       c->turnOff();
@@ -128,6 +128,7 @@ void startServer()
       config.setBoardName(request->getParam(2)->value());
       config.setUserName(request->getParam(3)->value());
       config.setUserPw(request->getParam(4)->value());
+      config.setFirstTime(false);
       config.save();
       Serial.printf("Wifi Saved\n");
       ESP.restart();
@@ -178,10 +179,53 @@ void startServer()
     }
   });
 
+  server.on("/alarm", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->params() == 6)
+    {
+      Serial.printf("alarm save\n");
+      uint8_t state = request->getParam(0)->value().toInt();
+      uint8_t relais = request->getParam(1)->value().toInt();
+      uint8_t day = request->getParam(2)->value().toInt();
+      uint8_t hour = request->getParam(3)->value().toInt();
+      uint8_t minute = request->getParam(4)->value().toInt();
+      bool enabled = request->getParam(2)->value().toInt();
+      Channel *c = getChannelById(relais);
+
+
+      Alarm *a = c->getAlarm((day * 2)+state) ;
+
+      Serial.print("Alarm state: ");
+      Serial.println(state);
+
+      Serial.print("Alarm day: ");
+      Serial.println(day);
+
+      Serial.print("Alarm hour: ");
+      Serial.println(hour);
+
+      Serial.print("Alarm minute: ");
+      Serial.println(minute);
+      
+      Serial.print("Alarm Enabled ");
+      Serial.println(enabled);
+
+      a->setWeekday(day); //change to stupid english week system
+      a->setHour(hour);
+      a->setMinute(minute);
+      a->setEnabled(enabled);
+      config.save();
+      request->send(200);
+    }
+    else
+    {
+      request->send(400);
+    }
+  });
+
   server.on("/doUpdate", HTTP_POST, [](AsyncWebServerRequest *request) {},
-            [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final){
-               handleDoUpdate(request, filename, index, data, len, final); 
-               });
+            [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final) {
+              handleDoUpdate(request, filename, index, data, len, final);
+            });
 
   char user[32];
   char userpw[32];
@@ -346,6 +390,7 @@ void sendIOState(AsyncWebServerRequest *request)
   inputs = getCurrentInputs();
   Mosfet *m1 = getMosfetById(1);
   Mosfet *m2 = getMosfetById(2);
+  Channel *c = getChannelById(1);
   root.set("relay1", relays[0].getState());
   root.set("relay2", relays[1].getState());
   root.set("relay3", relays[2].getState());
@@ -362,6 +407,13 @@ void sendIOState(AsyncWebServerRequest *request)
   root.set("input", inputs[12].read());
   root.set("mosfet1", m1->getState());
   root.set("mosfet2", m2->getState());
+  root.set("name1",c->getName());
+  JsonArray& names = root.createNestedArray("names");
+  for(int i =0;i<12;i++)
+  {
+    names.add((c+i)->getName());
+  }
+  
   root.printTo(*response);
   request->send(response);
 }
@@ -369,10 +421,10 @@ void sendIOState(AsyncWebServerRequest *request)
 void sendSettings(AsyncWebServerRequest *request)
 {
 
-  AsyncResponseStream *response = request->beginResponseStream("application/json");
-
-  DynamicJsonBuffer jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
+  //AsyncResponseStream *response = request->beginResponseStream("application/json");
+  AsyncJsonResponse *response = new AsyncJsonResponse();
+  //DynamicJsonBuffer jsonBuffer;
+  JsonObject &root = response->getRoot();
 
   root.set(config.USERNAME_KEY, config.getUserName());
   root.set(config.BOARDNAME_KEY, config.getBoardName());
@@ -388,7 +440,28 @@ void sendSettings(AsyncWebServerRequest *request)
   root.set(config.WIFI_SUBNETMASK_KEY, config.getWIFI_SubnetMask());     //TODO: change to interface settings
   root.set(config.WIFI_PRIMARYDNS_KEY, config.getWIFI_PrimaryDNS());     //TODO: change to interface settings
   root.set(config.WIFI_SECONDARYDNS_KEY, config.getWIFI_SecondaryDNS()); //TODO: change to interface settings
-  root.prettyPrintTo(*response);
+
+  JsonArray &Channels = root.createNestedArray("Channels");
+
+  for (int i = 0; i < 12; i++)
+  {
+    Channel *c = getChannelById(i + 1);
+    JsonObject &Channel = Channels.createNestedObject();
+    Channel[config.CHANNEL_NAME_KEY] = c->getName();
+
+    JsonArray &Channels_alarms = Channel.createNestedArray("alarms");
+    for (int j = 0; j < 14; j++)
+    {
+      Alarm *a = c->getAlarm(j);
+      JsonObject &Channels_alarms_settings = Channels_alarms.createNestedObject();
+      Channels_alarms_settings[config.ALARM_WEEKDAY_KEY] = a->getWeekday();
+      Channels_alarms_settings[config.ALARM_HOUR_KEY] = a->getHour();
+      Channels_alarms_settings[config.ALARM_MINUTE_KEY] = a->getMinute();
+      Channels_alarms_settings[config.ALARM_STATE_KEY] = a->getState();
+      Channels_alarms_settings[config.ALARM_ENABLED_KEY] = a->isEnabled();
+    }
+  }
+  response->setLength();
   request->send(response);
 }
 

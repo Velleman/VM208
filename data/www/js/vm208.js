@@ -23,7 +23,7 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_auth_settings(), update_network_settings(), update_email_settings(), update_names(), update_notif_settings()
+    update_auth_settings(), update_network_settings(), update_email_settings(), update_names(), update_notif_settings(), UpdateSheduleFields()
 }
 
 function update_auth_settings() {
@@ -344,7 +344,7 @@ function sendWifiNetworkSettings() {
 }
 
 function sendNames() {
-    var e = {
+    /*var e = {
         r1: $("#name_relay1").val(),
         r2: $("#name_relay2").val(),
         r3: $("#name_relay3").val(),
@@ -366,7 +366,7 @@ function sendNames() {
     $("#sendNameSettingsButton").html("SAVING...");
     $.ajax({
         type: "POST",
-        url: "/names",
+        url: "/alarm",
         dataType: "text",
         data: e,
         success: function(e) {
@@ -375,6 +375,24 @@ function sendNames() {
             } catch (t) {
                 console.log(t)
             }
+        }
+    })*/
+    var e = {
+        state: $("#shedule_state").val(),
+        relais: $("#shedule_relais").val(),
+        day: $("#shedule_day").val(),
+        hour: $("#shedule_hour").val(),
+        minute: $("#shedule_minute").val(),
+        enable: $("#shedule_enable").val()
+    };
+	
+    $("#sendNameSettingsButton").html("SAVING...");
+    $.ajax({
+        type: "POST",
+        url: "/alarm",
+        dataType: "text",
+        data: e,
+        success: function(e) {
         }
     })
 }
@@ -494,7 +512,7 @@ function enableButtons() {
 }
 var json, notif_select = new Object;
 $(document).ready(function() {
-    requestBoardInfo(),requestSettings(), notif_select = $("#notification_select"), notif_select.change(update_notif_settings), $("#splashscreen").delay(750).fadeOut(500), enableButtons()
+    requestBoardInfo(),requestSettings(), notif_select = $("#notification_select"), notif_select.change(update_notif_settings), $("#splashscreen").delay(750).fadeOut(500), enableButtons(),updateEthNetworkFieldsState(),updateWifiNetworkFieldState()
 });
 var current_slide = 0;
 $(function() {
@@ -607,8 +625,57 @@ $(function() {
             }
         }
     })
+    }), $("#shedule_state").change(function(){UpdateSheduleFields()}),
+    $("#shedule_relais").change(function(){UpdateSheduleFields()}),
+    $("#shedule_day").change(function(){UpdateSheduleFields()}),
+    $("#dhcp_enabled_wifi_checkbox").change(function(){
+       updateWifiNetworkFieldState();
+    }),
+    $("#dhcp_enabled_eth_checkbox").change(function(){
+        updateEthNetworkFieldsState();
     })
 });
+
+function updateEthNetworkFieldsState()
+{
+    if($("#dhcp_enabled_eth_checkbox").is(":checked"))
+        {
+            $("#value_eth_ipaddress").attr("disabled",true);
+            $("#value_eth_gateway").attr("disabled",true);
+            $("#value_eth_subnetmask").attr("disabled",true);
+            $("#value_eth_primarydns").attr("disabled",true);
+            $("#value_eth_secondarydns").attr("disabled",true);
+        }
+        else
+        {
+            $("#value_eth_ipaddress").attr("disabled",false);
+            $("#value_eth_gateway").attr("disabled",false);
+            $("#value_eth_subnetmask").attr("disabled",false);
+            $("#value_eth_primarydns").attr("disabled",false);
+            $("#value_eth_secondarydns").attr("disabled",false);
+            
+        }
+}
+
+function updateWifiNetworkFieldState()
+{
+     if($("#dhcp_enabled_wifi_checkbox").is(":checked"))
+        {
+            $("#value_wifi_ipaddress").attr("disabled",true);
+            $("#value_wifi_gateway").attr("disabled",true);
+            $("#value_wifi_subnetmask").attr("disabled",true);
+            $("#value_wifi_primarydns").attr("disabled",true);
+            $("#value_wifi_secondarydns").attr("disabled",true);
+        }
+        else
+        {
+            $("#value_wifi_ipaddress").attr("disabled",false);
+            $("#value_wifi_gateway").attr("disabled",false);
+            $("#value_wifi_subnetmask").attr("disabled",false);
+            $("#value_wifi_primarydns").attr("disabled",false);
+            $("#value_wifi_secondarydns").attr("disabled",false);            
+        }
+}
 
 function timerRelayEvent() {
 
@@ -629,4 +696,19 @@ function timerRelayEvent() {
 			}
 		})
 	}
+}
+
+function UpdateSheduleFields()
+{
+    var state = parseInt($("#shedule_state").val(),10);
+    var relais = $("#shedule_relais").val() - 1;
+    var day = parseInt($("#shedule_day").val(),10);
+    var alarm = (day *2) + state;
+    var hour = json.Channels[relais].alarms[alarm].hour;
+    var minute = json.Channels[relais].alarms[alarm].minute;
+    var enabled = json.Channels[relais].alarms[alarm].enabled;    
+    $("#shedule_hour").val(hour);
+    $("#shedule_minute").val(minute);
+    $("#shedule_enable").val(enabled?"1":"0");
+    
 }

@@ -213,7 +213,7 @@ static void time_keeping_task(void *pvParameter)
     struct tm *timeInfo;
     now = time(nullptr);
     timeInfo = localtime(&now);
-    if (timeInfo->tm_hour == 3 && timeInfo->tm_min == 0 && timeInfo->tm_min == 0)
+    if (timeInfo->tm_hour == 3 && timeInfo->tm_min == 5)
     {
       Serial.println("Daily Time Check");
       struct tm timeinfo;
@@ -346,6 +346,51 @@ void startEth()
   }
 }
 
+static void checkSheduler(void *pvParameter)
+{
+  delay(500); // wait to load all channels
+  uint8_t *id = (uint8_t *)pvParameter;
+  Channel *c;
+  while (true)
+  {
+    time_t t = time(NULL);
+    struct tm *time = localtime(&t);
+    uint8_t day = time->tm_wday;
+    Alarm *alarmOn;
+    Alarm *alarmOff;
+    for (int i = 0; i < 12; i++)
+    {
+      c = getChannelById(i + 1);
+      alarmOn = c->getAlarm(day * 2);
+      alarmOff = c->getAlarm((day * 2) + 1);
+      if (alarmOn->isEnabled())
+      {
+        if (time->tm_hour == alarmOn->getHour() && time->tm_min == alarmOn->getMinute())
+        {
+          if (c->getState() != alarmOn->getState())
+          {
+            //ESP_LOGI(TAG, "Alarm triggered");
+            alarmOn->getState() ? c->turnOn() : c->turnOff();
+          }
+        }
+      }
+      if (alarmOff->isEnabled())
+      {
+        if (time->tm_hour == alarmOff->getHour() && time->tm_min == alarmOff->getMinute())
+        {
+          if (c->getState() != alarmOff->getState())
+          {
+            //ESP_LOGI(TAG, "Alarm triggered");
+            alarmOff->getState() ? c->turnOn() : c->turnOff();
+          }
+        }
+      }
+    }
+    delay(500);
+  }
+  vTaskDelete(NULL);
+}
+
 void setup()
 {
   g_Mutex = xSemaphoreCreateMutex();
@@ -365,24 +410,25 @@ void setup()
 
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
-  
+  config.load();
 
   Input *inputs;
   inputs = getCurrentInputs();
   readInputs(inputs);
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
+
   ESP_LOGI(TAG, "Check Buttons");
-  if ((inputs[0].read() == false) && (inputs[3].read() == false))
+  if (((inputs[0].read() == false) && (inputs[3].read() == false)) || config.getFirstTime())
   {
+
     ESP_LOGI(TAG, "Start AP");
     WiFi.softAP("VM208_AP", "VellemanForMakers");
     WiFi.enableSTA(false);
   }
   else
   {
-    xTaskCreate(IO_task, "IO_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
-    config.load();
+    xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
     startEth();
     startWifi();
 
@@ -423,13 +469,15 @@ void setup()
       MDNS.addService("http", "tcp", 80);
     }
   }
+  xTaskCreate(checkSheduler, "Sheduler", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
   startServer();
 }
 
 void loop()
 {
   ArduinoOTA.handle();
-  //delay(5000);
+  delay(500);
+  ESP_LOGI(TAG, "%i", ESP.getFreeHeap());
   //printLocalTime();
 }
 

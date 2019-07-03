@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang=en>
+   <head>
+      <title>VM208 Shedule Page</title>
+   <body>
+      <meta charset=ISO-8859-1>
+      <meta content="width=device-width,initial-scale=1" name=viewport>
+      <meta content="The VM208 shedule page" name=description>
+      <link href=css/pure-min.css rel=stylesheet>
+      <link href=css/layouts/side-menu.css rel=stylesheet>
+      <link href=css/grids.css rel=stylesheet>
+      <link href=css/vm208.css rel=stylesheet>
+      <style>table{table-layout: fixed; width: 190px}</style>
+      <div id=layout>
+      <a class=menu-link href=#menu id=menuLink><span></span></a> 
+      <div id=menu>
+         <div class="pure-menu pure-menu-open">
+            <ul class=pure-menu-list>
+               <li class=pure-menu-item><a class=pure-menu-link href=index.html>Relay status</a></li>
+               <li class=pure-menu-item><a class=pure-menu-link href=settings.html>Settings</a></li>
+            </ul>
+         </div>
+      </div>
+      <div id=main>
+         <div class=header id=relayStatus>
+            <h1>Sheduling</h1>
+            <h2>View the status of your IO's</h2>
+         </div>
+         <div class=content>
+            <div class=pure-g id=realTimeIo>
+               <div class="pure-u-1-1">
+                  <table class="pure-table status-table">
+                     <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                     <thead>
+                        <tr>
+                           <th>Relay</th>
+                           <th>Day</th>
+                           <th>Start Time</th>
+                           <th>Stop Time</th>
+                           <th>Enabled</th>
+                        </tr>
+                     <tbody>
+                        <tr>
+                           <td> RELAY1 </td>
+                           <td> Monday</td>
+                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
+                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
+                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                        </tr>
+                        <tr>
+                           <td> RELAY2 </td>
+                           <td> Tuesday </td>
+                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required> </td>
+                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required> </td>
+                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                        </tr>
+                        <tr>
+                           <td> RELAY3 </td>
+                           <td> Wednesday </td>
+                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
+                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
+                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                        </tr>
+                        <tr>
+                           <td> RELAY4 </td>
+                           <td> Thursday</td>
+                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
+                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
+                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                        </tr>                     
+                        <tr>
+                           <td> RELAY5 </td>
+                           <td> Friday </td>
+                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
+                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
+                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                        </tr>
+                        <tr>
+                           <td> RELAY6 </td>
+                           <td> Saturday </td>
+                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
+                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
+                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                        </tr>
+                        <tr>
+                           <td> RELAY7 </td>
+                           <td> Sunday </td>
+                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
+                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
+                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+         </div>
+         <div class=header id=about>
+            <h1>About</h1>
+            <h2>Device information</h2>
+         </div>
+         <div class=content>
+            <dl>
+               <dt>Board name</dt>
+               <dd>
+                  <div id="boardname">name</div>
+               </dd>
+               <dt>MAC address Wifi</dt>
+               <dd>
+                  <div id="mac_wifi">mac</div>
+               </dd>
+               <dt>MAC address Ethernet</dt>
+               <dd>
+                  <div id="mac_eth">mac</div>
+               </dd>
+               <dt>System up-time</dt>
+               <dd>
+                  <div id="uptime">uptime</div>
+               </dd>
+               <dt>Firmware version</dt>
+               <dd>
+                  <div id="version">version</div>
+               </dd>
+            </dl>
+         </div>
+      </div>
+      <script src=js/jquery.min.js></script> <script src=js/ui.js></script> <script src=js/vm208.js></script> <script src=""></script>

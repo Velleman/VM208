@@ -175,19 +175,41 @@
                             <input type="text" maxlength="32" name="name_relay4" id="name_relay4" value="Relay 4"> </div>
                     </fieldset>
                     <fieldset>
-                        <legend>Pulse</legend>
+                        <legend>Shedule</legend>
                         <div class="pure-control-group">
-                            <label for="pulse_relay1">Relay 1:</label>
-                            <input type="number" name="pulse_relay1" id="pulse_relay1" min="1" max="4000000" value="1"> seconds </div>
+                            <label for="shedule_state">Turn:</label>
+                            <select id="shedule_state" name="shedule_state">
+                                <option value="0">On</option>
+                                <option value="1">Off</option>
+                            </select></div>
+                            <div class="pure-control-group">
+                            <label for="shedule_relais">Relais:</label>
+                            <input type="number" name="shedule_relais" id="shedule_relais" min="1" max="12" value="1"> 
+                            </select></div>
                         <div class="pure-control-group">
-                            <label for="pulse_relay2">Relay 2:</label>
-                            <input type="number" name="pulse_relay2" id="pulse_relay2" min="1" max="4000000" value="1"> seconds </div>
+                            <label for="shedule_day">Day</label>
+                            <select id="shedule_day" name="shedule_day">
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                                <option value="0">Sunday</option>
+                            </select>
+                        </div>
                         <div class="pure-control-group">
-                            <label for="pulse_relay3">Relay 3:</label>
-                            <input type="number" name="pulse_relay3" id="pulse_relay3" min="1" max="4000000" value="1"> seconds </div>
+                            <label for="shedule_hour">Hour:</label>
+                            <input type="number" name="shedule_hour" id="shedule_hour" min="0" max="23" value="20"></div>
                         <div class="pure-control-group">
-                            <label for="pulse_relay4">Relay 4:</label>
-                            <input type="number" name="pulse_relay4" id="pulse_relay4" min="1" max="4000000" value="1"> seconds </div>
+                            <label for="shedule_minute">Minute:</label>
+                            <input type="number" name="shedule_minute" id="shedule_minute" min="0" max="59" value="8"></div>
+                        <div class="pure-control-group">
+                        <label for="shedule_enable">Enabled:</label>
+                            <select id="shedule_enable" name="shedule_enable">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select></div>
                     </fieldset>
                     <fieldset>
                         <legend>Inputs</legend>
