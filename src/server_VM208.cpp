@@ -316,6 +316,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     log_i("Update");
     // if filename includes spiffs, update the spiffs partition
     int cmd = (filename.indexOf("spiffs") > 0) ? U_SPIFFS : U_FLASH;
+    (cmd = U_SPIFFS) ? Serial.println("SPIFFS") : Serial.println("FLASH");
     if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
     {
       Update.printError(Serial);

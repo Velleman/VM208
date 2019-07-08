@@ -150,10 +150,6 @@ bool Channel::getState()
     return m_relay->getState();
 }
 
-void Channel::clearTimerAndPulse()
-{
-}
-
 bool Channel::isTimerActive()
 {
     return m_isTimerActive;
@@ -172,6 +168,12 @@ void Channel::updateLed()
 void Channel::toggleLed()
 {
     m_led->toggle();
+}
+
+void Channel::clearTimerAndPulse()
+{
+    clearPulse();
+    clearTimer();
 }
 
 void Channel::clearPulse()

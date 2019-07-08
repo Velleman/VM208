@@ -23,7 +23,7 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_auth_settings(), update_network_settings(), update_email_settings(), update_names(), update_notif_settings(), UpdateSheduleFields()
+    update_auth_settings(), update_network_settings(), update_email_settings(), update_names(), update_notif_settings(), UpdateSheduleFields(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState()
 }
 
 function update_auth_settings() {
@@ -691,7 +691,8 @@ function timerRelayEvent() {
 						timerRelayEvent()
 					}, 500)
 				} catch (t) {
-					console.log(t)
+					console.log(t);
+                    timerRelayEvent();
 				}
 			}
 		})
