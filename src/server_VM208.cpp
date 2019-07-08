@@ -71,6 +71,7 @@ void startServer()
     {
       c->turnOn();
     }
+    c->clearTimerAndPulse();
 
     sendIOState(request);
   });
@@ -214,6 +215,24 @@ void startServer()
       a->setMinute(minute);
       a->setEnabled(enabled);
       config.save();
+      request->send(200);
+    }
+    else
+    {
+      request->send(400);
+    }
+  });
+
+  server.on("/time_settings", HTTP_POST, [](AsyncWebServerRequest *request) {
+    Serial.printf("time_settings\n");
+    if (request->params() == 2)
+    {
+      
+      
+      config.setTimezone(request->getParam(0)->value().toInt());
+      config.setDST(request->getParam(1)->value().toInt());
+      config.save();
+      //applyEthNetworkSettings();
       request->send(200);
     }
     else
@@ -449,7 +468,7 @@ void sendSettings(AsyncWebServerRequest *request)
     Channel *c = getChannelById(i + 1);
     JsonObject &Channel = Channels.createNestedObject();
     Channel[config.CHANNEL_NAME_KEY] = c->getName();
-
+/* */
     JsonArray &Channels_alarms = Channel.createNestedArray("alarms");
     for (int j = 0; j < 14; j++)
     {

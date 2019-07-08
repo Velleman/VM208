@@ -83,82 +83,6 @@ function update_notif_settings() {
     //t || (t = 0), e = json.notifications[t], $("#notif_enabled_checkbox").prop("checked", e.enable), $("#recipient_field").val(e.recipients), $("#alarmvalue_field").val(json.io.analog.alarmvalue), 9 == notif_select.val() ? $("#alarmvalue_div").show() : $("#alarmvalue_div").hide()
 }
 
-function sendRelay(e, t) {
-    relaysettings = "TURN OFF" == $(t).html() ? "/" + e + "/off" : "/" + e + "/on";
-    var payload = {
-        index: e,
-        state: "TURN OFF" == $(t).html() ? "0" : "1"
-    };
-    $.ajax({
-        type: "POST",
-        url: "/relay",
-        dataType: "text",
-        data: payload,
-        success: function(e) {
-            try {
-                updateIO(e)
-            } catch (t) {
-                console.log(t)
-            }
-        }
-    })
-}
-
-function sendMosfet(e, t) {
-    relaysettings = "TURN OFF" == $(t).html() ? "/" + e + "/off" : "/" + e + "/on";
-    var payload = {
-        index: e,
-        state: "TURN OFF" == $(t).html() ? "0" : "1"
-    };
-    $.ajax({
-        type: "POST",
-        url: "/mosfet",
-        dataType: "text",
-        data: payload,
-        success: function(e) {
-            try {
-                updateIO(e)
-            } catch (t) {
-                console.log(t)
-            }
-        }
-    })
-}
-
-function sendPulse(i,t) {
-
-        $.ajax({
-            type: "POST",
-            url: "pulse",
-            dataType: "text",
-            data: {index : i,time:t},
-            success: function(e) {
-                try {
-                    updateIO(e)
-                } catch (t) {
-                    console.log(t)
-                }
-            }
-        })
-}
-
-function sendTimer(i,t) {
-
-        $.ajax({
-            type: "POST",
-            url: "timer",
-            dataType: "text",
-            data: {index : i,time:t},
-            success: function(e) {
-                try {
-                    updateIO(e)
-                } catch (t) {
-                    console.log(t)
-                }
-            }
-        })
-}
-
 function timerClearEvent() {
     $("#statuslabel").text("")
 }
@@ -516,83 +440,8 @@ $(document).ready(function() {
 });
 var current_slide = 0;
 $(function() {
-    $("#sendMailButton").removeAttr("disabled"), timerRelayEvent(), $("#relay1Status").click(function() {
-        sendRelay(1, this)
-    }), $("#relay2Status").click(function() {
-        sendRelay(2, this)
-    }), $("#relay3Status").click(function() {
-        sendRelay(3, this)
-    }), $("#relay4Status").click(function() {
-        sendRelay(4, this)
-    }), $("#relay5Status").click(function() {
-        sendRelay(5, this)
-    }), $("#relay6Status").click(function() {
-        sendRelay(6, this)
-    }), $("#relay7Status").click(function() {
-        sendRelay(7, this)
-    }), $("#relay8Status").click(function() {
-        sendRelay(8, this)
-    }), $("#relay9Status").click(function() {
-        sendRelay(9, this)
-    }), $("#relay10Status").click(function() {
-        sendRelay(10, this)
-    }), $("#relay11Status").click(function() {
-        sendRelay(11, this)
-    }), $("#relay12Status").click(function() {
-        sendRelay(12, this)
-    }), $("#mosfet1Status").click(function() {
-        sendMosfet(1, this)
-    }), $("#mosfet2Status").click(function() {
-        sendMosfet(2, this)
-    }), $("#pulse1Start").click(function() {
-        sendPulse(1,$("#value_pulse1").val(), this)
-    }), $("#pulse2Start").click(function() {
-        sendPulse(2,$("#value_pulse2").val(), this)
-    }), $("#pulse3Start").click(function() {
-        sendPulse(3,$("#value_pulse3").val(), this)
-    }), $("#pulse4Start").click(function() {
-        sendPulse(4,$("#value_pulse4").val(), this)
-    }), $("#pulse5Start").click(function() {
-        sendPulse(5,$("#value_pulse5").val(), this)
-    }), $("#pulse6Start").click(function() {
-        sendPulse(6,$("#value_pulse6").val(), this)
-    }), $("#pulse7Start").click(function() {
-        sendPulse(7,$("#value_pulse7").val(), this)
-    }), $("#pulse8Start").click(function() {
-        sendPulse(8,$("#value_pulse8").val(), this)
-    }), $("#pulse9Start").click(function() {
-        sendPulse(9,$("#value_pulse9").val(), this)
-    }), $("#pulse10Start").click(function() {
-        sendPulse(10,$("#value_pulse10").val(), this)
-    }), $("#pulse11Start").click(function() {
-        sendPulse(11,$("#value_pulse11").val(), this)
-    }), $("#pulse12Start").click(function() {
-        sendPulse(12,$("#value_pulse12").val(), this)
-    }), $("#timer1Start").click(function() {
-        sendTimer(1,$("#value_timer1").val(), this)
-    }), $("#timer2Start").click(function() {
-        sendTimer(2,$("#value_timer2").val(), this)
-    }), $("#timer3Start").click(function() {
-        sendTimer(3,$("#value_timer3").val(), this)
-    }), $("#timer4Start").click(function() {
-        sendTimer(4,$("#value_timer4").val(), this)
-    }), $("#timer5Start").click(function() {
-        sendTimer(5,$("#value_timer5").val(), this)
-    }), $("#timer6Start").click(function() {
-        sendTimer(6,$("#value_timer6").val(), this)
-    }), $("#timer7Start").click(function() {
-        sendTimer(7,$("#value_timer7").val(), this)
-    }), $("#timer8Start").click(function() {
-        sendTimer(8,$("#value_timer8").val(), this)
-    }), $("#timer9Start").click(function() {
-        sendTimer(9,$("#value_timer9").val(), this)
-    }), $("#timer10Start").click(function() {
-        sendTimer(10,$("#value_timer10").val(), this)
-    }), $("#timer11Start").click(function() {
-        sendTimer(11,$("#value_timer11").val(), this)
-    }), $("#timer12Start").click(function() {
-        sendTimer(12,$("#value_timer12").val(), this)
-    }), $("#sendAuthSettingsButton").click(function() {
+    $("#sendMailButton").removeAttr("disabled"), 
+    $("#sendAuthSettingsButton").click(function() {
         return sendAuthSettings(), !1
     }), $("#sendWifiNetworkSettingsButton").click(function() {
         return sendWifiNetworkSettings(), !1
@@ -625,16 +474,34 @@ $(function() {
             }
         }
     })
-    }), $("#shedule_state").change(function(){UpdateSheduleFields()}),
-    $("#shedule_relais").change(function(){UpdateSheduleFields()}),
-    $("#shedule_day").change(function(){UpdateSheduleFields()}),
+    }),
     $("#dhcp_enabled_wifi_checkbox").change(function(){
        updateWifiNetworkFieldState();
     }),
     $("#dhcp_enabled_eth_checkbox").change(function(){
         updateEthNetworkFieldsState();
+    }),
+    $("#sendTimeSettings").click(function(){
+        sendTimeSettings();
     })
 });
+
+function sendTimeSettings(){
+    var e = {
+        timezone: $("#timezone_dropdown").val() * 3600,
+        dst: $("#shedule_enable").val() ? 3600 : 0
+    };
+	
+    $("#sendNameSettingsButton").html("SAVING...");
+    $.ajax({
+        type: "POST",
+        url: "/time_settings",
+        dataType: "text",
+        data: e,
+        success: function(e) {
+        }
+    })
+}
 
 function updateEthNetworkFieldsState()
 {

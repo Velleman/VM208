@@ -26,85 +26,85 @@
 					"hour": 13,
 					"minute": 28,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 13,
 					"minute": 29,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 10,
 					"minute": 0,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 10,
 					"minute": 10,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 10,
 					"minute": 0,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 10,
 					"minute": 10,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 10,
 					"minute": 0,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 10,
 					"minute": 0,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 10,
 					"minute": 0,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}
 			]
 		}, {
@@ -114,85 +114,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}
 			]
 		}, {
@@ -202,85 +202,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}
 			]
 		}, {
@@ -290,85 +290,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}
 			]
 		}, {
@@ -378,85 +378,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 10,
+					"state": true,
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 11,
+					"state": false,
+					"enabled": false
 				}
 			]
 		}, {
@@ -466,85 +466,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
+					"minute": 11,
+					"state": false,
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "0",
 					"hour": 12,
 					"minute": 10,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}
 			]
 		}, {
@@ -554,85 +554,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 10,
+					"state": true,
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 11,
+					"state": false,
+					"enabled": false
 				}
 			]
 		}, {
@@ -642,85 +642,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 10,
+					"state": true,
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 11,
+					"state": false,
+					"enabled": false
 				}
 			]
 		}, {
@@ -730,85 +730,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 10,
+					"state": true,
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 11,
+					"state": false,
+					"enabled": false
 				}
 			]
 		}, {
@@ -818,85 +818,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "5",
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": "6",
 					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": "0",
-					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 10,
+					"state": true,
+					"enabled": false
+				}, {
+					"dow": "0",
+					"hour": 12,
+					"minute": 11,
+					"state": false,
+					"enabled": false
 				}
 			]
 		}, {
@@ -906,85 +906,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 5,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 5,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 6,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 6,
 					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": 7,
-					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": 7,
-					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
+				}, {
+					"dow": 7,
+					"hour": 12,
+					"minute": 10,
+					"state": true,
+					"enabled": false
+				}, {
+					"dow": 7,
+					"hour": 12,
+					"minute": 11,
+					"state": false,
+					"enabled": false
 				}
 			]
 		}, {
@@ -994,85 +994,85 @@
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 1,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 2,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 3,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 4,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 5,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 5,
 					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 6,
 					"hour": 12,
 					"minute": 10,
 					"state": true,
-					"enabled": true
+					"enabled": false
 				}, {
 					"dow": 6,
 					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": 7,
-					"hour": 12,
-					"minute": 10,
-					"state": true,
-					"enabled": true
-				}, {
-					"dow": 7,
-					"hour": 12,
-					"minute": 10,
+					"minute": 11,
 					"state": false,
-					"enabled": true
+					"enabled": false
+				}, {
+					"dow": 7,
+					"hour": 12,
+					"minute": 10,
+					"state": true,
+					"enabled": false
+				}, {
+					"dow": 7,
+					"hour": 12,
+					"minute": 11,
+					"state": false,
+					"enabled": false
 				}
 			]
 		}

@@ -27,67 +27,84 @@
             <h2>View the status of your IO's</h2>
          </div>
          <div class=content>
-            <div class=pure-g id=realTimeIo>
-               <div class="pure-u-1-1">
+         <form class="pure-form pure-form-stacked">
+        <fieldset>
+            <label for="Relay">Relay:</label>
+        <select id="Relay">
+            <option>Relay1</option>
+            <option>Relay2</option>
+            <option>Relay3</option>
+            <option>Relay4</option>
+            <option>Relay5</option>
+            <option>Relay6</option>
+            <option>Relay7</option>
+            <option>Relay8</option>
+            <option>Relay9</option>
+            <option>Relay10</option>
+            <option>Relay11</option>
+            <option>Relay12</option>
+        </select>
+           
+            
+            
+               
                   <table class="pure-table status-table">
                      <colgroup>
                         <col>
                         <col>
                         <col>
                         <col>
+                     </colgroup>
                      <thead>
                         <tr>
-                           <th>Relay</th>
                            <th>Day</th>
                            <th>Start Time</th>
                            <th>Stop Time</th>
                            <th>Enabled</th>
                         </tr>
+                     </thead>
                      <tbody>
                         <tr>
-                           <td> RELAY1 </td>
                            <td> Monday</td>
                            <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
                            <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
                            <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
                         </tr>
                         <tr>
-                           <td> RELAY2 </td>
                            <td> Tuesday </td>
                            <td> <input type="time" id="start_time_monday" name="start_time_monday" required> </td>
                            <td> <input type="time" id="start_time_monday" name="start_time_monday" required> </td>
                            <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
                         </tr>
                         <tr>
-                           <td> RELAY3 </td>
                            <td> Wednesday </td>
                            <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
                            <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
                            <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
                         </tr>
                         <tr>
-                           <td> RELAY4 </td>
+
                            <td> Thursday</td>
                            <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
                            <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
                            <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
                         </tr>                     
                         <tr>
-                           <td> RELAY5 </td>
+
                            <td> Friday </td>
                            <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
                            <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
                            <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
                         </tr>
                         <tr>
-                           <td> RELAY6 </td>
+
                            <td> Saturday </td>
                            <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
                            <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
                            <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
                         </tr>
                         <tr>
-                           <td> RELAY7 </td>
+
                            <td> Sunday </td>
                            <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
                            <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
@@ -95,8 +112,10 @@
                         </tr>
                      </tbody>
                   </table>
-               </div>
-            </div>
+                
+            <button type="button" class="pure-button pure-button-primary">Save</button>
+            </fieldset>
+            </form>
          </div>
          <div class=header id=about>
             <h1>About</h1>
@@ -127,4 +146,4 @@
             </dl>
          </div>
       </div>
-      <script src=js/jquery.min.js></script> <script src=js/ui.js></script> <script src=js/vm208.js></script> <script src=""></script>
+      <script src=js/jquery.min.js></script> <script src=js/ui.js></script> <script src=js/shedule.js></script> <script src=""></script>

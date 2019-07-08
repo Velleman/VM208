@@ -178,12 +178,18 @@ void Channel::clearTimerAndPulse()
 
 void Channel::clearPulse()
 {
-    m_isPulseActive = false;
-    vTaskDelete(pulseTaskHandle);
+    if (m_isPulseActive)
+    {
+        m_isPulseActive = false;
+        vTaskDelete(pulseTaskHandle);
+    }
 }
 
 void Channel::clearTimer()
 {
-    m_isTimerActive = false;
-    vTaskDelete(timerTaskHandle);
+    if (m_isTimerActive)
+    {
+        m_isTimerActive = false;
+        vTaskDelete(timerTaskHandle);
+    }
 }
