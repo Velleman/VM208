@@ -244,7 +244,7 @@ void startServer()
     if (request->params() == 29)
     {
       String relay = request->getParam(0)->value();
-      Channel *c = getChannelById(relay.toInt()+1);
+      Channel *c = getChannelById(relay.toInt());
       bool state = true;
       int param = 1;
       String time;
@@ -252,6 +252,7 @@ void startServer()
       String minute;
       Alarm a;
       bool enabled;
+      uint8_t alarm = 0;
       for (int i = 0; i < 7; i++)      {
         //Turn On Alarm
         time = request->getParam(param)->value();//get time
@@ -259,9 +260,20 @@ void startServer()
         minute = time.substring(3, 5); // split minute
         param++; //increase param;
         enabled = (request->getParam(param)->value() == "true") ? true:false;//get alarm enabled
+        Serial.print(i);
+        Serial.println(" day");
+        Serial.print(hour);
+        Serial.println(" hour");
+        Serial.print(minute);
+        Serial.println(" minute");
+        Serial.print(state?"True":"false");
+        Serial.println(" State");
+        Serial.print(enabled ? "true":"false");
+        Serial.println(" enabled");
         a = Alarm(i, hour.toInt(), minute.toInt(), state, enabled); //Create Alarm based on params        
         state = !state;
-        c->setAlarm(a, param - 1);//set Alarm on channel
+        c->setAlarm(a, alarm);//set Alarm on channel
+        alarm++;
         //Turn Off Alarm
         param++;
         time = request->getParam(param)->value();
@@ -269,9 +281,21 @@ void startServer()
         minute = time.substring(3, 5);
         param++;
         enabled = (request->getParam(param)->value() == "true") ? true:false;//get alarm enabled
+        Serial.print(i);
+        Serial.println(" day");
+        Serial.print(hour);
+        Serial.println(" hour");
+        Serial.print(minute);
+        Serial.println(" minute");
+        Serial.print(state?"True":"false");
+        Serial.println(" State");
+        Serial.print(enabled ? "true":"false");
+        Serial.println(" enabled");
         a = Alarm(i, hour.toInt(), minute.toInt(), state, enabled);        
         state = !state;
-        c->setAlarm(a, param - 1);
+        c->setAlarm(a, alarm);//set Alarm on channel
+        alarm++;
+        param++;
       }
       config.save();
 

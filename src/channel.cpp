@@ -138,6 +138,9 @@ void Channel::setAlarm(Alarm a, uint8_t index)
     {
         alarms[index] = a;
     }
+    else{
+        Serial.println("Alarm index is invalid");
+    }
 }
 
 Alarm *Channel::getAlarm(uint8_t index)
