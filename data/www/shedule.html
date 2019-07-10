@@ -27,7 +27,7 @@
             <h2>View the status of your IO's</h2>
          </div>
          <div class=content>
-         <form class="pure-form pure-form-stacked">
+         <form class="pure-form pure-form">
         <fieldset>
             <label for="Relay">Relay:</label>
         <select id="Relay">
@@ -43,12 +43,8 @@
             <option>Relay10</option>
             <option>Relay11</option>
             <option>Relay12</option>
-        </select>
-           
-            
-            
-               
-                  <table class="pure-table status-table">
+        </select>  
+        <table class="pure-table status-table-shedule">
                      <colgroup>
                         <col>
                         <col>
@@ -60,60 +56,56 @@
                            <th>Day</th>
                            <th>Start Time</th>
                            <th>Stop Time</th>
-                           <th>Enabled</th>
                         </tr>
                      </thead>
                      <tbody>
                         <tr>
                            <td> Monday</td>
-                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
-                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
-                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                           <td> <input type="time" id="alarm_1" name="start_time_monday" value="22:10" required> <input type="checkbox" id="alam_enabeled_1" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           <td> <input type="time" id="alarm_2" name="stop_time_monday" value="22:10" required> <input type="checkbox" id="alam_enabeled_2" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                          
                         </tr>
                         <tr>
                            <td> Tuesday </td>
-                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required> </td>
-                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required> </td>
-                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                           <td> <input type="time" id="alarm_3" name="start_time_monday" value="22:10" required> <input type="checkbox" id="alam_enabeled_3" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           <td> <input type="time" id="alarm_4" name="start_time_monday" value="22:10" required> <input type="checkbox" id="alam_enabeled_4" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           
                         </tr>
                         <tr>
                            <td> Wednesday </td>
-                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
-                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
-                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                           <td> <input type="time" id="alarm_5" name="start_time_monday" value="22:10" required><input type="checkbox" id="alam_enabeled_5" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           <td> <input type="time" id="alarm_6" name="stop_time_monday" value="22:10" required><input type="checkbox" id="alam_enabeled_6" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+
                         </tr>
                         <tr>
 
                            <td> Thursday</td>
-                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
-                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
-                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                           <td> <input type="time" id="alarm_7" name="start_time_monday" value="22:10" required><input type="checkbox" id="alam_enabeled_7 class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           <td> <input type="time" id="alarm_8" name="stop_time_monday" value="22:10" required><input type="checkbox" id="alam_enabeled_8" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+
                         </tr>                     
                         <tr>
 
                            <td> Friday </td>
-                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
-                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
-                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                           <td> <input type="time" id="alarm_9" name="start_time_friday" value="22:10" required><input type="checkbox" id="alam_enabeled_9" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           <td> <input type="time" id="alarm_10" name="stop_time_friday" value="22:10" required><input type="checkbox" id="alam_enabeled_10" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+
                         </tr>
                         <tr>
 
                            <td> Saturday </td>
-                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
-                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
-                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                           <td> <input type="time" id="alarm_11" name="start_time_saturday" value="22:10" required><input type="checkbox" id="alam_enabeled_11" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           <td> <input type="time" id="alarm_12" name="stop_time_saturday" value="22:10" required><input type="checkbox" id="alam_enabeled_12" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
                         </tr>
                         <tr>
 
                            <td> Sunday </td>
-                           <td> <input type="time" id="start_time_monday" name="start_time_monday" required></td>
-                           <td> <input type="time" id="stop_time_monday" name="stop_time_monday" required></td>
-                           <td> <input type="checkbox" id="alarm_enabled_monday" name="alarm_enabled_monday" checked></td>
+                           <td> <input type="time" id="alarm_13" name="start_time_sunday" value="22:10" required></input><input type="checkbox" id="alam_enabeled_13" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           <td> <input type="time" id="alarm_14" name="stop_time_sunday" value="22:10" required><input type="checkbox" id="alam_enabeled_14" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
                         </tr>
                      </tbody>
-                  </table>
-                
-            <button type="button" class="pure-button pure-button-primary">Save</button>
+                  </table>                
+                <button type="button" class="pure-button pure-button-primary">Save</button>
             </fieldset>
             </form>
          </div>
