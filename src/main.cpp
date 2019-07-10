@@ -477,7 +477,7 @@ void loop()
 {
   ArduinoOTA.handle();
   delay(500);
-  ESP_LOGI(TAG, "%i", ESP.getFreeHeap());
+  //ESP_LOGI(TAG, "%i", ESP.getFreeHeap());
   //printLocalTime();
 }
 

@@ -30,19 +30,19 @@
          <form class="pure-form pure-form">
         <fieldset>
             <label for="Relay">Relay:</label>
-        <select id="Relay">
-            <option>Relay1</option>
-            <option>Relay2</option>
-            <option>Relay3</option>
-            <option>Relay4</option>
-            <option>Relay5</option>
-            <option>Relay6</option>
-            <option>Relay7</option>
-            <option>Relay8</option>
-            <option>Relay9</option>
-            <option>Relay10</option>
-            <option>Relay11</option>
-            <option>Relay12</option>
+        <select id="Relay" name="Relay">
+            <option value="1">Relay1</option>
+            <option value="2">Relay2</option>
+            <option value="3">Relay3</option>
+            <option value="4">Relay4</option>
+            <option value="5">Relay5</option>
+            <option value="6">Relay6</option>
+            <option value="7">Relay7</option>
+            <option value="8">Relay8</option>
+            <option value="9">Relay9</option>
+            <option value="10">Relay10</option>
+            <option value="11">Relay11</option>
+            <option value="12">Relay12</option>
         </select>  
         <table class="pure-table status-table-shedule">
                      <colgroup>
@@ -80,7 +80,7 @@
                         <tr>
 
                            <td> Thursday</td>
-                           <td> <input type="time" id="alarm_7" name="start_time_monday" value="22:10" required><input type="checkbox" id="alam_enabeled_7 class="shedule_check" name="alarm_enabled_monday"> Enable</td>
+                           <td> <input type="time" id="alarm_7" name="start_time_monday" value="22:10" required><input type="checkbox" id="alam_enabeled_7" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
                            <td> <input type="time" id="alarm_8" name="stop_time_monday" value="22:10" required><input type="checkbox" id="alam_enabeled_8" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
 
                         </tr>                     
@@ -105,7 +105,7 @@
                         </tr>
                      </tbody>
                   </table>                
-                <button type="button" class="pure-button pure-button-primary">Save</button>
+                <button type="button" onClick="updateShedule()" class="pure-button pure-button-primary">Save</button>
             </fieldset>
             </form>
          </div>

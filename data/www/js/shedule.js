@@ -50,7 +50,7 @@ function UpdateSheduleFields()
 
 
 function zeroPad(numberStr) {
-  return numberStr.padStart(2, "0");
+  return String(numberStr).padStart(2, "0");
 }
 
 function GetURLParameter(sParam)
@@ -88,18 +88,46 @@ function updateShedule()
     var relay = $("#Relay").val();
     
     var e = {
+        relay: relay,
+        alarm_time_13: $("#alarm_13").val(),
+        alarm_enable_13: $("#alam_enabeled_13").is(":checked"),
+        alarm_time_14: $("#alarm_14").val(),
+        alarm_enable_14: $("#alam_enabeled_14").is(":checked"),
         alarm_time_1: $("#alarm_1").val(),
-        alarm_enable_1: $("#alam_enabeled_").is(":checked");
+        alarm_enable_1: $("#alam_enabeled_1").is(":checked"),
+        alarm_time_2: $("#alarm_2").val(),
+        alarm_enable_2: $("#alam_enabeled_2").is(":checked"),
+        alarm_time_3: $("#alarm_3").val(),
+        alarm_enable_3: $("#alam_enabeled_3").is(":checked"),
+        alarm_time_4: $("#alarm_4").val(),
+        alarm_enable_4: $("#alam_enabeled_4").is(":checked"),
+        alarm_time_5: $("#alarm_5").val(),
+        alarm_enable_5: $("#alam_enabeled_5").is(":checked"),
+        alarm_time_6: $("#alarm_6").val(),
+        alarm_enable_6: $("#alam_enabeled_6").is(":checked"),
+        alarm_time_7: $("#alarm_7").val(),
+        alarm_enable_7: $("#alam_enabeled_7").is(":checked"),
+        alarm_time_8: $("#alarm_8").val(),
+        alarm_enable_8: $("#alam_enabeled_8").is(":checked"),
+        alarm_time_9: $("#alarm_9").val(),
+        alarm_enable_9: $("#alam_enabeled_9").is(":checked"),
+        alarm_time_10: $("#alarm_10").val(),
+        alarm_enable_10: $("#alam_enabeled_10").is(":checked"),
+        alarm_time_11: $("#alarm_11").val(),
+        alarm_enable_11: $("#alam_enabeled_11").is(":checked"),
+        alarm_time_12: $("#alarm_12").val(),
+        alarm_enable_12: $("#alam_enabeled_12").is(":checked")
+        
     };
     $("#sendAuthSettingsButton").html("SAVING...");
     $.ajax({
         type: "POST",
-        url: "/auth_settings",
+        url: "/shedule_set",
         dataType: "text",
         data: e,
         success: function(e) {
             try {
-                "OK" == e ? ($("#sendAuthSettingsButton").html("SAVED"), requestSettings()) : ($("#sendAuthSettingsButton").html("FAILED SAVING"), console.log("FAILED TO SAVE EMAILSETTINGS"))
+                
             } catch (t) {
                 console.log(t)
             }

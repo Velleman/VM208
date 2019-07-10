@@ -192,8 +192,7 @@ void startServer()
       bool enabled = request->getParam(2)->value().toInt();
       Channel *c = getChannelById(relais);
 
-
-      Alarm *a = c->getAlarm((day * 2)+state) ;
+      Alarm *a = c->getAlarm((day * 2) + state);
 
       Serial.print("Alarm state: ");
       Serial.println(state);
@@ -206,7 +205,7 @@ void startServer()
 
       Serial.print("Alarm minute: ");
       Serial.println(minute);
-      
+
       Serial.print("Alarm Enabled ");
       Serial.println(enabled);
 
@@ -227,12 +226,55 @@ void startServer()
     Serial.printf("time_settings\n");
     if (request->params() == 2)
     {
-      
-      
+
       config.setTimezone(request->getParam(0)->value().toInt());
       config.setDST(request->getParam(1)->value().toInt());
       config.save();
       //applyEthNetworkSettings();
+      request->send(200);
+    }
+    else
+    {
+      request->send(400);
+    }
+  });
+
+  server.on("/shedule_set", HTTP_POST, [](AsyncWebServerRequest *request) {
+    Serial.printf("shedule_set\n");
+    if (request->params() == 29)
+    {
+      String relay = request->getParam(0)->value();
+      Channel *c = getChannelById(relay.toInt()+1);
+      bool state = true;
+      int param = 1;
+      String time;
+      String hour;
+      String minute;
+      Alarm a;
+      bool enabled;
+      for (int i = 0; i < 7; i++)      {
+        //Turn On Alarm
+        time = request->getParam(param)->value();//get time
+        hour = time.substring(0, 2); //split hour
+        minute = time.substring(3, 5); // split minute
+        param++; //increase param;
+        enabled = (request->getParam(param)->value() == "true") ? true:false;//get alarm enabled
+        a = Alarm(i, hour.toInt(), minute.toInt(), state, enabled); //Create Alarm based on params        
+        state = !state;
+        c->setAlarm(a, param - 1);//set Alarm on channel
+        //Turn Off Alarm
+        param++;
+        time = request->getParam(param)->value();
+        hour = time.substring(0, 2);
+        minute = time.substring(3, 5);
+        param++;
+        enabled = (request->getParam(param)->value() == "true") ? true:false;//get alarm enabled
+        a = Alarm(i, hour.toInt(), minute.toInt(), state, enabled);        
+        state = !state;
+        c->setAlarm(a, param - 1);
+      }
+      config.save();
+
       request->send(200);
     }
     else
@@ -334,8 +376,9 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
   {
     log_i("Update");
     // if filename includes spiffs, update the spiffs partition
-    int cmd = (filename.indexOf("spiffs") > 0) ? U_SPIFFS : U_FLASH;
-    (cmd = U_SPIFFS) ? Serial.println("SPIFFS") : Serial.println("FLASH");
+    
+    int cmd = (filename.startsWith("spiffs")) ? U_SPIFFS : U_FLASH;
+    cmd ? Serial.println("SPIFFS") : Serial.println("FLASH");
     if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
     {
       Update.printError(Serial);
@@ -427,13 +470,13 @@ void sendIOState(AsyncWebServerRequest *request)
   root.set("input", inputs[12].read());
   root.set("mosfet1", m1->getState());
   root.set("mosfet2", m2->getState());
-  root.set("name1",c->getName());
-  JsonArray& names = root.createNestedArray("names");
-  for(int i =0;i<12;i++)
+  root.set("name1", c->getName());
+  JsonArray &names = root.createNestedArray("names");
+  for (int i = 0; i < 12; i++)
   {
-    names.add((c+i)->getName());
+    names.add((c + i)->getName());
   }
-  
+
   root.printTo(*response);
   request->send(response);
 }
@@ -468,7 +511,7 @@ void sendSettings(AsyncWebServerRequest *request)
     Channel *c = getChannelById(i + 1);
     JsonObject &Channel = Channels.createNestedObject();
     Channel[config.CHANNEL_NAME_KEY] = c->getName();
-/* */
+    /* */
     JsonArray &Channels_alarms = Channel.createNestedArray("alarms");
     for (int j = 0; j < 14; j++)
     {

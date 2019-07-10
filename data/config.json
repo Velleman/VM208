@@ -974,13 +974,13 @@
 					" state ": false,
 					" enabled ": false
 				}, {
-					" dow ": 7,
+					" dow ": 0,
 					" hour ": 12,
 					" minute ": 10,
 					" state ": true,
 					" enabled ": false
 				}, {
-					" dow ": 7,
+					" dow ": 0,
 					" hour ": 12,
 					" minute ": 11,
 					" state ": false,
@@ -1062,13 +1062,13 @@
 					" state ": false,
 					" enabled ": false
 				}, {
-					" dow ": 7,
+					" dow ": 0,
 					" hour ": 12,
 					" minute ": 10,
 					" state ": true,
 					" enabled ": false
 				}, {
-					" dow ": 7,
+					" dow ": 0,
 					" hour ": 12,
 					" minute ": 11,
 					" state ": false,
