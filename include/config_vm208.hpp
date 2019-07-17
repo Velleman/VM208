@@ -36,7 +36,9 @@ private:
   long _timezoneSeconds;
   int _DSTseconds;
   const char *configPath = "/config.json";
-  void writeFile(const char *path);
+  const char *alarmPath = "/alarms.json";
+  void writeConfig();
+  void writeAlarms();
   File loadFile(const char *path);
   DynamicJsonBuffer jsonBuffer;
   String m_channelNames[14];
@@ -157,6 +159,7 @@ public:
   int getDST();
   void load();
   void save();
+  void saveAlarms();
 
   ~Configuration();
 };

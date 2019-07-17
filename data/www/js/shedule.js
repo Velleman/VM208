@@ -16,18 +16,38 @@ function requestSettings() {
 }
 
 function update_content() {
-    UpdateSheduleFields();
+    var relay = GetURLParameter('relay');
+    $("#Relay").val(relay);
+    UpdateSheduleFields(relay);
 }
 
 $(document).ready(function() {
     requestBoardInfo();
     requestSettings();
+    $("#Relay").change(function(){
+        var relay = $("#Relay").val(); 
+        UpdateSheduleFields(relay);
+    });
 });
 
-
-function UpdateSheduleFields()
+function ValidateShedule()
 {
-    var relay = GetURLParameter('relay');
+    var valid = false;
+    var field = 1;
+    for(var i =0;i<7;i++)
+    {
+        if(($("#alarm_"+field).val() == $("#alarm_"+(field+1)).val()) && $("#alam_enabeled_"+field).is(":checked") && $("#alam_enabeled_"+(field+1)).is(":checked"))
+        {
+            return false;
+        }
+    }
+    return true;    
+}
+
+function UpdateSheduleFields(relay)
+{
+    
+    
     relay -=1;//zero-based
     for(var i =0;i<14;i++)
     {
@@ -85,14 +105,12 @@ function requestBoardInfo()
 
 function updateShedule()
 {
+    if(ValidateShedule())
+    {
     var relay = $("#Relay").val();
     
     var e = {
-        relay: relay,
-        alarm_time_13: $("#alarm_13").val(),
-        alarm_enable_13: $("#alam_enabeled_13").is(":checked"),
-        alarm_time_14: $("#alarm_14").val(),
-        alarm_enable_14: $("#alam_enabeled_14").is(":checked"),
+        relay: relay,        
         alarm_time_1: $("#alarm_1").val(),
         alarm_enable_1: $("#alam_enabeled_1").is(":checked"),
         alarm_time_2: $("#alarm_2").val(),
@@ -116,7 +134,11 @@ function updateShedule()
         alarm_time_11: $("#alarm_11").val(),
         alarm_enable_11: $("#alam_enabeled_11").is(":checked"),
         alarm_time_12: $("#alarm_12").val(),
-        alarm_enable_12: $("#alam_enabeled_12").is(":checked")
+        alarm_enable_12: $("#alam_enabeled_12").is(":checked"),
+        alarm_time_13: $("#alarm_13").val(),
+        alarm_enable_13: $("#alam_enabeled_13").is(":checked"),
+        alarm_time_14: $("#alarm_14").val(),
+        alarm_enable_14: $("#alam_enabeled_14").is(":checked"),
         
     };
     $("#sendAuthSettingsButton").html("SAVING...");
@@ -127,10 +149,40 @@ function updateShedule()
         data: e,
         success: function(e) {
             try {
-                
+                json = $.parseJSON(e);
+                var relay = $("#Relay").val(); 
+                UpdateSheduleFields(relay);
             } catch (t) {
                 console.log(t)
             }
         }
-    })
+    });
+    }
+    else{
+        alert("Shedule form is incorrect");
+    }
 }
+
+function updateBoardInfo(e)
+{
+        var boardInfo = $.parseJSON(e);
+        $("#boardname").text(boardInfo.name);
+        $("#mac_eth").text(boardInfo.MAC_ETH);
+        $("#mac_wifi").text(boardInfo.MAC_WIFI);
+        var uptime = boardInfo.time;
+        uptime = Math.floor(uptime/1000000);
+        var years = Math.floor(uptime/31556952);
+        uptime -= (years * 31556952);
+        var days = Math.floor(uptime / 86400);
+        uptime -= (days * 86400);
+        var hours = Math.floor(uptime /3600);
+        uptime -= hours * 3600;
+        var minutes = Math.floor(uptime /60);
+        uptime -= minutes * 60;
+        var seconds = Math.floor(uptime);
+        var time = years + "y " + days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+        $("#uptime").text(time);
+        $("#version").text(boardInfo.firmware);
+        $("#localtime").text(boardInfo.LOCAL_TIME);
+}
+

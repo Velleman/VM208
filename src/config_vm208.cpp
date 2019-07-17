@@ -127,7 +127,12 @@ void Configuration::load()
 
 void Configuration::save()
 {
-    writeFile(configPath);
+    writeConfig();
+}
+
+void Configuration::saveAlarms()
+{
+    writeAlarms();
 }
 
 /*
@@ -154,12 +159,12 @@ void Configuration::save()
 https://arduinojson.org/v5/assistant/
  */
 
-void Configuration::writeFile(const char *path)
+void Configuration::writeConfig()
 {
     if (SPIFFS.exists(configPath))
     {
         ESP_LOGI(TAG, "remove file");
-        SPIFFS.remove(path);
+        SPIFFS.remove(configPath);
     }
     JsonObject &root = jsonBuffer.createObject();
     root[SSID_KEY] = _ssid;
@@ -182,18 +187,54 @@ void Configuration::writeFile(const char *path)
     root[TIMEZONE_KEY] = _timezoneSeconds;
     root[DST_KEY] = _DSTseconds;
     root[FIRST_TIME_KEY] = _firstTime;
-    JsonArray &Channels = root.createNestedArray("Channels");
-
+    /*JsonArray &Channels = root.createNestedArray("Channels");
+    Channel *c;
+    Alarm *a;
     for (int i = 0; i < 12; i++)
     {
-        Channel* c = getChannelById(i+1);
+        c = getChannelById(i + 1);
         JsonObject &Channel = Channels.createNestedObject();
         Channel[CHANNEL_NAME_KEY] = c->getName();
 
         JsonArray &Channels_alarms = Channel.createNestedArray("alarms");
         for (int j = 0; j < 14; j++)
         {
-            Alarm* a = c->getAlarm(j);
+            a = c->getAlarm(j);
+            JsonObject &Channels_alarms_settings = Channels_alarms.createNestedObject();
+            Channels_alarms_settings[ALARM_WEEKDAY_KEY] = a->getWeekday();
+            Channels_alarms_settings[ALARM_HOUR_KEY] = a->getHour();
+            Channels_alarms_settings[ALARM_MINUTE_KEY] = a->getMinute();
+            Channels_alarms_settings[ALARM_STATE_KEY] = a->getState();
+            Channels_alarms_settings[ALARM_ENABLED_KEY] = a->isEnabled();
+        }
+    }*/
+    //Write json file
+    File file = SPIFFS.open(configPath, "w");
+    root.printTo(file);
+    file.close();
+}
+
+void Configuration::writeAlarms()
+{
+    if (SPIFFS.exists(alarmPath))
+    {
+        ESP_LOGI(TAG, "remove file");
+        SPIFFS.remove(alarmPath);
+    }
+    JsonObject &root = jsonBuffer.createObject();
+    JsonArray &Channels = root.createNestedArray("Channels");
+    Channel *c;
+    Alarm *a;
+    for (int i = 0; i < 12; i++)
+    {
+        c = getChannelById(i + 1);
+        JsonObject &Channel = Channels.createNestedObject();
+        Channel[CHANNEL_NAME_KEY] = c->getName();
+
+        JsonArray &Channels_alarms = Channel.createNestedArray("alarms");
+        for (int j = 0; j < 14; j++)
+        {
+            a = c->getAlarm(j);
             JsonObject &Channels_alarms_settings = Channels_alarms.createNestedObject();
             Channels_alarms_settings[ALARM_WEEKDAY_KEY] = a->getWeekday();
             Channels_alarms_settings[ALARM_HOUR_KEY] = a->getHour();
@@ -203,7 +244,7 @@ void Configuration::writeFile(const char *path)
         }
     }
     //Write json file
-    File file = SPIFFS.open(path, "w");
+    File file = SPIFFS.open(alarmPath, "w");
     root.printTo(file);
     file.close();
 }
@@ -211,11 +252,11 @@ void Configuration::writeFile(const char *path)
 Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
 {
     Channel c;
-    if (SPIFFS.exists(configPath))
+    if (SPIFFS.exists(alarmPath))
     {
 
         ESP_LOGI(TAG, "file exist");
-        File file = loadFile(configPath);
+        File file = loadFile(alarmPath);
         JsonObject &root = jsonBuffer.parseObject(file);
         JsonArray &channels = root["Channels"];
 
@@ -225,11 +266,11 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
         for (int i = 0; i < 14; i++)
         {
             JsonObject &Channels_0_alarms_i = Channels_0_alarms[i];
-            uint8_t dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY].as<uint8_t>();
-            uint8_t hour = Channels_0_alarms_i[ALARM_HOUR_KEY].as<uint8_t>();
-            uint8_t minute = Channels_0_alarms_i[ALARM_MINUTE_KEY].as<uint8_t>();
-            bool state = Channels_0_alarms_i[ALARM_STATE_KEY].as<bool>();
-            bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY].as<bool>();
+            uint dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY];
+            uint hour = Channels_0_alarms_i[ALARM_HOUR_KEY];
+            uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
+            bool state = Channels_0_alarms_i[ALARM_STATE_KEY];
+            bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY];
             Alarm a = Alarm(dow, hour, minute, state, enabled);
             c.setAlarm(a, i);
         }
@@ -366,6 +407,7 @@ void Configuration::setWIFI_SecondaryDNS(String secondaryDNS)
 
 void Configuration::setTimezone(long seconds)
 {
+    _timezoneSeconds = seconds;
 }
 
 long Configuration::getTimezone()
@@ -380,6 +422,7 @@ int Configuration::getDST()
 
 void Configuration::setDST(int seconds)
 {
+    _DSTseconds = seconds;
 }
 
 String Configuration::getChannelNameById(uint8_t id)
@@ -389,7 +432,7 @@ String Configuration::getChannelNameById(uint8_t id)
 
 bool Configuration::getFirstTime()
 {
-   return _firstTime;
+    return _firstTime;
 }
 
 void Configuration::setFirstTime(bool first_time)

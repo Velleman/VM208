@@ -173,6 +173,11 @@ void Channel::toggleLed()
     m_led->toggle();
 }
 
+void Channel::setLed(bool state)
+{
+    state ? m_led->turnOn() : m_led->turnOff();
+}
+
 void Channel::clearTimerAndPulse()
 {
     clearPulse();
@@ -195,4 +200,22 @@ void Channel::clearTimer()
         m_isTimerActive = false;
         vTaskDelete(timerTaskHandle);
     }
+}
+
+void Channel::disableSheduler()
+{
+    for(int i =0;i<14;i++)
+    {
+        alarms[i].setEnabled(false);
+    }
+}
+
+bool Channel::isSheduleActive()
+{
+    for(int i =0;i<14;i++)
+    {
+        if(alarms[i].isEnabled())
+            return true;
+    }
+    return false;
 }

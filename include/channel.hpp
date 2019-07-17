@@ -37,9 +37,12 @@ class Channel{
         bool isPulseActive();
         void updateLed();
         void toggleLed();
+        void setLed(bool state);
         uint64_t getTimerTime();
         uint64_t getPulseTime();
         void clearTimer();
         void clearPulse();
+        void disableSheduler();
+        bool isSheduleActive();
 };
 #endif

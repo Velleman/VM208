@@ -351,42 +351,78 @@ static void checkSheduler(void *pvParameter)
   delay(500); // wait to load all channels
   uint8_t *id = (uint8_t *)pvParameter;
   Channel *c;
+  Alarm *alarmOn;
+  Alarm *alarmOff;
+  uint8_t day;
+  time_t t;
+  struct tm *current_time;
   while (true)
   {
-    time_t t = time(NULL);
-    struct tm *time = localtime(&t);
-    uint8_t day = time->tm_wday;
-    Alarm *alarmOn;
-    Alarm *alarmOff;
+    t = time(NULL);
+    current_time = localtime(&t);
+    day = current_time->tm_wday;
+    day = day == 0 ? 6 : (day - 1);
+
     for (int i = 0; i < 12; i++)
     {
       c = getChannelById(i + 1);
-      alarmOn = c->getAlarm(day * 2);
-      alarmOff = c->getAlarm((day * 2) + 1);
-      if (alarmOn->isEnabled())
+      if (c->isSheduleActive())
       {
-        if (time->tm_hour == alarmOn->getHour() && time->tm_min == alarmOn->getMinute())
+        alarmOn = c->getAlarm(day * 2);
+        alarmOff = c->getAlarm((day * 2) + 1);
+        if (alarmOn->isEnabled())
         {
-          if (c->getState() != alarmOn->getState())
+          if (current_time->tm_hour == alarmOn->getHour() && current_time->tm_min == alarmOn->getMinute())
           {
-            //ESP_LOGI(TAG, "Alarm triggered");
-            alarmOn->getState() ? c->turnOn() : c->turnOff();
+            if (c->getState() != alarmOn->getState())
+            {
+              //ESP_LOGI(TAG, "Alarm triggered");
+              alarmOn->getState() ? c->turnOn() : c->turnOff();
+            }
           }
         }
-      }
-      if (alarmOff->isEnabled())
-      {
-        if (time->tm_hour == alarmOff->getHour() && time->tm_min == alarmOff->getMinute())
+        if (alarmOff->isEnabled())
         {
-          if (c->getState() != alarmOff->getState())
+          if (current_time->tm_hour == alarmOff->getHour() && current_time->tm_min == alarmOff->getMinute())
           {
-            //ESP_LOGI(TAG, "Alarm triggered");
-            alarmOff->getState() ? c->turnOn() : c->turnOff();
+            if (c->getState() != alarmOff->getState())
+            {
+              //ESP_LOGI(TAG, "Alarm triggered");
+              alarmOff->getState() ? c->turnOn() : c->turnOff();
+            }
           }
         }
       }
     }
     delay(500);
+  }
+  vTaskDelete(NULL);
+}
+
+static void shedulerStatus(void *pvParameter)
+{
+  delay(500); // wait to load all channels
+  Channel* c;
+  while (true)
+  {
+    for (int i = 0; i < 12; i++)
+    {
+      c = getChannelById(i + 1);
+      if (c->isSheduleActive())
+      {
+          c->setLed(c->getState());
+      }
+    }
+    delay(1800);
+    for (int i = 0; i < 12; i++)
+    {
+      c = getChannelById(i + 1);
+      if (c->isSheduleActive())
+      {
+          c->toggleLed();
+      }
+    }
+    delay(200);
   }
   vTaskDelete(NULL);
 }
@@ -470,6 +506,7 @@ void setup()
     }
   }
   xTaskCreate(checkSheduler, "Sheduler", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  xTaskCreate(shedulerStatus, "ShedulerStatus", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
   startServer();
 }
 

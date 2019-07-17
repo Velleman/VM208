@@ -229,6 +229,7 @@ void startServer()
 
       config.setTimezone(request->getParam(0)->value().toInt());
       config.setDST(request->getParam(1)->value().toInt());
+      configTime(config.getTimezone(), config.getDST(), "pool.ntp.org");
       config.save();
       //applyEthNetworkSettings();
       request->send(200);
@@ -250,29 +251,33 @@ void startServer()
       String time;
       String hour;
       String minute;
-      Alarm a;
       bool enabled;
       uint8_t alarm = 0;
-      for (int i = 0; i < 7; i++)      {
+      Alarm *a;
+      for (int i = 1; i < 7; i++)
+      { //do monday to saturday 1-6 Sunday is 0 handle out of loop
         //Turn On Alarm
-        time = request->getParam(param)->value();//get time
-        hour = time.substring(0, 2); //split hour
-        minute = time.substring(3, 5); // split minute
-        param++; //increase param;
-        enabled = (request->getParam(param)->value() == "true") ? true:false;//get alarm enabled
+        time = request->getParam(param)->value();                               //get time
+        hour = time.substring(0, 2);                                            //split hour
+        minute = time.substring(3, 5);                                          // split minute
+        param++;                                                                //increase param;
+        enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
         Serial.print(i);
         Serial.println(" day");
         Serial.print(hour);
         Serial.println(" hour");
         Serial.print(minute);
         Serial.println(" minute");
-        Serial.print(state?"True":"false");
+        Serial.print(state ? "True" : "false");
         Serial.println(" State");
-        Serial.print(enabled ? "true":"false");
+        Serial.print(enabled ? "true" : "false");
         Serial.println(" enabled");
-        a = Alarm(i, hour.toInt(), minute.toInt(), state, enabled); //Create Alarm based on params        
-        state = !state;
-        c->setAlarm(a, alarm);//set Alarm on channel
+
+        a = c->getAlarm(alarm);
+        a->setHour(hour.toInt());
+        a->setMinute(minute.toInt());
+        a->setEnabled(enabled);
+        state != state;
         alarm++;
         //Turn Off Alarm
         param++;
@@ -280,26 +285,73 @@ void startServer()
         hour = time.substring(0, 2);
         minute = time.substring(3, 5);
         param++;
-        enabled = (request->getParam(param)->value() == "true") ? true:false;//get alarm enabled
+        enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
         Serial.print(i);
         Serial.println(" day");
         Serial.print(hour);
         Serial.println(" hour");
         Serial.print(minute);
         Serial.println(" minute");
-        Serial.print(state?"True":"false");
+        Serial.print(state ? "True" : "false");
         Serial.println(" State");
-        Serial.print(enabled ? "true":"false");
+        Serial.print(enabled ? "true" : "false");
         Serial.println(" enabled");
-        a = Alarm(i, hour.toInt(), minute.toInt(), state, enabled);        
+        a = c->getAlarm(alarm);
+        a->setHour(hour.toInt());
+        a->setMinute(minute.toInt());
+        a->setEnabled(enabled);
         state = !state;
-        c->setAlarm(a, alarm);//set Alarm on channel
         alarm++;
         param++;
       }
-      config.save();
+      //Ugly ass bitch code....
+      //Turn On Alarm
+      time = request->getParam(param)->value();                               //get time
+      hour = time.substring(0, 2);                                            //split hour
+      minute = time.substring(3, 5);                                          // split minute
+      param++;                                                                //increase param;
+      enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
+      Serial.print(0);
+      Serial.println(" day");
+      Serial.print(hour);
+      Serial.println(" hour");
+      Serial.print(minute);
+      Serial.println(" minute");
+      Serial.print(state ? "True" : "false");
+      Serial.println(" State");
+      Serial.print(enabled ? "true" : "false");
+      Serial.println(" enabled");
+      a = c->getAlarm(alarm);
+      a->setHour(hour.toInt());
+      a->setMinute(minute.toInt());
+      a->setEnabled(enabled);
+      state = !state;
+      alarm++;
+      //Turn Off Alarm
+      param++;
+      time = request->getParam(param)->value();
+      hour = time.substring(0, 2);
+      minute = time.substring(3, 5);
+      param++;
+      enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
+      Serial.print(0);
+      Serial.println(" day");
+      Serial.print(hour);
+      Serial.println(" hour");
+      Serial.print(minute);
+      Serial.println(" minute");
+      Serial.print(state ? "True" : "false");
+      Serial.println(" State");
+      Serial.print(enabled ? "true" : "false");
+      Serial.println(" enabled");
+      a = c->getAlarm(alarm);
+      a->setHour(hour.toInt());
+      a->setMinute(minute.toInt());
+      a->setEnabled(enabled);
+      state = !state;
 
-      request->send(200);
+      config.saveAlarms();
+      sendSettings(request);
     }
     else
     {
@@ -399,10 +451,15 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
   if (!index)
   {
     log_i("Update");
+
     // if filename includes spiffs, update the spiffs partition
-    
+
     int cmd = (filename.startsWith("spiffs")) ? U_SPIFFS : U_FLASH;
     cmd ? Serial.println("SPIFFS") : Serial.println("FLASH");
+    if (cmd == U_FLASH)
+    {
+      SPIFFS.end();
+    }
     if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
     {
       Update.printError(Serial);
@@ -448,6 +505,23 @@ void sendBoardInfo(AsyncWebServerRequest *request)
   root.set("MAC_ETH", getMacAsString(mac));
   esp_read_mac(mac, ESP_MAC_WIFI_STA);
   root.set("MAC_WIFI", getMacAsString(mac));
+  time_t now;
+  struct tm *timeInfo;
+  now = time(nullptr);
+  timeInfo = localtime(&now);
+  timeInfo->tm_hour;
+  timeInfo->tm_min;
+  timeInfo->tm_sec;
+  String hour = String((int)timeInfo->tm_hour, 10);
+  String minute = String((int)timeInfo->tm_min, 10);
+  String second = String((int)timeInfo->tm_sec, 10);
+  String s;
+  s += hour;
+  s +=":";
+  s += minute;
+  s += ":";
+  s += second;
+  root.set("LOCAL_TIME", s);
   root.printTo(*response);
   request->send(response);
 }
@@ -527,20 +601,28 @@ void sendSettings(AsyncWebServerRequest *request)
   root.set(config.WIFI_SUBNETMASK_KEY, config.getWIFI_SubnetMask());     //TODO: change to interface settings
   root.set(config.WIFI_PRIMARYDNS_KEY, config.getWIFI_PrimaryDNS());     //TODO: change to interface settings
   root.set(config.WIFI_SECONDARYDNS_KEY, config.getWIFI_SecondaryDNS()); //TODO: change to interface settings
-
+  root.set(config.TIMEZONE_KEY, config.getTimezone());
+  root.set(config.DST_KEY, config.getDST());
   JsonArray &Channels = root.createNestedArray("Channels");
+  Channel *c;
+  Alarm *a;
 
   for (int i = 0; i < 12; i++)
   {
-    Channel *c = getChannelById(i + 1);
+    c = getChannelById(i + 1);
     JsonObject &Channel = Channels.createNestedObject();
     Channel[config.CHANNEL_NAME_KEY] = c->getName();
     /* */
     JsonArray &Channels_alarms = Channel.createNestedArray("alarms");
     for (int j = 0; j < 14; j++)
     {
-      Alarm *a = c->getAlarm(j);
+      a = c->getAlarm(j);
       JsonObject &Channels_alarms_settings = Channels_alarms.createNestedObject();
+      Serial.println(a->getWeekday());
+      Serial.println(a->getHour());
+      Serial.println(a->getMinute());
+      Serial.println(a->getState() ? "True" : "False");
+      Serial.println(a->isEnabled() ? "True" : "False");
       Channels_alarms_settings[config.ALARM_WEEKDAY_KEY] = a->getWeekday();
       Channels_alarms_settings[config.ALARM_HOUR_KEY] = a->getHour();
       Channels_alarms_settings[config.ALARM_MINUTE_KEY] = a->getMinute();

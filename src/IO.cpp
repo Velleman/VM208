@@ -85,7 +85,7 @@ void Init_IO()
   gpio_set_intr_type(GPIO_NUM_35, GPIO_INTR_NEGEDGE);
 
   //create a queue to handle gpio event from isr
-  int_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+  int_evt_queue = xQueueCreate(2, sizeof(uint32_t));
   //install gpio isr service
   gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
   gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
@@ -120,6 +120,7 @@ void IO_task(void *arg)
 {
 
   uint32_t io_num;
+  bool inputs_state[13];
   for (int i = 0; i < 12; i++)
   {
     bool currentState = currentInputs[i].read();
@@ -132,10 +133,27 @@ void IO_task(void *arg)
     if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY))
     {
       //ESP_LOGI(TAG, "interrupt %i",io_num);
-      readInputs(currentInputs);
+      /* bool user_input = tca.readPin(TCA6424A_P06);
+      uint8_t bank = tca.readBank(1);
+      uint8_t bank_ext = tca_ext.readBank(1);
+      bank &= 0x0f;
+      Serial.println(bank);
+      Serial.println(bank_ext);
+      for (int i = 0; i < 4; i++) //4 times
+      {
+        inputs_state[i] = (bool)(bank & 0x01);
+        bank >>= 1;
+      }
+      for (int i = 4; i < 12; i++)
+      {
+        inputs_state[i] = (bool)(bank_ext & 0x01);
+        bank_ext >>= 1;
+      }
+      inputs_state[12] = user_input;*/
       for (int i = 0; i < INPUT_MAX; i++)
       {
         bool currentState = currentInputs[i].read();
+        //bool currentState = inputs_state[i];
         if (currentState != previousInputs[i])
         {
           if (i < 12)
@@ -145,6 +163,7 @@ void IO_task(void *arg)
             {
               channels[i].toggle(); //toggle state
               channels[i].clearTimerAndPulse();
+              channels[i].disableSheduler();
             }
           }
           else
@@ -155,6 +174,7 @@ void IO_task(void *arg)
           previousInputs[i] = currentState;
           _inputChanged = true;
         }
+        delay(5);
       }
     }
     delay(100);
@@ -256,6 +276,6 @@ void copyStateRelaysToLeds()
 {
   for (int i = 0; i < 12; i++)
   {
-    leds[i].setState(!relays[i].getState());
+    channels[i].updateLed();
   }
 }

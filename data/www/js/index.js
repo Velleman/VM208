@@ -261,6 +261,7 @@ function updateBoardInfo(e)
         var time = years + "y " + days + "d " + hours + "h " + minutes + "m " + seconds + "s";
         $("#uptime").text(time);
         $("#version").text(boardInfo.firmware);
+        $("#localtime").text(boardInfo.LOCAL_TIME);
 }
 
 function enableButtons() {

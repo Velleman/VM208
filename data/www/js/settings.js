@@ -23,7 +23,7 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_auth_settings(), update_network_settings(), update_email_settings(), update_names(), update_notif_settings(), UpdateSheduleFields(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState()
+    update_auth_settings(), update_network_settings(), update_email_settings(), update_names(), update_notif_settings(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState(), updateTimeSettings()
 }
 
 function update_auth_settings() {
@@ -428,6 +428,7 @@ function updateBoardInfo(e)
         var time = years + "y " + days + "d " + hours + "h " + minutes + "m " + seconds + "s";
         $("#uptime").text(time);
         $("#version").text(boardInfo.firmware);
+        $("#localtime").text(boardInfo.LOCAL_TIME);
 }
 
 function enableButtons() {
@@ -503,6 +504,14 @@ function sendTimeSettings(){
     })
 }
 
+function updateTimeSettings(){
+    var timezone = json.TIMEZONE;
+    var DST = json.DST;
+    timezone /=3600;
+    $("#timezone_dropdown").val(timezone);
+    $("#DST_enable").prop("checked", (DST == 3600));    
+}
+
 function updateEthNetworkFieldsState()
 {
     if($("#dhcp_enabled_eth_checkbox").is(":checked"))
@@ -542,41 +551,4 @@ function updateWifiNetworkFieldState()
             $("#value_wifi_primarydns").attr("disabled",false);
             $("#value_wifi_secondarydns").attr("disabled",false);            
         }
-}
-
-function timerRelayEvent() {
-
-	if(location.pathname == "/index.html" || location.pathname =="/")
-	{
-		$.ajax({
-			type: "GET",
-			url: "/status",
-			dataType: "text",
-			success: function(e) {
-				try {
-					updateIO(e), setTimeout(function() {
-						timerRelayEvent()
-					}, 500)
-				} catch (t) {
-					console.log(t);
-                    timerRelayEvent();
-				}
-			}
-		})
-	}
-}
-
-function UpdateSheduleFields()
-{
-    var state = parseInt($("#shedule_state").val(),10);
-    var relais = $("#shedule_relais").val() - 1;
-    var day = parseInt($("#shedule_day").val(),10);
-    var alarm = (day *2) + state;
-    var hour = json.Channels[relais].alarms[alarm].hour;
-    var minute = json.Channels[relais].alarms[alarm].minute;
-    var enabled = json.Channels[relais].alarms[alarm].enabled;    
-    $("#shedule_hour").val(hour);
-    $("#shedule_minute").val(minute);
-    $("#shedule_enable").val(enabled?"1":"0");
-    
 }
