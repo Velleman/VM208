@@ -14,5 +14,6 @@ public:
     bool readPin(uint16_t pin);
     void setPinDirection(uint16_t pin, bool direction);
     void writePin(uint16_t pin, bool polarity);
+    void writeByte(uint8_t register, uint8_t data);
 };
 #endif

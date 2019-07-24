@@ -10,12 +10,12 @@ Copyright 2019 Velleman nv
 #include "global.hpp"
 xQueueHandle int_evt_queue = NULL;
 
-Channel channels[12];
+Channel channels[14];
 Relay relays[12];
 Mosfet mosfets[2];
 Led leds[12];
 bool previousInputs[13];
-Input currentInputs[13];
+Input *currentInputs[13];
 bool _inputChanged = false;
 bool _userInputChanged = false;
 static const char *TAG = "IO";
@@ -39,24 +39,24 @@ void Init_IO()
   {
     relays[i] = Relay(i + 1, i, false, &tca);
     leds[i] = Led(i + 1, TCA6424A_P14 + i, true, &tca);
-    currentInputs[i] = Input(i + 1, TCA6424A_P10 + i, &tca);
+    currentInputs[i] = new Input(i + 1, TCA6424A_P10 + i, &tca);
 
     channels[i] = config.createChannel(i + 1, relays + i, leds + i);
-    channels[i].startSheduler();
-    //ESP_LOGI(TAG,"init index %d",i);
+    
   }
   for (int i = 4; i < 12; i++)
   {
     relays[i] = Relay(i + 1, TCA6424A_P00 + (i - 4), false, &tca_ext);
     leds[i] = Led(i + 1, TCA6424A_P20 + (i - 4), true, &tca_ext);
-    currentInputs[i] = Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
+    currentInputs[i] = new Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
     channels[i] = config.createChannel(i + 1, relays + i, leds + i);
-    channels[i].startSheduler();
   }
 
   mosfets[0] = Mosfet(1, TCA6424A_P04, false, &tca);
   mosfets[1] = Mosfet(2, TCA6424A_P05, false, &tca);
-  currentInputs[12] = Input(13, TCA6424A_P06, &tca);
+  //channels[12] = config.createMosfetChannel(13,&mosfets[0]);
+  //channels[13] = config.createMosfetChannel(14,&mosfets[1]);
+  currentInputs[12] = new Input(13, TCA6424A_P06, &tca);
 
   //set floating pins as output
   tca.setPinDirection(TCA6424A_P07, TCA6424A_OUTPUT);
@@ -103,15 +103,15 @@ void initExtPinDirections()
   {
     relays[i].initPin();
     leds[i].initPin();
-    currentInputs[i].initPin();
+    currentInputs[i]->initPin();
   }
 }
 
-Input *readInputs(Input *inputs)
+Input **readInputs(Input **inputs)
 {
   for (int i = 0; i < INPUT_MAX; i++)
   {
-    inputs[i].read();
+    inputs[i]->read();
   }
   return inputs;
 }
@@ -120,45 +120,50 @@ void IO_task(void *arg)
 {
 
   uint32_t io_num;
-  bool inputs_state[13];
+  //bool inputs_state[13];
   for (int i = 0; i < 12; i++)
   {
-    bool currentState = currentInputs[i].read();
+    bool currentState = currentInputs[i]->read();
     previousInputs[i] = currentState;
     leds[i].setState(currentState);
   }
+  xTaskCreate(updateIO,"Update IO",2048,NULL,(tskIDLE_PRIORITY + 2),NULL);
   while (1)
   {
 
     if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY))
     {
-      //ESP_LOGI(TAG, "interrupt %i",io_num);
-      /* bool user_input = tca.readPin(TCA6424A_P06);
-      uint8_t bank = tca.readBank(1);
-      uint8_t bank_ext = tca_ext.readBank(1);
-      bank &= 0x0f;
-      Serial.println(bank);
-      Serial.println(bank_ext);
-      for (int i = 0; i < 4; i++) //4 times
+      if (io_num == INT2_PIN) //read extension
       {
-        inputs_state[i] = (bool)(bank & 0x01);
-        bank >>= 1;
-      }
-      for (int i = 4; i < 12; i++)
-      {
-        inputs_state[i] = (bool)(bank_ext & 0x01);
-        bank_ext >>= 1;
-      }
-      inputs_state[12] = user_input;*/
-      for (int i = 0; i < INPUT_MAX; i++)
-      {
-        bool currentState = currentInputs[i].read();
-        //bool currentState = inputs_state[i];
-        if (currentState != previousInputs[i])
+        for (int i = 4; i < 12; i++)
         {
-          if (i < 12)
+          bool currentState = currentInputs[i]->read();
+          Serial.print(i);
+          Serial.print(" ");
+          currentState ? Serial.println("True") : Serial.println("False");
+          //bool currentState = inputs_state[i];
+          if (currentState != previousInputs[i])
           {
-
+            if (currentState == false)
+            {
+              channels[i].toggle(); //toggle state
+              channels[i].clearTimerAndPulse();
+              channels[i].disableSheduler();
+            }
+            previousInputs[i] = currentState;
+            _inputChanged = true;
+          }
+          delay(1);
+        }
+      }
+      else
+      {
+        for (int i = 0; i < 4; i++)
+        {
+          bool currentState = currentInputs[i]->read();
+          //bool currentState = inputs_state[i];
+          if (currentState != previousInputs[i])
+          {
             if (currentState == false)
             {
               channels[i].toggle(); //toggle state
@@ -166,19 +171,47 @@ void IO_task(void *arg)
               channels[i].disableSheduler();
             }
           }
-          else
-          {
-            _userInputChanged = true;
-            ESP_LOGI(TAG, "Input has changed");
-          }
           previousInputs[i] = currentState;
           _inputChanged = true;
+          delay(1);
         }
-        delay(5);
+        bool currentState = currentInputs[12]->read();
+        if (currentState != previousInputs[12])
+        {
+          _userInputChanged = true;
+          ESP_LOGI(TAG, "Input has changed");
+          previousInputs[12] = currentState;
+          _inputChanged = true;
+        }
       }
     }
-    delay(100);
   }
+  delay(100);
+}
+
+void updateIO(void* params)
+{
+  uint8_t data;
+  for(;;)
+  {
+    data = 0x00;
+    for(int i = 3 ; i != 0;i--)
+    {
+      
+      bool state = leds[i].getState();
+      if(state)
+      {
+        data |= 0x01;//set last bit 1 = LED OFF
+      }else{
+        data &= 0xFE;//set last bit 0 = LED ON
+      }
+      data <<=1;
+    }
+    data<<=4;
+    tca.writeByte(TCA6424A_RA_OUTPUT1,data);
+  vTaskDelay(100/portTICK_PERIOD_MS);
+  }
+  vTaskDelete(NULL);
 }
 
 bool convertInputToRelay(Input input)
@@ -267,7 +300,7 @@ bool isUserInputChanged()
   return _userInputChanged;
 }
 
-Input *getCurrentInputs()
+Input **getCurrentInputs()
 {
   return currentInputs;
 }
@@ -276,6 +309,6 @@ void copyStateRelaysToLeds()
 {
   for (int i = 0; i < 12; i++)
   {
-    channels[i].updateLed();
+    channels[i].getState() ? channels[i].turnOn() : channels[i].turnOff();
   }
 }

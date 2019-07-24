@@ -27,24 +27,15 @@ function update_content() {
 }
 
 function update_names() {
-    var e = $("#name_card"),
-        t = $("#name_relay1"),
-        a = $("#name_relay2"),
-        n = $("#name_relay3"),
-        s = $("#name_relay4"),
-        l = $("#pulse_relay1"),
-        o = $("#pulse_relay2"),
-        i = $("#pulse_relay3"),
-        r = $("#pulse_relay4"),
-        u = $("#name_input1"),
-        c = $("#name_input2"),
-        d = $("#name_input3"),
-        m = $("#name_input4"),
-        p = $("#name_analog"),
-        v = $("#name_custom_js"),
-        _ = $("#name_custom_css");
-    //t.val(json.io.relays[0].name), a.val(json.io.relays[1].name), n.val(json.io.relays[2].name), s.val(json.io.relays[3].name), $(".r1Name").html(json.io.relays[0].name), $(".r2Name").html(json.io.relays[1].name), $(".r3Name").html(json.io.relays[2].name), $(".r4Name").html(json.io.relays[3].name), u.val(json.io.inputs[0].name), c.val(json.io.inputs[1].name), d.val(json.io.inputs[2].name), m.val(json.io.inputs[3].name), l.val(json.io.relays[0].time), o.val(json.io.relays[1].time), i.val(json.io.relays[2].time), r.val(json.io.relays[3].time), $("#i1Name").html(json.io.inputs[0].name), $("#i2Name").html(json.io.inputs[1].name), $("#i3Name").html(json.io.inputs[2].name), $("#i4Name").html(json.io.inputs[3].name), p.val(json.io.analog.name), v.val(json.customjs), _.val(json.customcss), e.val(json.cardname)
+    //var e = $("#name_card").val(json.BOARDNAME);
+    for(var i =1;i<=12;i++)
+    {
+        $("#Name"+i).html(json.Channels[i-1].name);
+    }   
+    //$("#name_mosfet1").val(json.Channels[12].name);
+    //$("#name_mosfet2").val(json.Channels[13].name);
 }
+
 
 
 

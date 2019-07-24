@@ -59,3 +59,15 @@ void TCA6424A_TS::writePin(uint16_t pin, bool polarity)
     }
     xSemaphoreGive(g_Mutex);
 }
+
+void TCA6424A_TS::writeByte(uint8_t reg, uint8_t data)
+{
+    xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    bool success = I2Cdev::writeByte(devAddr, reg, data);
+    if(!success)
+    {
+        Serial.println("FAIL WRITE BIT");
+        bool success = I2Cdev::writeByte(devAddr, reg, data);
+    }
+    xSemaphoreGive(g_Mutex);
+}

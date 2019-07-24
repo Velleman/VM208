@@ -222,6 +222,27 @@ void startServer()
     }
   });
 
+  server.on("/names", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->params() == 16)
+    {
+      Serial.printf("names save\n");
+      Channel* c;
+      for(int i=0;i<12;i++)
+      {
+        c = getChannelById(i+1);
+        c->setName(request->getParam(i)->value());
+      }
+      config.setBoardName(request->getParam(15)->value());
+      config.saveAlarms();
+      config.save();
+      request->send(200);
+    }
+    else
+    {
+      request->send(400);
+    }
+  });
+
   server.on("/time_settings", HTTP_POST, [](AsyncWebServerRequest *request) {
     Serial.printf("time_settings\n");
     if (request->params() == 2)
@@ -277,7 +298,7 @@ void startServer()
         a->setHour(hour.toInt());
         a->setMinute(minute.toInt());
         a->setEnabled(enabled);
-        state != state;
+        state = !state;
         alarm++;
         //Turn Off Alarm
         param++;
@@ -509,9 +530,6 @@ void sendBoardInfo(AsyncWebServerRequest *request)
   struct tm *timeInfo;
   now = time(nullptr);
   timeInfo = localtime(&now);
-  timeInfo->tm_hour;
-  timeInfo->tm_min;
-  timeInfo->tm_sec;
   String hour = String((int)timeInfo->tm_hour, 10);
   String minute = String((int)timeInfo->tm_min, 10);
   String second = String((int)timeInfo->tm_sec, 10);
@@ -547,7 +565,7 @@ void sendIOState(AsyncWebServerRequest *request)
   DynamicJsonBuffer jsonBuffer(capacity);
   JsonObject &root = jsonBuffer.createObject();
   Relay *relays = getRelays();
-  Input *inputs;
+  Input **inputs;
   inputs = getCurrentInputs();
   Mosfet *m1 = getMosfetById(1);
   Mosfet *m2 = getMosfetById(2);
@@ -565,7 +583,7 @@ void sendIOState(AsyncWebServerRequest *request)
   root.set("relay11", relays[10].getState());
   root.set("relay12", relays[11].getState());
   root.set("isExtConnected", IsExtensionConnected());
-  root.set("input", inputs[12].read());
+  root.set("input", inputs[12]->read());
   root.set("mosfet1", m1->getState());
   root.set("mosfet2", m2->getState());
   root.set("name1", c->getName());

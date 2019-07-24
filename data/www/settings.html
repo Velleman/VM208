@@ -150,7 +150,8 @@
             </div>
             <div class="header" id="customize">
                 <h1>Customize</h1>
-                <h2>Customize the IO's names<br>Customize the layout with CSS and javascript/JQuery</h2> </div>
+                <h2>Customize the IO's names</h2> 
+            </div>
             <div class="content">
                 <form id="nameSettingsForm" class="pure-form pure-form-aligned">
                     <fieldset>
@@ -163,64 +164,57 @@
                         <legend>Relays</legend>
                         <div class="pure-control-group">
                             <label for="name_relay1">Relay 1:</label>
-                            <input type="text" maxlength="32" name="name_relay1" id="name_relay1" value="Relay 1"> </div>
+                            <input type="text" maxlength="16" name="name_relay1" id="name_relay1" value="Relay 1"> </div>
                         <div class="pure-control-group">
                             <label for="name_relay2">Relay 2:</label>
-                            <input type="text" maxlength="32" name="name_relay2" id="name_relay2" value="Relay 2"> </div>
+                            <input type="text" maxlength="16" name="name_relay2" id="name_relay2" value="Relay 2"> </div>
                         <div class="pure-control-group">
                             <label for="name_relay3">Relay 3:</label>
-                            <input type="text" maxlength="32" name="name_relay3" id="name_relay3" value="Relay 3"> </div>
+                            <input type="text" maxlength="16" name="name_relay3" id="name_relay3" value="Relay 3"> </div>
                         <div class="pure-control-group">
                             <label for="name_relay4">Relay 4:</label>
-                            <input type="text" maxlength="32" name="name_relay4" id="name_relay4" value="Relay 4"> </div>
+                            <input type="text" maxlength="16" name="name_relay4" id="name_relay4" value="Relay 4"> </div>
+                            <div class="pure-control-group">
+                            <label for="name_relay4">Relay 5:</label>
+                            <input type="text" maxlength="16" name="name_relay5" id="name_relay5" value="Relay 5"> </div>
+                            <div class="pure-control-group">
+                            <label for="name_relay4">Relay 6:</label>
+                            <input type="text" maxlength="16" name="name_relay6" id="name_relay6" value="Relay 6"> </div>
+                            <div class="pure-control-group">
+                            <label for="name_relay4">Relay 7:</label>
+                            <input type="text" maxlength="16" name="name_relay7" id="name_relay7" value="Relay 7"> </div>
+                            <div class="pure-control-group">
+                            <label for="name_relay4">Relay 8:</label>
+                            <input type="text" maxlength="16" name="name_relay8" id="name_relay8" value="Relay 8"> </div>
+                            <div class="pure-control-group">
+                            <label for="name_relay4">Relay 9:</label>
+                            <input type="text" maxlength="16" name="name_relay9" id="name_relay9" value="Relay 9"> </div>
+                            <div class="pure-control-group">
+                            <label for="name_relay4">Relay 10:</label>
+                            <input type="text" maxlength="16" name="name_relay10" id="name_relay10" value="Relay 10"> </div>
+                            <div class="pure-control-group">
+                            <label for="name_relay4">Relay 11:</label>
+                            <input type="text" maxlength="16" name="name_relay11" id="name_relay11" value="Relay 11"> </div>
+                            <div class="pure-control-group">
+                            <label for="name_relay4">Relay 12:</label>
+                            <input type="text" maxlength="16" name="name_relay12" id="name_relay12" value="Relay 12"> </div>
                     </fieldset>
                     <fieldset>
-                        <legend>Shedule</legend>
+                        <legend>MOSFETs</legend>
                         <div class="pure-control-group">
-                            <label for="shedule_state">Turn:</label>
-                            <select id="shedule_state" name="shedule_state">
-                                <option value="0">On</option>
-                                <option value="1">Off</option>
-                            </select>
+                            <label for="name_mosfet1">Mosfet 1:</label>
+                            <input type="text" maxlength="16" name="name_mosfet1" id="name_mosfet1" value="Mosfet 1"> 
                         </div>
                         <div class="pure-control-group">
-                            <label for="shedule_relais">Relais:</label>
-                            <input type="number" name="shedule_relais" id="shedule_relais" min="1" max="12" value="1">
-                            </select>
-                        </div>
-                        <div class="pure-control-group">
-                            <label for="shedule_day">Day</label>
-                            <select id="shedule_day" name="shedule_day">
-                                <option value="1">Monday</option>
-                                <option value="2">Tuesday</option>
-                                <option value="3">Wednesday</option>
-                                <option value="4">Thursday</option>
-                                <option value="5">Friday</option>
-                                <option value="6">Saturday</option>
-                                <option value="0">Sunday</option>
-                            </select>
-                        </div>
-                        <div class="pure-control-group">
-                            <label for="shedule_hour">Hour:</label>
-                            <input type="number" name="shedule_hour" id="shedule_hour" min="0" max="23" value="20">
-                        </div>
-                        <div class="pure-control-group">
-                            <label for="shedule_minute">Minute:</label>
-                            <input type="number" name="shedule_minute" id="shedule_minute" min="0" max="59" value="8">
-                        </div>
-                        <div class="pure-control-group">
-                            <label for="shedule_enable">Enabled:</label>
-                            <select id="shedule_enable" name="shedule_enable">
-                                <option value="0">No</option>
-                                <option value="1">Yes</option>
-                            </select>
+                            <label for="name_mosfet2">Mosfet 2:</label>
+                            <input type="text" maxlength="16" name="name_mosfet2" id="name_mosfet2" value="Mosfet 2"> 
                         </div>
                     </fieldset>
                     <fieldset>
                         <legend>Inputs</legend>
                         <div class="pure-control-group">
                             <label for="name_input1">Input 1:</label>
-                            <input type="text" maxlength="32" name="name_input1" id="name_input1" value="Input 1"> </div>
+                            <input type="text" maxlength="16" name="name_input1" id="name_input1" value="Input 1"> </div>
                     </fieldset>
                     <div class="pure-controls">
                         <button type="submit" id="sendNameSettingsButton" class="pure-button pure-button-primary">Save</button>
@@ -263,7 +257,7 @@
             </div>
             <div class="header" id="Time">
                 <h1>Time</h1>
-                <h2>Configure timezone settings input is in minutes</h2> </div>
+                <h2>Configure timezone settings</h2> </div>
             <div class="content">
                 <form id="TimeForm" class="pure-form pure-form-aligned">
                     <fieldset>

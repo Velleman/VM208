@@ -59,23 +59,13 @@ function update_network_settings() {
 }
 
 function update_names() {
-    var e = $("#name_card"),
-        t = $("#name_relay1"),
-        a = $("#name_relay2"),
-        n = $("#name_relay3"),
-        s = $("#name_relay4"),
-        l = $("#pulse_relay1"),
-        o = $("#pulse_relay2"),
-        i = $("#pulse_relay3"),
-        r = $("#pulse_relay4"),
-        u = $("#name_input1"),
-        c = $("#name_input2"),
-        d = $("#name_input3"),
-        m = $("#name_input4"),
-        p = $("#name_analog"),
-        v = $("#name_custom_js"),
-        _ = $("#name_custom_css");
-    //t.val(json.io.relays[0].name), a.val(json.io.relays[1].name), n.val(json.io.relays[2].name), s.val(json.io.relays[3].name), $(".r1Name").html(json.io.relays[0].name), $(".r2Name").html(json.io.relays[1].name), $(".r3Name").html(json.io.relays[2].name), $(".r4Name").html(json.io.relays[3].name), u.val(json.io.inputs[0].name), c.val(json.io.inputs[1].name), d.val(json.io.inputs[2].name), m.val(json.io.inputs[3].name), l.val(json.io.relays[0].time), o.val(json.io.relays[1].time), i.val(json.io.relays[2].time), r.val(json.io.relays[3].time), $("#i1Name").html(json.io.inputs[0].name), $("#i2Name").html(json.io.inputs[1].name), $("#i3Name").html(json.io.inputs[2].name), $("#i4Name").html(json.io.inputs[3].name), p.val(json.io.analog.name), v.val(json.customjs), _.val(json.customcss), e.val(json.cardname)
+    var e = $("#name_card").val(json.BOARDNAME);
+    for(var i =1;i<=12;i++)
+    {
+        $("#name_relay"+i).val(json.Channels[i-1].name);
+    }   
+    $("#name_mosfet1").val(json.Channels[12].name);
+    $("#name_mosfet2").val(json.Channels[13].name);
 }
 
 function update_notif_settings() {
@@ -268,29 +258,29 @@ function sendWifiNetworkSettings() {
 }
 
 function sendNames() {
-    /*var e = {
+    var e = {
         r1: $("#name_relay1").val(),
         r2: $("#name_relay2").val(),
         r3: $("#name_relay3").val(),
         r4: $("#name_relay4").val(),
-        p1: $("#pulse_relay1").val(),
-        p2: $("#pulse_relay2").val(),
-        p3: $("#pulse_relay3").val(),
-        p4: $("#pulse_relay4").val(),
+        r5: $("#name_relay5").val(),
+        r6: $("#name_relay6").val(),
+        r7: $("#name_relay7").val(),
+        r8: $("#name_relay8").val(),
+        r9: $("#name_relay9").val(),
+        r10: $("#name_relay10").val(),
+        r11: $("#name_relay11").val(),
+        r12: $("#name_relay12").val(),
+        m1: $("#name_mosfet1").val(),
+        m2: $("#name_mosfet2").val(),
         i1: $("#name_input1").val(),
-        i2: $("#name_input2").val(),
-        i3: $("#name_input3").val(),
-        i4: $("#name_input4").val(),
-        an: $("#name_analog").val(),
-        js: $("#name_custom_js").val(),
-        css: $("#name_custom_css").val(),
         cardname: $("#name_card").val()
     };
 	
     $("#sendNameSettingsButton").html("SAVING...");
     $.ajax({
         type: "POST",
-        url: "/alarm",
+        url: "/names",
         dataType: "text",
         data: e,
         success: function(e) {
@@ -300,25 +290,8 @@ function sendNames() {
                 console.log(t)
             }
         }
-    })*/
-    var e = {
-        state: $("#shedule_state").val(),
-        relais: $("#shedule_relais").val(),
-        day: $("#shedule_day").val(),
-        hour: $("#shedule_hour").val(),
-        minute: $("#shedule_minute").val(),
-        enable: $("#shedule_enable").val()
-    };
-	
-    $("#sendNameSettingsButton").html("SAVING...");
-    $.ajax({
-        type: "POST",
-        url: "/alarm",
-        dataType: "text",
-        data: e,
-        success: function(e) {
-        }
-    })
+    });
+
 }
 
 function sliderOnInitialized() {
@@ -490,7 +463,7 @@ $(function() {
 function sendTimeSettings(){
     var e = {
         timezone: $("#timezone_dropdown").val() * 3600,
-        dst: $("#shedule_enable").val() ? 3600 : 0
+        dst: $("#DST_enable").prop("checked")
     };
 	
     $("#sendNameSettingsButton").html("SAVING...");

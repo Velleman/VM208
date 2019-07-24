@@ -7,6 +7,8 @@
 #define ARDUINOJSON_USE_LONG_LONG 1
 #include "ArduinoJson.h"
 #include "channel.hpp"
+#include "relay.hpp"
+#include "mosfet.hpp"
 class Configuration
 {
 private:
@@ -151,7 +153,7 @@ public:
   String getChannelNameById(uint8_t id);
 
   Channel createChannel(uint8_t id, Relay *r, Led *l);
-
+  Channel createMosfetChannel(uint8_t id, Mosfet *r);
   bool getFirstTime();
   void setFirstTime(bool first_time);
 

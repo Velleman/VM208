@@ -39,7 +39,6 @@ WiFiUDP ntpUDP;
 Configuration config;
 bool gotETH_IP;
 bool gotSTA_IP;
-void startWifi();
 
 #define PIN_PHY_POWER GPIO_NUM_5
 #define PIN_SMI_MDC 23
@@ -51,6 +50,51 @@ int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
 const PROGMEM char *ntpServer = "pool.ntp.org";
 bool wifiFirstConnected = false;
+
+void startWifi();
+
+//mail
+#include "ESP32_MailClient.h"
+//WiFi or HTTP client for internet connection
+HTTPClientESP32Ex http;
+
+//The Email Sending data object contains config and data to send
+SMTPData smtpData;
+
+//Callback function to get the Email sending status
+void sendCallback(SendStatus info);
+
+//zwhqfcbifbcbbfxw
+static void sendEmail(void * pvParamaters)
+{
+  
+
+  //Add attachments, can add the file or binary data from flash memory, file in SD card
+  //Data from internal memory
+  //smtpData.addAttachData("config.json", "application/json", (uint8_t *)dummyImageData, sizeof dummyImageData);
+
+  //Add attach files from SD card
+  //Comment these two lines, if no SD card connected
+  //Two files that previousely created.
+  //smtpData.addAttachFile("/config.json");
+  //smtpData.addAttachFile("/text_file.txt");
+
+  //Set the storage types to read the attach files (SD is default)
+  //smtpData.setFileStorageType(MailClientStorageType::SPIFFS);
+  //smtpData.setFileStorageType(MailClientStorageType::SD);
+
+  smtpData.setSendCallback(sendCallback);
+
+  Serial.println("Sending Mail...");
+  //Start sending Email, can be set callback function to track the status
+  if (!MailClient.sendMail(http, smtpData))
+    Serial.println("Error sending Email, " + MailClient.smtpErrorReason());
+
+  //Clear all data from Email object to free memory
+  smtpData.empty();
+
+  vTaskDelete(NULL);
+}
 
 static void phy_device_power_enable_via_gpio(bool enable)
 {
@@ -115,11 +159,11 @@ static void eth_gpio_config_rmii(void)
 * @param event
 * @return esp_err_t
 */
-static esp_err_t event_handler(void *ctx, system_event_t *event)
+static void WiFiEvent(WiFiEvent_t event)
 {
   tcpip_adapter_ip_info_t ip;
 
-  switch (event->event_id)
+  switch (event)
   {
   case SYSTEM_EVENT_ETH_CONNECTED:
     ESP_LOGI(TAG, "Ethernet Link Up");
@@ -154,8 +198,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
   case SYSTEM_EVENT_STA_GOT_IP:
     gotSTA_IP = true;
     ESP_LOGI(TAG, "GOT_STA_IP");
-    ESP_LOGI(TAG, "got ip:%s",
-             ip4addr_ntoa(&event->event_info.got_ip.ip_info.ip));
+    ESP_LOGI(TAG, "got ip:%s", WiFi.localIP());
     xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;
@@ -167,7 +210,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
   default:
     break;
   }
-  return ESP_OK;
+  //return ESP_OK;
 }
 
 static void printLocalTime()
@@ -201,7 +244,9 @@ static void got_ip_task(void *pvParameter)
     Serial.println(daylightOffset_sec);
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
     printLocalTime();
+
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    //sendEmail();
   }
 }
 
@@ -228,6 +273,13 @@ static void time_keeping_task(void *pvParameter)
   vTaskDelete(NULL);
 }
 
+void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
+{
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(IPAddress(info.got_ip.ip_info.ip.addr));
+}
+
 void startWifi()
 {
 
@@ -237,6 +289,43 @@ void startWifi()
   }
   else
   {
+    if (!config.getWIFI_DHCPEnable())
+    {
+      char ip[15];
+      char gw[15];
+      char sub[15];
+      char prim[15];
+      char sec[15];
+      config.getWIFI_IPAddress().toCharArray(ip, 15);
+      config.getWIFI_Gateway().toCharArray(gw, 15);
+      config.getWIFI_SubnetMask().toCharArray(sub, 15);
+      config.getWIFI_PrimaryDNS().toCharArray(prim, 15);
+      config.getWIFI_SecondaryDNS().toCharArray(sec, 15);
+
+      IPAddress local_IP(ipaddr_addr(ip));
+      IPAddress gateway(ipaddr_addr(gw));
+      IPAddress subnet(ipaddr_addr(sub));
+      IPAddress primaryDNS(ipaddr_addr(prim));
+      IPAddress secondaryDNS(ipaddr_addr(sec));
+
+      if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS))
+      {
+        Serial.println("STA Failed to configure");
+      }
+    }
+    char ssid[15];
+    char pw[15];
+    WiFi.onEvent(WiFiGotIP,WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
+    config.getSSID().toCharArray(ssid, 15);
+    config.getWifiPassword().toCharArray(pw, 15);
+    WiFi.begin(ssid, pw);
+    while (!WiFi.isConnected())
+    {
+      Serial.print(".");
+      delay(200);
+    }
+    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    /*
     if (!config.getWIFI_DHCPEnable())
     {
       ESP_LOGI(TAG, "WIFI DHCP DISABLED");
@@ -283,7 +372,7 @@ void startWifi()
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg));
     ESP_ERROR_CHECK(esp_wifi_start());
     esp_wifi_connect();
-    //Load Config and connect to Wifi
+    //Load Config and connect to Wifi*/
   }
 }
 static void applyEthNetworkSettings()
@@ -349,7 +438,7 @@ void startEth()
 static void checkSheduler(void *pvParameter)
 {
   delay(500); // wait to load all channels
-  uint8_t *id = (uint8_t *)pvParameter;
+  //uint8_t *id = (uint8_t *)pvParameter;
   Channel *c;
   Alarm *alarmOn;
   Alarm *alarmOff;
@@ -402,7 +491,7 @@ static void checkSheduler(void *pvParameter)
 static void shedulerStatus(void *pvParameter)
 {
   delay(500); // wait to load all channels
-  Channel* c;
+  Channel *c;
   while (true)
   {
     for (int i = 0; i < 12; i++)
@@ -410,7 +499,7 @@ static void shedulerStatus(void *pvParameter)
       c = getChannelById(i + 1);
       if (c->isSheduleActive())
       {
-          c->setLed(c->getState());
+        c->setLed(c->getState());
       }
     }
     delay(1800);
@@ -419,7 +508,7 @@ static void shedulerStatus(void *pvParameter)
       c = getChannelById(i + 1);
       if (c->isSheduleActive())
       {
-          c->toggleLed();
+        c->toggleLed();
       }
     }
     delay(200);
@@ -444,18 +533,18 @@ void setup()
   tcpip_adapter_init();
   s_wifi_event_group = xEventGroupCreate();
 
-  ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
+  //ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
   config.load();
 
-  Input *inputs;
+  Input **inputs;
   inputs = getCurrentInputs();
   readInputs(inputs);
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
 
   ESP_LOGI(TAG, "Check Buttons");
-  if (((inputs[0].read() == false) && (inputs[3].read() == false)) || config.getFirstTime())
+  if (((inputs[0]->read() == false) && (inputs[3]->read() == false)) || config.getFirstTime())
   {
 
     ESP_LOGI(TAG, "Start AP");
@@ -465,11 +554,13 @@ void setup()
   else
   {
     xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    WiFi.onEvent(WiFiEvent);
     startEth();
     startWifi();
+    
 
-    xTaskCreate(got_ip_task, "got_ip_task", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
-    xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
+    xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    //xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
     xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
     //#region hide
@@ -492,7 +583,9 @@ void setup()
         Serial.write(packet.data(), packet.length());
         Serial.println();
         //reply to the client
-        packet.printf("Aloha, My Name is:%s", config.getBoardName());
+        char boardname[16];
+        config.getBoardName().toCharArray(boardname, 16, 0);
+        packet.printf("Aloha, My Name is:%s", boardname);
       });
     }
     if (!MDNS.begin("VM208"))
@@ -514,6 +607,8 @@ void loop()
 {
   ArduinoOTA.handle();
   delay(500);
+
+  //sendEmail();
   //ESP_LOGI(TAG, "%i", ESP.getFreeHeap());
   //printLocalTime();
 }
@@ -523,3 +618,16 @@ void applyWifiNetworkSettings()
 {
 
 }*/
+
+//Callback function to get the Email sending status
+void sendCallback(SendStatus msg)
+{
+  //Print the current status
+  Serial.println(msg.info());
+
+  //Do something when complete
+  if (msg.success())
+  {
+    Serial.println("----------------");
+  }
+}

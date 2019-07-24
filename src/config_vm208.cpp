@@ -90,7 +90,6 @@ String Configuration::getUserPw() const
 
 void Configuration::load()
 {
-
     if (SPIFFS.exists(configPath))
     {
         ESP_LOGI(TAG, "file exist");
@@ -187,28 +186,6 @@ void Configuration::writeConfig()
     root[TIMEZONE_KEY] = _timezoneSeconds;
     root[DST_KEY] = _DSTseconds;
     root[FIRST_TIME_KEY] = _firstTime;
-    /*JsonArray &Channels = root.createNestedArray("Channels");
-    Channel *c;
-    Alarm *a;
-    for (int i = 0; i < 12; i++)
-    {
-        c = getChannelById(i + 1);
-        JsonObject &Channel = Channels.createNestedObject();
-        Channel[CHANNEL_NAME_KEY] = c->getName();
-
-        JsonArray &Channels_alarms = Channel.createNestedArray("alarms");
-        for (int j = 0; j < 14; j++)
-        {
-            a = c->getAlarm(j);
-            JsonObject &Channels_alarms_settings = Channels_alarms.createNestedObject();
-            Channels_alarms_settings[ALARM_WEEKDAY_KEY] = a->getWeekday();
-            Channels_alarms_settings[ALARM_HOUR_KEY] = a->getHour();
-            Channels_alarms_settings[ALARM_MINUTE_KEY] = a->getMinute();
-            Channels_alarms_settings[ALARM_STATE_KEY] = a->getState();
-            Channels_alarms_settings[ALARM_ENABLED_KEY] = a->isEnabled();
-        }
-    }*/
-    //Write json file
     File file = SPIFFS.open(configPath, "w");
     root.printTo(file);
     file.close();
@@ -260,9 +237,41 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
         JsonObject &root = jsonBuffer.parseObject(file);
         JsonArray &channels = root["Channels"];
 
+        String Channels_i_name = channels[id - 1]["name"]; // "Channel1"
+        JsonArray &Channels_i_alarms = channels[id - 1]["alarms"];
+        c = Channel(Channels_i_name, r, l, id);
+        for (int i = 0; i < 14; i++)
+        {
+            JsonObject &Channels_0_alarms_i = Channels_i_alarms[i];
+            uint dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY];
+            uint hour = Channels_0_alarms_i[ALARM_HOUR_KEY];
+            uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
+            bool state = Channels_0_alarms_i[ALARM_STATE_KEY];
+            bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY];
+            Alarm a = Alarm(dow, hour, minute, state, enabled);
+            c.setAlarm(a, i);
+        }
+        file.close();
+        jsonBuffer.clear();
+    }
+    return c;
+    SPIFFS.end();
+}
+
+Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
+{
+    
+    /*if (SPIFFS.exists(alarmPath))
+    {
+
+        ESP_LOGI(TAG, "file exist");
+        File file = loadFile(alarmPath);
+        JsonObject &root = jsonBuffer.parseObject(file);
+        JsonArray &channels = root["Channels"];
+
         String Channels_0_name = channels[id - 1]["name"].as<String>(); // "Channel1"
         JsonArray &Channels_0_alarms = channels[id - 1]["alarms"];
-        c = Channel(Channels_0_name, r, l, id);
+        Channel c = Channel(Channels_0_name, r, nullptr,id);
         for (int i = 0; i < 14; i++)
         {
             JsonObject &Channels_0_alarms_i = Channels_0_alarms[i];
@@ -276,8 +285,9 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
         }
         file.close();
         jsonBuffer.clear();
-    }
-    return c;
+        return c;
+    }*/
+    return Channel("",nullptr,nullptr,0);
 }
 
 File Configuration::loadFile(const char *path)

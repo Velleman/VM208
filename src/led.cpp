@@ -11,3 +11,8 @@ void Led::turnOn()
     m_state = false;
     updateTCA();
 }
+
+void Led::reflect()
+{
+    updateTCA();
+}
