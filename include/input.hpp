@@ -17,7 +17,7 @@ class Input
     Input(uint8_t id = 0,uint16_t pin = 0,TCA6424A_TS* tca = nullptr);
     uint8_t getId();
     bool read();
-    void initPin(void);  
+    void initPin(bool CheckConnection = true);  
 
 };
 #endif

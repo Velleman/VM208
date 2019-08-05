@@ -10,10 +10,10 @@ private:
 public:
     TCA6424A_TS();
     TCA6424A_TS(uint8_t address);
-    bool testConnection();
-    bool readPin(uint16_t pin);
-    void setPinDirection(uint16_t pin, bool direction);
-    void writePin(uint16_t pin, bool polarity);
-    void writeByte(uint8_t register, uint8_t data);
+    bool ts_testConnection();
+    bool ts_readPin(uint16_t pin);
+    void ts_setPinDirection(uint16_t pin, bool direction);
+    void ts_writePin(uint16_t pin, bool polarity);
+    void ts_writeByte(uint8_t register, uint8_t data);
 };
 #endif

@@ -127,11 +127,9 @@
                             <input type="text" name="server" maxlength="64" id="smtp_server" value="smtp.example.com"> </div>
                         <div class="pure-control-group">
                             <label for="smtp_port">Port:</label>
-                            <input type="text" name="port" id="smtp_port" value="25"> </div>
-                        <div class="pure-controls">
-                            <label for="smtp_tls" class="pure-checkbox">
-                                <input type="checkbox" id="smtp_tls"> TLS</label>
+                            <input type="text" name="port" id="smtp_port" value="25"> 
                         </div>
+                      
                     </fieldset>
                     <fieldset>
                         <legend>Authentication</legend>
@@ -141,6 +139,12 @@
                         <div class="pure-control-group">
                             <label for="smtp_pass">Password:</label>
                             <input type="password" maxlength="64" name="password" value="placebo" id="smtp_pass"> </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Receiver</legend>
+                        <div class="pure-control-group">
+                            <label for="smtp_user">Recipient:</label>
+                            <input type="text" maxlength="64" name="recipient" value="recipient" id="smtp_recipient"> </div>
                     </fieldset>
                     <div class="pure-controls">
                         <button type="submit" id="sendMailSettingsButton" class="pure-button pure-button-primary">Save</button>

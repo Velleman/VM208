@@ -13,6 +13,8 @@
 #include "global.hpp"
 #include "config_vm208.hpp"
 #include <Update.h>
+#include <ETH.h>
+#include "mail.hpp"
 const char *TAG = "SERVER";
 
 // SKETCH BEGIN
@@ -120,6 +122,27 @@ void startServer()
     sendIOState(request);
   });
 
+  server.on("/email_settings", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if(request->params() == 5)
+    {
+      config.setEmailServer(request->getParam(0)->value());
+      config.setEmailPort(request->getParam(1)->value());
+      config.setEmailUser(request->getParam(2)->value());
+      config.setEmailPW(request->getParam(3)->value());
+      config.setEmailRecipient(request->getParam(4)->value());
+      config.save();
+      request->send(200,"text/plain","OK");
+    }else
+    {
+      request->send(400);
+    }
+    
+  });
+
+  server.on("/testmail", HTTP_POST, [](AsyncWebServerRequest *request) {
+    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);    
+  });
+
   server.on("/wifisave", HTTP_POST, [](AsyncWebServerRequest *request) {
     Serial.printf("WifiSave\n");
     if (request->params() == 5)
@@ -133,6 +156,9 @@ void startServer()
       config.save();
       Serial.printf("Wifi Saved\n");
       ESP.restart();
+    }else
+    {
+      request->send(400);
     }
   });
 
@@ -194,21 +220,6 @@ void startServer()
 
       Alarm *a = c->getAlarm((day * 2) + state);
 
-      Serial.print("Alarm state: ");
-      Serial.println(state);
-
-      Serial.print("Alarm day: ");
-      Serial.println(day);
-
-      Serial.print("Alarm hour: ");
-      Serial.println(hour);
-
-      Serial.print("Alarm minute: ");
-      Serial.println(minute);
-
-      Serial.print("Alarm Enabled ");
-      Serial.println(enabled);
-
       a->setWeekday(day); //change to stupid english week system
       a->setHour(hour);
       a->setMinute(minute);
@@ -235,7 +246,7 @@ void startServer()
       config.setBoardName(request->getParam(15)->value());
       config.saveAlarms();
       config.save();
-      request->send(200);
+      request->send(200,"text/plain","OK");
     }
     else
     {
@@ -253,7 +264,7 @@ void startServer()
       configTime(config.getTimezone(), config.getDST(), "pool.ntp.org");
       config.save();
       //applyEthNetworkSettings();
-      request->send(200);
+      request->send(200,"text/plain","OK");
     }
     else
     {
@@ -283,16 +294,7 @@ void startServer()
         minute = time.substring(3, 5);                                          // split minute
         param++;                                                                //increase param;
         enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-        Serial.print(i);
-        Serial.println(" day");
-        Serial.print(hour);
-        Serial.println(" hour");
-        Serial.print(minute);
-        Serial.println(" minute");
-        Serial.print(state ? "True" : "false");
-        Serial.println(" State");
-        Serial.print(enabled ? "true" : "false");
-        Serial.println(" enabled");
+        
 
         a = c->getAlarm(alarm);
         a->setHour(hour.toInt());
@@ -307,16 +309,7 @@ void startServer()
         minute = time.substring(3, 5);
         param++;
         enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-        Serial.print(i);
-        Serial.println(" day");
-        Serial.print(hour);
-        Serial.println(" hour");
-        Serial.print(minute);
-        Serial.println(" minute");
-        Serial.print(state ? "True" : "false");
-        Serial.println(" State");
-        Serial.print(enabled ? "true" : "false");
-        Serial.println(" enabled");
+        
         a = c->getAlarm(alarm);
         a->setHour(hour.toInt());
         a->setMinute(minute.toInt());
@@ -332,16 +325,7 @@ void startServer()
       minute = time.substring(3, 5);                                          // split minute
       param++;                                                                //increase param;
       enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-      Serial.print(0);
-      Serial.println(" day");
-      Serial.print(hour);
-      Serial.println(" hour");
-      Serial.print(minute);
-      Serial.println(" minute");
-      Serial.print(state ? "True" : "false");
-      Serial.println(" State");
-      Serial.print(enabled ? "true" : "false");
-      Serial.println(" enabled");
+      
       a = c->getAlarm(alarm);
       a->setHour(hour.toInt());
       a->setMinute(minute.toInt());
@@ -355,16 +339,7 @@ void startServer()
       minute = time.substring(3, 5);
       param++;
       enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-      Serial.print(0);
-      Serial.println(" day");
-      Serial.print(hour);
-      Serial.println(" hour");
-      Serial.print(minute);
-      Serial.println(" minute");
-      Serial.print(state ? "True" : "false");
-      Serial.println(" State");
-      Serial.print(enabled ? "true" : "false");
-      Serial.println(" enabled");
+      
       a = c->getAlarm(alarm);
       a->setHour(hour.toInt());
       a->setMinute(minute.toInt());
@@ -397,6 +372,12 @@ void startServer()
   server.serveStatic("/", SPIFFS, "/ap/").setDefaultFile("index.html").setFilter(ON_AP_VM208_FILTER);
 
   server.onNotFound([](AsyncWebServerRequest *request) {
+    if(ON_AP_VM208_FILTER(nullptr))
+    {
+      //Send index.htm with default content type
+      request->send(SPIFFS, "/index.htm");
+    }
+    else{
     Serial.printf("NOT_FOUND: ");
     if (request->method() == HTTP_GET)
       Serial.printf("GET");
@@ -415,7 +396,7 @@ void startServer()
     else
       Serial.printf("UNKNOWN");
     Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
-
+    
     if (request->contentLength())
     {
       Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
@@ -449,6 +430,7 @@ void startServer()
     }
 
     request->send(404);
+    }
   });
   server.onFileUpload([](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final) {
     if (!index)
@@ -542,6 +524,7 @@ void sendBoardInfo(AsyncWebServerRequest *request)
   root.set("LOCAL_TIME", s);
   root.printTo(*response);
   request->send(response);
+  jsonBuffer.clear();
 }
 
 String getMacAsString(uint8_t *mac)
@@ -561,8 +544,8 @@ void sendIOState(AsyncWebServerRequest *request)
 {
 
   AsyncResponseStream *response = request->beginResponseStream("application/json");
-  const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
-  DynamicJsonBuffer jsonBuffer(capacity);
+  //const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
+  DynamicJsonBuffer jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   Relay *relays = getRelays();
   Input **inputs;
@@ -595,6 +578,7 @@ void sendIOState(AsyncWebServerRequest *request)
 
   root.printTo(*response);
   request->send(response);
+  jsonBuffer.clear();
 }
 
 void sendSettings(AsyncWebServerRequest *request)
@@ -675,7 +659,7 @@ bool ON_STA_VM208_FILTER(AsyncWebServerRequest *request)
   }
   else
   {
-    if (tcpip_adapter_is_netif_up(TCPIP_ADAPTER_IF_ETH) && gotETH_IP)
+    if (ETH.linkUp())
     {
       return true;
     }

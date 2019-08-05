@@ -11,6 +11,8 @@ Configuration::Configuration()
     _boardName = "VM208";
     _DSTseconds = 0;
     _timezoneSeconds = 0;
+    _ETH_DHCPEnable = true;
+    _WIFI_DHCPEnable = true;
     _firstTime = true;
 }
 
@@ -94,27 +96,68 @@ void Configuration::load()
     {
         ESP_LOGI(TAG, "file exist");
         File file = loadFile(configPath);
+        /* while (file.available())
+        {
+            Serial.write(file.read());
+        }*/
+        DynamicJsonBuffer jsonBuffer;
         JsonObject &root = jsonBuffer.parseObject(file);
-        _ssid = root[SSID_KEY].as<String>();
-        _wifi_pw = root[WIFI_PW_KEY].as<String>();
-        _boardName = root[BOARDNAME_KEY].as<String>();
-        _username = root[USERNAME_KEY].as<String>();
-        _userPW = root[USERPW_KEY].as<String>();
-        _WIFI_DHCPEnable = root[WIFI_DHCPEN_KEY].as<bool>();
-        _WIFI_IPAddress = root[WIFI_IPADDR_KEY].as<String>();
-        _WIFI_Gateway = root[WIFI_GATEWAY_KEY].as<String>();
-        _WIFI_SubnetMask = root[WIFI_SUBNETMASK_KEY].as<String>();
-        _WIFI_PrimaryDNS = root[WIFI_PRIMARYDNS_KEY].as<String>();
-        _WIFI_SecondaryDNS = root[WIFI_SECONDARYDNS_KEY].as<String>();
-        _ETH_DHCPEnable = root[ETH_DHCPEN_KEY].as<bool>();
-        _ETH_IPAddress = root[ETH_IPADDR_KEY].as<String>();
-        _ETH_Gateway = root[ETH_GATEWAY_KEY].as<String>();
-        _ETH_SubnetMask = root[ETH_SUBNETMASK_KEY].as<String>();
-        _ETH_PrimaryDNS = root[ETH_PRIMARYDNS_KEY].as<String>();
-        _ETH_SecondaryDNS = root[ETH_SECONDARYDNS_KEY].as<String>();
-        _timezoneSeconds = root[TIMEZONE_KEY].as<long>();
-        _DSTseconds = root[DST_KEY].as<int>();
-        _firstTime = root[FIRST_TIME_KEY].as<bool>();
+        if (root.containsKey(SSID_KEY))
+        {
+            _ssid = root[SSID_KEY].as<String>();
+            _wifi_pw = root[WIFI_PW_KEY].as<String>();
+            _boardName = root[BOARDNAME_KEY].as<String>();
+            _username = root[USERNAME_KEY].as<String>();
+            _userPW = root[USERPW_KEY].as<String>();
+            _WIFI_DHCPEnable = root[WIFI_DHCPEN_KEY].as<bool>();
+            _WIFI_IPAddress = root[WIFI_IPADDR_KEY].as<String>();
+            _WIFI_Gateway = root[WIFI_GATEWAY_KEY].as<String>();
+            _WIFI_SubnetMask = root[WIFI_SUBNETMASK_KEY].as<String>();
+            _WIFI_PrimaryDNS = root[WIFI_PRIMARYDNS_KEY].as<String>();
+            _WIFI_SecondaryDNS = root[WIFI_SECONDARYDNS_KEY].as<String>();
+            _ETH_DHCPEnable = root[ETH_DHCPEN_KEY].as<bool>();
+            _ETH_IPAddress = root[ETH_IPADDR_KEY].as<String>();
+            _ETH_Gateway = root[ETH_GATEWAY_KEY].as<String>();
+            _ETH_SubnetMask = root[ETH_SUBNETMASK_KEY].as<String>();
+            _ETH_PrimaryDNS = root[ETH_PRIMARYDNS_KEY].as<String>();
+            _ETH_SecondaryDNS = root[ETH_SECONDARYDNS_KEY].as<String>();
+            _timezoneSeconds = root[TIMEZONE_KEY].as<long>();
+            _DSTseconds = root[DST_KEY].as<int>();
+            _firstTime = root[FIRST_TIME_KEY].as<bool>();
+        }
+        else
+        {
+            Serial.println("LOAD CONFIG: FILE IS INVALID");
+        }
+        file.close();
+        jsonBuffer.clear();
+    }
+    else
+    {
+        ESP_LOGI(TAG, "file doesnt exist");
+    }
+    if (SPIFFS.exists(emailPath))
+    {
+        ESP_LOGI(TAG, "file exist");
+        File file = loadFile(emailPath);
+        /* while (file.available())
+        {
+            Serial.write(file.read());
+        }*/
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject &root = jsonBuffer.parseObject(file);
+        if (root.containsKey(EMAIL_SERRVER_KEY))
+        {
+            _email_server = root[EMAIL_SERRVER_KEY].as<String>();
+            _email_port = root[EMAIL_PORT_KEY].as<String>();
+            _email_user = root[EMAIL_USER_KEY].as<String>();
+            _email_pw = root[EMAIL_PW_KEY].as<String>();
+            _email_recipient = root[EMAIL_RECEIVER_KEY].as<String>();
+        }
+        else
+        {
+            Serial.println("LOAD EMAIL CONFIG: FILE IS INVALID");
+        }
         file.close();
         jsonBuffer.clear();
     }
@@ -165,6 +208,7 @@ void Configuration::writeConfig()
         ESP_LOGI(TAG, "remove file");
         SPIFFS.remove(configPath);
     }
+    DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
     root[SSID_KEY] = _ssid;
     root[WIFI_PW_KEY] = _wifi_pw;
@@ -186,8 +230,11 @@ void Configuration::writeConfig()
     root[TIMEZONE_KEY] = _timezoneSeconds;
     root[DST_KEY] = _DSTseconds;
     root[FIRST_TIME_KEY] = _firstTime;
-    File file = SPIFFS.open(configPath, "w");
-    root.printTo(file);
+    File file = SPIFFS.open(configPath, FILE_WRITE);
+    if (root.printTo(file) == 0)
+    {
+        Serial.println("Error writing to file");
+    }
     file.close();
 }
 
@@ -198,6 +245,7 @@ void Configuration::writeAlarms()
         ESP_LOGI(TAG, "remove file");
         SPIFFS.remove(alarmPath);
     }
+    DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
     JsonArray &Channels = root.createNestedArray("Channels");
     Channel *c;
@@ -234,6 +282,7 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
 
         ESP_LOGI(TAG, "file exist");
         File file = loadFile(alarmPath);
+        DynamicJsonBuffer jsonBuffer;
         JsonObject &root = jsonBuffer.parseObject(file);
         JsonArray &channels = root["Channels"];
 
@@ -260,7 +309,7 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
 
 Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
 {
-    
+
     /*if (SPIFFS.exists(alarmPath))
     {
 
@@ -287,7 +336,7 @@ Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
         jsonBuffer.clear();
         return c;
     }*/
-    return Channel("",nullptr,nullptr,0);
+    return Channel("", nullptr, nullptr, 0);
 }
 
 File Configuration::loadFile(const char *path)
@@ -450,6 +499,105 @@ void Configuration::setFirstTime(bool first_time)
     _firstTime = first_time;
 }
 
+String Configuration::getEmailServer()
+{
+    return _email_server;
+}
+
+void Configuration::setEmailServer(String server)
+{
+    _email_server = server;
+}
+
+String Configuration::getEmailPort()
+{
+    return _email_port;
+}
+void Configuration::setEmailPort(String port)
+{
+    _email_port = port;
+}
+
+String Configuration::getEmailUser()
+{
+    return _email_user;
+}
+
+void Configuration::setEmailUser(String user)
+{
+    _email_user = user;
+}
+
+String Configuration::getEmailPW()
+{
+    return _email_pw;
+}
+
+void Configuration::setEmailPW(String pw)
+{
+    _email_pw = pw;
+}
+
+String Configuration::getEmailRecipient()
+{
+    return _email_recipient;
+}
+
+void Configuration::setEmailRecipient(String recipient)
+{
+    _email_recipient = recipient;
+}
+
+void Configuration::setInputName(String name)
+{
+    _name_input = name;
+}
+
+String Configuration::getInputName()
+{
+    return _name_input;
+}
+
+void Configuration::setNotificationBoot(bool enable)
+{
+    _notif_boot = enable;
+}
+
+bool Configuration::getNotificationBoot()
+{
+    return _notif_boot;
+}
+
+void Configuration::setNotificationInputChange(bool enable)
+{
+    _notif_input_change = enable;
+}
+
+bool Configuration::getNotificationInputChange()
+{
+    return _notif_input_change;
+}
+
+void Configuration::setNotification_ext_connected(bool enable)
+{
+    _notif_ext_connected = enable;
+}
+
+bool Configuration::getNotification_ext_connected()
+{
+    return _notif_ext_connected;
+}
+
+void Configuration::setNotification_manual_input(bool enable)
+{
+    _notif_manual_input = enable;
+}
+
+bool Configuration::getNotification_manual_input()
+{
+    return _notif_manual_input;
+}
+
 const char *Configuration::SSID_KEY = "SSID";
 const char *Configuration::WIFI_PW_KEY = "WiFi_PW";
 const char *Configuration::BOARDNAME_KEY = "BOARDNAME";
@@ -477,3 +625,14 @@ const char *Configuration::ALARM_STATE_KEY = "state";
 const char *Configuration::ALARM_ENABLED_KEY = "enabled";
 const char *Configuration::CHANNEL_NAME_KEY = "name";
 const char *Configuration::FIRST_TIME_KEY = "first_time";
+;
+const char *Configuration::EMAIL_SERRVER_KEY = "EMAIL_SERVER";
+const char *Configuration::EMAIL_PORT_KEY = "EMAIL_PORT";
+const char *Configuration::EMAIL_USER_KEY = "EMAIL_USER";
+const char *Configuration::EMAIL_PW_KEY = "EMAIL_PW";
+const char *Configuration::EMAIL_RECEIVER_KEY = "EMAIL_RECEIVER";
+const char *Configuration::NAME_INPUT_KEY = "NAME_INPUT";
+const char *Configuration::NOTIF_BOOT_KEY = "NOTIFICATION_BOOT";
+const char *Configuration::NOTIF_INPUT_CHANGE_KEY = "NOTIFICATION_INPUT_CHANG";
+const char *Configuration::NOTIF_EXT_CONNECT_KEY = "NOTIFICATION_EXT_DIS/CONNECTED";
+const char *Configuration::NOTIF_MANUAL_INPUT_KEY = "NOTIFICATION_MANUAL_INPUT";

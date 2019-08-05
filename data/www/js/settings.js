@@ -37,7 +37,7 @@ function update_email_settings() {
         t = $("#smtp_port"),
         a = $("#smtp_user"),
         n = $("#smtp_pass"),
-        s = $("#smtp_tls");
+        s = $("#smtp_recipient");
     //e.val(json.email.smtpserver), t.val(json.email.smtpport), a.val(json.email.username), n.val(json.email.password), s.prop("checked", json.email.usessltls)
 }
 
@@ -83,7 +83,7 @@ function sendEmailSettings() {
         smtpport: $("#smtp_port").val(),
         user: $("#smtp_user").val(),
         password: $("#smtp_pass").val(),
-        tls: $("#smtp_tls").prop("checked") ? 1 : 0
+        recipeint:$("#smtp_recipient").val()
     };
     $("#sendMailSettingsButton").html("SAVING...");
     $.ajax({
@@ -466,13 +466,18 @@ function sendTimeSettings(){
         dst: $("#DST_enable").prop("checked")
     };
 	
-    $("#sendNameSettingsButton").html("SAVING...");
+    $("#sendTimeSettings").html("SAVING...");
     $.ajax({
         type: "POST",
         url: "/time_settings",
         dataType: "text",
         data: e,
         success: function(e) {
+            try {
+                "OK" == e ? ($("#sendTimeSettings").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE EMAILSETTINGS")
+            } catch (t) {
+                console.log(t)
+            }
         }
     })
 }

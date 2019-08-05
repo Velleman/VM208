@@ -26,6 +26,7 @@ extern "C"
             c->toggle();
         }
         c->clearTimer();
+        vTaskDelete( NULL );
     }
 
     static void pulseTask(void *arg)
@@ -46,6 +47,7 @@ extern "C"
             c->toggle();
         }
         c->clearPulse();
+        vTaskDelete( NULL );
     }
 }
 
@@ -114,7 +116,7 @@ void Channel::activateTimer(uint16_t timertime)
     m_timerTime = time_us;
     if (!m_isTimerActive)
     {
-        xTaskCreate(timerTask, "timer", 2048, (void *)m_id, (tskIDLE_PRIORITY + 2), &timerTaskHandle);
+        xTaskCreate(timerTask, "timer", 4092, (void *)m_id, (tskIDLE_PRIORITY + 2), &timerTaskHandle);
         m_isTimerActive = true;
     }
 }
@@ -127,7 +129,7 @@ void Channel::activatePulse(uint64_t pulsetime)
     m_pulseTime = pulseTime;
     if (!m_isPulseActive)
     {
-        xTaskCreate(pulseTask, "pulse", 2048, (void *)m_id, (tskIDLE_PRIORITY + 2), &pulseTaskHandle);
+        xTaskCreate(pulseTask, "pulse", 4092, (void *)m_id, (tskIDLE_PRIORITY + 2), &pulseTaskHandle);
         m_isPulseActive = true;
     }
 }
@@ -138,7 +140,8 @@ void Channel::setAlarm(Alarm a, uint8_t index)
     {
         alarms[index] = a;
     }
-    else{
+    else
+    {
         Serial.println("Alarm index is invalid");
     }
 }
@@ -170,7 +173,8 @@ void Channel::updateLed()
 
 void Channel::toggleLed()
 {
-    m_led->toggle();
+    if (m_led != nullptr)
+        m_led->toggle();
 }
 
 void Channel::setLed(bool state)
@@ -204,7 +208,7 @@ void Channel::clearTimer()
 
 void Channel::disableSheduler()
 {
-    for(int i =0;i<14;i++)
+    for (int i = 0; i < 14; i++)
     {
         alarms[i].setEnabled(false);
     }
@@ -212,9 +216,9 @@ void Channel::disableSheduler()
 
 bool Channel::isSheduleActive()
 {
-    for(int i =0;i<14;i++)
+    for (int i = 0; i < 14; i++)
     {
-        if(alarms[i].isEnabled())
+        if (alarms[i].isEnabled())
             return true;
     }
     return false;

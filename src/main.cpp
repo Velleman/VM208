@@ -31,6 +31,9 @@
 #include "output.hpp"
 #include "esp_log.h"
 #include "FreeRTOS.h"
+#include <ETH.h>
+#include <DNSServer.h>
+#include "mail.hpp"
 static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
@@ -46,55 +49,14 @@ bool gotSTA_IP;
 
 SemaphoreHandle_t g_Mutex;
 SemaphoreHandle_t g_MutexChannel;
+SemaphoreHandle_t g_MutexMail;
 int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
 const PROGMEM char *ntpServer = "pool.ntp.org";
 bool wifiFirstConnected = false;
-
+//DNSServer dnsServer;
 void startWifi();
 
-//mail
-#include "ESP32_MailClient.h"
-//WiFi or HTTP client for internet connection
-HTTPClientESP32Ex http;
-
-//The Email Sending data object contains config and data to send
-SMTPData smtpData;
-
-//Callback function to get the Email sending status
-void sendCallback(SendStatus info);
-
-//zwhqfcbifbcbbfxw
-static void sendEmail(void * pvParamaters)
-{
-  
-
-  //Add attachments, can add the file or binary data from flash memory, file in SD card
-  //Data from internal memory
-  //smtpData.addAttachData("config.json", "application/json", (uint8_t *)dummyImageData, sizeof dummyImageData);
-
-  //Add attach files from SD card
-  //Comment these two lines, if no SD card connected
-  //Two files that previousely created.
-  //smtpData.addAttachFile("/config.json");
-  //smtpData.addAttachFile("/text_file.txt");
-
-  //Set the storage types to read the attach files (SD is default)
-  //smtpData.setFileStorageType(MailClientStorageType::SPIFFS);
-  //smtpData.setFileStorageType(MailClientStorageType::SD);
-
-  smtpData.setSendCallback(sendCallback);
-
-  Serial.println("Sending Mail...");
-  //Start sending Email, can be set callback function to track the status
-  if (!MailClient.sendMail(http, smtpData))
-    Serial.println("Error sending Email, " + MailClient.smtpErrorReason());
-
-  //Clear all data from Email object to free memory
-  smtpData.empty();
-
-  vTaskDelete(NULL);
-}
 
 static void phy_device_power_enable_via_gpio(bool enable)
 {
@@ -161,8 +123,6 @@ static void eth_gpio_config_rmii(void)
 */
 static void WiFiEvent(WiFiEvent_t event)
 {
-  tcpip_adapter_ip_info_t ip;
-
   switch (event)
   {
   case SYSTEM_EVENT_ETH_CONNECTED:
@@ -170,24 +130,36 @@ static void WiFiEvent(WiFiEvent_t event)
     break;
   case SYSTEM_EVENT_ETH_DISCONNECTED:
     gotETH_IP = false;
-    startWifi();
+    WiFi.reconnect();
     ESP_LOGI(TAG, "Ethernet Link Down");
     break;
   case SYSTEM_EVENT_ETH_START:
     ESP_LOGI(TAG, "Ethernet Started");
-    tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_ETH, "VM208");
+    ETH.setHostname("VM208");
     break;
   case SYSTEM_EVENT_ETH_GOT_IP:
-    memset(&ip, 0, sizeof(tcpip_adapter_ip_info_t));
+    /*/memset(&ip, 0, sizeof(tcpip_adapter_ip_info_t));
     ESP_ERROR_CHECK(tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_ETH, &ip));
     ESP_LOGI(TAG, "Ethernet Got IP Addr");
     ESP_LOGI(TAG, "~~~~~~~~~~~");
     ESP_LOGI(TAG, "ETHIP:" IPSTR, IP2STR(&ip.ip));
     ESP_LOGI(TAG, "ETHMASK:" IPSTR, IP2STR(&ip.netmask));
     ESP_LOGI(TAG, "ETHGW:" IPSTR, IP2STR(&ip.gw));
-    ESP_LOGI(TAG, "~~~~~~~~~~~");
+    ESP_LOGI(TAG, "~~~~~~~~~~~");*/
+    Serial.print("ETH MAC: ");
+    Serial.print(ETH.macAddress());
+    Serial.print(", IPv4: ");
+    Serial.print(ETH.localIP());
+    if (ETH.fullDuplex())
+    {
+      Serial.print(", FULL_DUPLEX");
+    }
+    Serial.print(", ");
+    Serial.print(ETH.linkSpeed());
+    Serial.println("Mbps");
     gotETH_IP = true;
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
+    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
     break;
   case SYSTEM_EVENT_ETH_STOP:
     ESP_LOGI(TAG, "Ethernet Stopped");
@@ -199,11 +171,11 @@ static void WiFiEvent(WiFiEvent_t event)
     gotSTA_IP = true;
     ESP_LOGI(TAG, "GOT_STA_IP");
     ESP_LOGI(TAG, "got ip:%s", WiFi.localIP());
+    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;
   case SYSTEM_EVENT_STA_DISCONNECTED:
-    esp_wifi_connect();
     xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT | GOTIP_BIT);
     gotSTA_IP = false;
     break;
@@ -233,7 +205,8 @@ static void got_ip_task(void *pvParameter)
     xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
     if (gotETH_IP)
     {
-      esp_wifi_stop();
+      //esp_wifi_stop();
+      WiFi.mode(WIFI_OFF);
     }
     const char *ntpServer = "pool.ntp.org";
     long gmtOffset_sec = config.getTimezone();
@@ -275,9 +248,9 @@ static void time_keeping_task(void *pvParameter)
 
 void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
-    Serial.println(IPAddress(info.got_ip.ip_info.ip.addr));
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(IPAddress(info.got_ip.ip_info.ip.addr));
 }
 
 void startWifi()
@@ -315,9 +288,15 @@ void startWifi()
     }
     char ssid[15];
     char pw[15];
-    WiFi.onEvent(WiFiGotIP,WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
+    WiFi.onEvent(WiFiGotIP, WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
     config.getSSID().toCharArray(ssid, 15);
     config.getWifiPassword().toCharArray(pw, 15);
+    Serial.println("Connecting to:");
+    Serial.println(config.getSSID());
+    Serial.println(config.getWifiPassword());
+
+    //WiFi.disconnect(false,false);
+  
     WiFi.begin(ssid, pw);
     while (!WiFi.isConnected())
     {
@@ -418,10 +397,10 @@ static void applyEthNetworkSettings()
 
 void startEth()
 {
-  esp_err_t ret;
+  /*esp_err_t ret;
   applyEthNetworkSettings();
   eth_config_t eth_config = DEFAULT_ETHERNET_PHY_CONFIG;
-  /* Set the PHY address in the example configuration */
+  /* Set the PHY address in the example configuration *
   eth_config.phy_addr = PHY0;
   eth_config.gpio_config = eth_gpio_config_rmii;
   eth_config.tcpip_input = tcpip_adapter_eth_input;
@@ -432,7 +411,32 @@ void startEth()
   if (ret == ESP_OK)
   {
     esp_eth_enable();
+  }*/
+  if (!config.getETH_DHCPEnable())
+  {
+    char ip[15];
+    char gw[15];
+    char sub[15];
+    char prim[15];
+    char sec[15];
+    config.getETH_IPAddress().toCharArray(ip, 15);
+    config.getETH_Gateway().toCharArray(gw, 15);
+    config.getETH_SubnetMask().toCharArray(sub, 15);
+    config.getETH_PrimaryDNS().toCharArray(prim, 15);
+    config.getETH_SecondaryDNS().toCharArray(sec, 15);
+
+    IPAddress local_IP(ipaddr_addr(ip));
+    IPAddress gateway(ipaddr_addr(gw));
+    IPAddress subnet(ipaddr_addr(sub));
+    IPAddress primaryDNS(ipaddr_addr(prim));
+    IPAddress secondaryDNS(ipaddr_addr(sec));
+
+    ETH.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS);
   }
+  pinMode(GPIO_NUM_2, OUTPUT);
+  digitalWrite(GPIO_NUM_2, HIGH);
+  ETH.begin(0, PIN_PHY_POWER, 23, 18, ETH_PHY_LAN8720, ETH_CLOCK_GPIO0_IN);
+  
 }
 
 static void checkSheduler(void *pvParameter)
@@ -520,17 +524,18 @@ void setup()
 {
   g_Mutex = xSemaphoreCreateMutex();
   g_MutexChannel = xSemaphoreCreateMutex();
+  g_MutexMail = xSemaphoreCreateMutex();
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
+  //Serial.setDebugOutput(true);
   delay(10);
   Serial.printf("START\n");
 
-  ESP_ERROR_CHECK(nvs_flash_init());
+  //ESP_ERROR_CHECK(nvs_flash_init());
   ESP_LOGI(TAG, "APP MAIN ENTRY");
   SPIFFS.begin();
   Init_IO();
 
-  tcpip_adapter_init();
+  //tcpip_adapter_init();
   s_wifi_event_group = xEventGroupCreate();
 
   //ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
@@ -550,6 +555,11 @@ void setup()
     ESP_LOGI(TAG, "Start AP");
     WiFi.softAP("VM208_AP", "VellemanForMakers");
     WiFi.enableSTA(false);
+    IPAddress apIP(192, 168, 4, 1);
+    
+    // if DNSServer is started with "*" for domain name, it will reply with
+    // provided IP to all DNS request
+    //dnsServer.start(53, "*", apIP);
   }
   else
   {
@@ -557,7 +567,6 @@ void setup()
     WiFi.onEvent(WiFiEvent);
     startEth();
     startWifi();
-    
 
     xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
     //xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
@@ -606,28 +615,8 @@ void setup()
 void loop()
 {
   ArduinoOTA.handle();
-  delay(500);
-
-  //sendEmail();
-  //ESP_LOGI(TAG, "%i", ESP.getFreeHeap());
-  //printLocalTime();
+  delay(100);
+  Serial.println(esp_get_free_heap_size());
 }
 
-/*
-void applyWifiNetworkSettings()
-{
 
-}*/
-
-//Callback function to get the Email sending status
-void sendCallback(SendStatus msg)
-{
-  //Print the current status
-  Serial.println(msg.info());
-
-  //Do something when complete
-  if (msg.success())
-  {
-    Serial.println("----------------");
-  }
-}

@@ -39,12 +39,27 @@ private:
   int _DSTseconds;
   const char *configPath = "/config.json";
   const char *alarmPath = "/alarms.json";
+  const char *emailPath = "/email.json";
   void writeConfig();
   void writeAlarms();
   File loadFile(const char *path);
-  DynamicJsonBuffer jsonBuffer;
+  //DynamicJsonBuffer jsonBuffer;
   String m_channelNames[14];
   bool _firstTime;
+  //mail
+  String _email_server;
+  String _email_port;
+  String _email_user;
+  String _email_pw;
+  String _email_recipient;
+
+  String _name_input;
+
+  bool _notif_boot;
+  bool _notif_input_change;
+  bool _notif_ext_connected;
+  bool _notif_manual_input;
+
 public:
   Configuration();
   static const char *SSID_KEY;
@@ -74,6 +89,17 @@ public:
   static const char *ALARM_ENABLED_KEY;
   static const char *CHANNEL_NAME_KEY;
   static const char *FIRST_TIME_KEY;
+  static const char *EMAIL_SERRVER_KEY;
+  static const char *EMAIL_PORT_KEY;
+  static const char *EMAIL_USER_KEY;
+  static const char *EMAIL_PW_KEY;
+  static const char *EMAIL_RECEIVER_KEY;
+  static const char *NAME_INPUT_KEY;
+  static const char *NOTIF_BOOT_KEY;
+  static const char *NOTIF_INPUT_CHANGE_KEY;
+  static const char *NOTIF_EXT_CONNECT_KEY;
+  static const char *NOTIF_MANUAL_INPUT_KEY;
+
   //getter setter SSID
   String getVersion() const;
 
@@ -154,8 +180,39 @@ public:
 
   Channel createChannel(uint8_t id, Relay *r, Led *l);
   Channel createMosfetChannel(uint8_t id, Mosfet *r);
+
   bool getFirstTime();
   void setFirstTime(bool first_time);
+
+  String getEmailServer();
+  void setEmailServer(String server);
+
+  String getEmailPort();
+  void setEmailPort(String port);
+
+  String getEmailUser();
+  void setEmailUser(String user);
+
+  String getEmailPW();
+  void setEmailPW(String pw);
+
+  String getEmailRecipient();
+  void setEmailRecipient(String recipient);
+
+  String getInputName();
+  void setInputName(String name);
+
+  bool getNotificationBoot();
+  void setNotificationBoot(bool enable);
+
+  bool getNotificationInputChange();
+  void setNotificationInputChange(bool enable);
+
+  bool getNotification_ext_connected();
+  void setNotification_ext_connected(bool enable);
+
+  bool getNotification_manual_input();
+  void setNotification_manual_input(bool enable);
 
   void setDST(int seconds);
   int getDST();

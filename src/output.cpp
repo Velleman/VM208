@@ -6,9 +6,6 @@
 
 extern "C"
 {
- 
-
-    
 }
 Output::Output(uint8_t id, uint16_t pin, bool initState, TCA6424A_TS *tca) : m_id(id),
                                                                              m_pin(pin),
@@ -18,7 +15,7 @@ Output::Output(uint8_t id, uint16_t pin, bool initState, TCA6424A_TS *tca) : m_i
                                                                              m_pulseTime(5),
                                                                              m_timerTime(1)
 {
-    initPin();
+    initPin(true);
     updateTCA();
 }
 
@@ -49,7 +46,8 @@ void Output::updateTCA()
 {
     if (m_tca != nullptr && m_isAccessible)
     {
-        m_tca->writePin(m_pin, m_state);
+        m_tca->ts_writePin(m_pin, m_state);
+        delay(1);
     }
 }
 
@@ -59,18 +57,27 @@ void Output::toggle()
     updateTCA();
 }
 
-void Output::initPin()
+void Output::initPin(bool checkConnection)
 {
     if (m_tca != nullptr)
     {
-        if (m_tca->testConnection())
+        if (checkConnection)
         {
-            m_isAccessible = true;
-            m_tca->setPinDirection(m_pin, TCA6424A_OUTPUT);
+            if (m_tca->testConnection())
+            {
+                m_isAccessible = true;
+                m_tca->ts_setPinDirection(m_pin, TCA6424A_OUTPUT);
+            }
+            else
+            {
+                m_isAccessible = false;
+            }
         }
         else
         {
-            m_isAccessible = false;
+            Serial.println("FALSE CHECK");
+            m_tca->ts_setPinDirection(m_pin, TCA6424A_OUTPUT);
+            updateTCA();
         }
     }
 }

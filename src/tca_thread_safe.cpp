@@ -12,22 +12,17 @@ TCA6424A_TS::TCA6424A_TS(uint8_t address) : TCA6424A(TCA6424A_DEFAULT_ADDRESS)
     devAddr = address;
 }
 
-bool TCA6424A_TS::testConnection()
+bool TCA6424A_TS::ts_testConnection()
 {
     bool isConnected = false;
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
-    int8_t result = I2Cdev::readBytes(devAddr, TCA6424A_RA_INPUT0, 3, buffer);
-    if(result == -1)
-    {
-        Serial.println("FAIL READ BYTES");
-        result = I2Cdev::readBytes(devAddr, TCA6424A_RA_INPUT0, 3, buffer);
-    }
+    int8_t result = I2Cdev::readBytes(devAddr, TCA6424A_RA_INPUT0 , 3, buffer);
     isConnected = (bool)(result == 3);
     xSemaphoreGive(g_Mutex);
     return isConnected;
 }
 
-bool TCA6424A_TS::readPin(uint16_t pin)
+bool TCA6424A_TS::ts_readPin(uint16_t pin)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
 
@@ -41,14 +36,14 @@ bool TCA6424A_TS::readPin(uint16_t pin)
     return buffer[0];
 }
 
-void TCA6424A_TS::setPinDirection(uint16_t pin, bool direction)
+void TCA6424A_TS::ts_setPinDirection(uint16_t pin, bool direction)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
     I2Cdev::writeBit(devAddr, TCA6424A_RA_CONFIG0 + (pin / 8), pin % 8, direction);
     xSemaphoreGive(g_Mutex);
 }
 
-void TCA6424A_TS::writePin(uint16_t pin, bool polarity)
+void TCA6424A_TS::ts_writePin(uint16_t pin, bool polarity)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
     bool success = I2Cdev::writeBit(devAddr, TCA6424A_RA_OUTPUT0 + (pin / 8), pin % 8, polarity);
@@ -60,14 +55,14 @@ void TCA6424A_TS::writePin(uint16_t pin, bool polarity)
     xSemaphoreGive(g_Mutex);
 }
 
-void TCA6424A_TS::writeByte(uint8_t reg, uint8_t data)
+void TCA6424A_TS::ts_writeByte(uint8_t reg, uint8_t data)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
     bool success = I2Cdev::writeByte(devAddr, reg, data);
     if(!success)
     {
         Serial.println("FAIL WRITE BIT");
-        bool success = I2Cdev::writeByte(devAddr, reg, data);
+        success = I2Cdev::writeByte(devAddr, reg, data);
     }
     xSemaphoreGive(g_Mutex);
 }

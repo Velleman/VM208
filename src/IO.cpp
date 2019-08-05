@@ -32,8 +32,12 @@ static void gpio_isr_handler(void *arg)
 void Init_IO()
 {
 
-  Wire.begin(33, 32);
+  Wire.begin(33, 32, 50000);
 
+  gpio_pullup_en(GPIO_NUM_33);
+  gpio_pullup_en(GPIO_NUM_32);
+  gpio_pulldown_dis(GPIO_NUM_33);
+  gpio_pulldown_dis(GPIO_NUM_32);
   //init relays,leds and buttons
   for (uint8_t i = 0; i < 4; i++)
   {
@@ -42,7 +46,6 @@ void Init_IO()
     currentInputs[i] = new Input(i + 1, TCA6424A_P10 + i, &tca);
 
     channels[i] = config.createChannel(i + 1, relays + i, leds + i);
-    
   }
   for (int i = 4; i < 12; i++)
   {
@@ -62,8 +65,8 @@ void Init_IO()
   tca.setPinDirection(TCA6424A_P07, TCA6424A_OUTPUT);
   for (size_t i = 0; i < 8; i++)
   {
-    tca.setPinDirection(TCA6424A_P20 + i, TCA6424A_OUTPUT);
-    tca.writePin(TCA6424A_P20 + i, TCA6424A_LOW);
+    tca.ts_setPinDirection(TCA6424A_P20 + i, TCA6424A_OUTPUT);
+    tca.ts_writePin(TCA6424A_P20 + i, TCA6424A_LOW);
   }
 
   pinMode(4, INPUT);
@@ -82,14 +85,14 @@ void Init_IO()
 
   gpio_set_direction(GPIO_NUM_35, GPIO_MODE_INPUT);
   gpio_pullup_en(GPIO_NUM_35);
-  gpio_set_intr_type(GPIO_NUM_35, GPIO_INTR_NEGEDGE);
+  gpio_set_intr_type(GPIO_NUM_35, GPIO_INTR_LOW_LEVEL);
 
   //create a queue to handle gpio event from isr
   int_evt_queue = xQueueCreate(2, sizeof(uint32_t));
   //install gpio isr service
   gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
   gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
-  if (tca_ext.testConnection())
+  if (tca_ext.ts_testConnection())
   {
     ESP_LOGI(TAG, "EXTENSION CONNECTED");
     gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
@@ -101,9 +104,9 @@ void initExtPinDirections()
   ESP_LOGI(TAG, "initExtPinDirections");
   for (int i = 4; i < 12; i++)
   {
-    relays[i].initPin();
-    leds[i].initPin();
-    currentInputs[i]->initPin();
+    currentInputs[i]->initPin(false);
+    relays[i].initPin(false);
+    leds[i].initPin(false);
   }
 }
 
@@ -127,7 +130,7 @@ void IO_task(void *arg)
     previousInputs[i] = currentState;
     leds[i].setState(currentState);
   }
-  xTaskCreate(updateIO,"Update IO",2048,NULL,(tskIDLE_PRIORITY + 2),NULL);
+  xTaskCreate(updateIO, "Update IO", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
   while (1)
   {
 
@@ -135,25 +138,29 @@ void IO_task(void *arg)
     {
       if (io_num == INT2_PIN) //read extension
       {
-        for (int i = 4; i < 12; i++)
+        Serial.println("EXTENSION INTERRUPT");
+        if (IsExtensionConnected())
         {
-          bool currentState = currentInputs[i]->read();
-          Serial.print(i);
-          Serial.print(" ");
-          currentState ? Serial.println("True") : Serial.println("False");
-          //bool currentState = inputs_state[i];
-          if (currentState != previousInputs[i])
+          for (int i = 4; i < 12; i++)
           {
-            if (currentState == false)
+            bool currentState = currentInputs[i]->read();
+            /*/Serial.print(i);
+          Serial.print(" ");
+          currentState ? Serial.println("True") : Serial.println("False");*/
+            //bool currentState = inputs_state[i];
+            if (currentState != previousInputs[i])
             {
-              channels[i].toggle(); //toggle state
-              channels[i].clearTimerAndPulse();
-              channels[i].disableSheduler();
+              if (currentState == false)
+              {
+                channels[i].toggle(); //toggle state
+                channels[i].clearTimerAndPulse();
+                channels[i].disableSheduler();
+              }
+              previousInputs[i] = currentState;
+              _inputChanged = true;
             }
-            previousInputs[i] = currentState;
-            _inputChanged = true;
+            delay(1);
           }
-          delay(1);
         }
       }
       else
@@ -189,27 +196,51 @@ void IO_task(void *arg)
   delay(100);
 }
 
-void updateIO(void* params)
+void updateIO(void *params)
 {
   uint8_t data;
-  for(;;)
+  for (;;)
   {
+    //extension
     data = 0x00;
-    for(int i = 3 ; i != 0;i--)
+    for (int i = 3; i >= 0; i--)
     {
-      
+
       bool state = leds[i].getState();
-      if(state)
+      if (state)
       {
-        data |= 0x01;//set last bit 1 = LED OFF
-      }else{
-        data &= 0xFE;//set last bit 0 = LED ON
+        data |= 0x01; //set last bit 1 = LED OFF
       }
-      data <<=1;
+      else
+      {
+        data &= 0xFE; //set last bit 0 = LED ON
+      }
+      data <<= 1;
     }
-    data<<=4;
-    tca.writeByte(TCA6424A_RA_OUTPUT1,data);
-  vTaskDelay(100/portTICK_PERIOD_MS);
+    data <<= 3;
+    tca.ts_writeByte(TCA6424A_RA_OUTPUT1, data);
+    mosfets[0].getState() ? mosfets[0].turnOn() : mosfets[0].turnOff();
+    mosfets[1].getState() ? mosfets[1].turnOn() : mosfets[1].turnOff();
+
+    if (IsExtensionConnected())
+    {
+      data = 0x00;
+      for (int i = 11; i > 3; i--)
+      {
+        data <<= 1;
+        bool state = leds[i].getState();
+        if (state)
+        {
+          data |= 0x01; //set last bit 1 = LED OFF
+        }
+        else
+        {
+          data &= 0xFE; //set last bit 0 = LED ON
+        }
+      }
+      tca_ext.ts_writeByte(TCA6424A_RA_OUTPUT2, data);
+    }
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }
@@ -239,16 +270,22 @@ void getLeds(Led *pLeds)
 
 bool IsExtensionConnected()
 {
-  bool currentState = tca_ext.testConnection();
+  bool currentState = tca_ext.ts_testConnection();
   if (currentState == true && previousExtConnectedState == false)
   {
+    delay(1000);
     initExtPinDirections();
     copyStateRelaysToLeds();
-    gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, NULL);
+    uint8_t data[3];
+    tca_ext.readAll(data);
+    gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
+    Serial.println("EXT CONNECTED");
   }
   if (previousExtConnectedState == true && currentState == false)
   {
+    Serial.println("EXT NOT CONNECTED");
     gpio_isr_handler_remove(INT2_PIN);
+    gpio_pullup_en(INT2_PIN);
   }
   previousExtConnectedState = currentState;
   return currentState;

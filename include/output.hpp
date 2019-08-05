@@ -55,6 +55,6 @@ public:
 
   bool getState();
 
-  void initPin();
+  void initPin(bool CheckConnection);
 };
 #endif
