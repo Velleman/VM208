@@ -64,13 +64,16 @@ function update_names() {
     {
         $("#name_relay"+i).val(json.Channels[i-1].name);
     }   
-    $("#name_mosfet1").val(json.Channels[12].name);
-    $("#name_mosfet2").val(json.Channels[13].name);
+    $("#name_input1").val(json.NAME_INPUT);
+    $("#name_mosfet1").val(json.NAME_MOSFET1);
+    $("#name_mosfet2").val(json.NAME_MOSFET2);
 }
 
 function update_notif_settings() {
-    var e, t = notif_select.val();
-    //t || (t = 0), e = json.notifications[t], $("#notif_enabled_checkbox").prop("checked", e.enable), $("#recipient_field").val(e.recipients), $("#alarmvalue_field").val(json.io.analog.alarmvalue), 9 == notif_select.val() ? $("#alarmvalue_div").show() : $("#alarmvalue_div").hide()
+    $("#AlarmBoot").prop("checked", json.NOTIFICATION_BOOT);
+    $("#AlarmExt").prop("checked", json.NOTIFICATION_EXT_DIS);
+    $("#AlarmInput").prop("checked", json.NOTIFICATION_INPUT_CHANGE);
+    $("#AlarmManInput").prop("checked", json.NOTIFICATION_MANUAL_INPUT);
 }
 
 function timerClearEvent() {
@@ -119,19 +122,16 @@ function sendRequestBootloader() {
 }
 
 function sendAlarm() {
-	
-	if(validateEmail($("#recipient_field").val()))
-	{
-		var e = {
-			alarm: $("#notification_select").val(),
-			enable: $("#notif_enabled_checkbox").is(":checked") ? 1 : 0,
-			recipient: $("#recipient_field").val(),
-			alarmvalue: $("#alarmvalue_field").val()
+	var e = {
+			boot: $("#AlarmBoot").is(":checked") ? true : false,
+			ext: $("#AlarmExt").is(":checked") ? true : false,
+            input: $("#AlarmInput").is(":checked") ? true : false,
+            button: $("#AlarmManInput").is(":checked") ? true : false,
 		};
 		$("#sendAlarmButton").html("SAVING...");
 		$.ajax({
 			type: "POST",
-			url: "/alarm_settings",
+			url: "/notif_setting",
 			dataType: "text",
 			data: e,
 			success: function(e) {
@@ -141,13 +141,7 @@ function sendAlarm() {
 					console.log(t)
 				}
 			}
-		})
-	}
-	else
-	{
-		$("#sendAlarmButton").html("INVALID EMAIL ADDRESS");
-		setTimeout(function(){$("#sendAlarmButton").html("Save");}, 5000);
-	}
+		});
 }
 
 function validateEmail(email) {
@@ -410,7 +404,7 @@ function enableButtons() {
 }
 var json, notif_select = new Object;
 $(document).ready(function() {
-    requestBoardInfo(),requestSettings(), notif_select = $("#notification_select"), notif_select.change(update_notif_settings), $("#splashscreen").delay(750).fadeOut(500), enableButtons(),updateEthNetworkFieldsState(),updateWifiNetworkFieldState()
+    requestBoardInfo(),requestSettings(), $("#splashscreen").delay(750).fadeOut(500), enableButtons(),updateEthNetworkFieldsState(),updateWifiNetworkFieldState()
 });
 var current_slide = 0;
 $(function() {

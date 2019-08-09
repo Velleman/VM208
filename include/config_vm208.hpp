@@ -42,6 +42,7 @@ private:
   const char *emailPath = "/email.json";
   void writeConfig();
   void writeAlarms();
+  void writeEmailSettings();
   File loadFile(const char *path);
   //DynamicJsonBuffer jsonBuffer;
   String m_channelNames[14];
@@ -54,6 +55,8 @@ private:
   String _email_recipient;
 
   String _name_input;
+  String _mosfet1_name;
+  String _mosfet2_name;
 
   bool _notif_boot;
   bool _notif_input_change;
@@ -95,6 +98,8 @@ public:
   static const char *EMAIL_PW_KEY;
   static const char *EMAIL_RECEIVER_KEY;
   static const char *NAME_INPUT_KEY;
+  static const char *NAME_MOSFET1_KEY;
+  static const char *NAME_MOSFET2_KEY;
   static const char *NOTIF_BOOT_KEY;
   static const char *NOTIF_INPUT_CHANGE_KEY;
   static const char *NOTIF_EXT_CONNECT_KEY;
@@ -202,6 +207,12 @@ public:
   String getInputName();
   void setInputName(String name);
 
+  String getMosfet1Name();
+  void setMosfet1Name(String name);
+
+  String getMosfet2Name();
+  void setMosfet2Name(String name);
+
   bool getNotificationBoot();
   void setNotificationBoot(bool enable);
 
@@ -219,6 +230,7 @@ public:
   void load();
   void save();
   void saveAlarms();
+  void saveEmailSettings();
 
   ~Configuration();
 };

@@ -19,5 +19,7 @@
 	"TIMEZONE": 3600,
 	"DST": 3600,
 	"first_time": false,
-    "NAME_INPUT": "Input"
+    "NAME_INPUT": "Input",
+    "NAME_MOSFET1": "Mosfet 1",
+    "NAME_MOSFET2": "Mosfet 2"
 }

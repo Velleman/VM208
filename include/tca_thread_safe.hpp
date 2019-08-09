@@ -6,7 +6,8 @@ class TCA6424A_TS : public TCA6424A
 private:
     uint8_t devAddr;
     uint8_t buffer[3];
-
+    uint8_t registers[15];
+    
 public:
     TCA6424A_TS();
     TCA6424A_TS(uint8_t address);

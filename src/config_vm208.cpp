@@ -96,10 +96,7 @@ void Configuration::load()
     {
         ESP_LOGI(TAG, "file exist");
         File file = loadFile(configPath);
-        /* while (file.available())
-        {
-            Serial.write(file.read());
-        }*/
+
         DynamicJsonBuffer jsonBuffer;
         JsonObject &root = jsonBuffer.parseObject(file);
         if (root.containsKey(SSID_KEY))
@@ -124,6 +121,9 @@ void Configuration::load()
             _timezoneSeconds = root[TIMEZONE_KEY].as<long>();
             _DSTseconds = root[DST_KEY].as<int>();
             _firstTime = root[FIRST_TIME_KEY].as<bool>();
+            _name_input = root[NAME_INPUT_KEY].as<String>();
+            _mosfet1_name = root[NAME_MOSFET1_KEY].as<String>();
+            _mosfet2_name = root[NAME_MOSFET2_KEY].as<String>();
         }
         else
         {
@@ -153,6 +153,10 @@ void Configuration::load()
             _email_user = root[EMAIL_USER_KEY].as<String>();
             _email_pw = root[EMAIL_PW_KEY].as<String>();
             _email_recipient = root[EMAIL_RECEIVER_KEY].as<String>();
+            _notif_boot = root[NOTIF_BOOT_KEY].as<bool>();
+            _notif_ext_connected = root[NOTIF_EXT_CONNECT_KEY].as<bool>();
+            _notif_input_change = root[NOTIF_INPUT_CHANGE_KEY].as<bool>();
+            _notif_manual_input = root[NOTIF_MANUAL_INPUT_KEY].as<bool>();
         }
         else
         {
@@ -175,6 +179,37 @@ void Configuration::save()
 void Configuration::saveAlarms()
 {
     writeAlarms();
+}
+
+void Configuration::saveEmailSettings()
+{
+    writeEmailSettings();
+}
+
+void Configuration::writeEmailSettings()
+{
+    if (SPIFFS.exists(emailPath))
+    {
+        ESP_LOGI(TAG, "remove file");
+        SPIFFS.remove(emailPath);
+    }
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject &root = jsonBuffer.createObject();
+    root[EMAIL_SERRVER_KEY] = _email_server;
+    root[EMAIL_PORT_KEY] = _email_port;
+    root[EMAIL_USER_KEY] = _email_user;
+    root[EMAIL_PW_KEY] = _email_pw;
+    root[EMAIL_RECEIVER_KEY] = _email_recipient;
+    root[NOTIF_BOOT_KEY] = _notif_boot;
+    root[NOTIF_EXT_CONNECT_KEY] = _notif_ext_connected;
+    root[NOTIF_INPUT_CHANGE_KEY] = _notif_input_change;
+    root[NOTIF_MANUAL_INPUT_KEY] = _notif_manual_input;
+    File file = SPIFFS.open(emailPath, FILE_WRITE);
+    if (root.printTo(file) == 0)
+    {
+        Serial.println("Error writing to file");
+    }
+    file.close();
 }
 
 /*
@@ -205,7 +240,7 @@ void Configuration::writeConfig()
 {
     if (SPIFFS.exists(configPath))
     {
-        ESP_LOGI(TAG, "remove file");
+        Serial.println("remove config file");
         SPIFFS.remove(configPath);
     }
     DynamicJsonBuffer jsonBuffer;
@@ -230,11 +265,12 @@ void Configuration::writeConfig()
     root[TIMEZONE_KEY] = _timezoneSeconds;
     root[DST_KEY] = _DSTseconds;
     root[FIRST_TIME_KEY] = _firstTime;
+    root[NAME_INPUT_KEY] = _name_input;
+    root[NAME_MOSFET1_KEY] = _mosfet1_name;
+    root[NAME_MOSFET2_KEY] = _mosfet2_name;
+    
     File file = SPIFFS.open(configPath, FILE_WRITE);
-    if (root.printTo(file) == 0)
-    {
-        Serial.println("Error writing to file");
-    }
+    root.printTo(file);
     file.close();
 }
 
@@ -548,6 +584,26 @@ void Configuration::setEmailRecipient(String recipient)
     _email_recipient = recipient;
 }
 
+void Configuration::setMosfet1Name(String name)
+{
+    _mosfet1_name = name;
+}
+
+String Configuration::getMosfet1Name()
+{
+    return _mosfet1_name;
+}
+
+void Configuration::setMosfet2Name(String name)
+{
+    _mosfet2_name = name;
+}
+
+String Configuration::getMosfet2Name()
+{
+    return _mosfet2_name;
+}
+
 void Configuration::setInputName(String name)
 {
     _name_input = name;
@@ -625,13 +681,14 @@ const char *Configuration::ALARM_STATE_KEY = "state";
 const char *Configuration::ALARM_ENABLED_KEY = "enabled";
 const char *Configuration::CHANNEL_NAME_KEY = "name";
 const char *Configuration::FIRST_TIME_KEY = "first_time";
-;
 const char *Configuration::EMAIL_SERRVER_KEY = "EMAIL_SERVER";
 const char *Configuration::EMAIL_PORT_KEY = "EMAIL_PORT";
 const char *Configuration::EMAIL_USER_KEY = "EMAIL_USER";
 const char *Configuration::EMAIL_PW_KEY = "EMAIL_PW";
 const char *Configuration::EMAIL_RECEIVER_KEY = "EMAIL_RECEIVER";
 const char *Configuration::NAME_INPUT_KEY = "NAME_INPUT";
+const char *Configuration::NAME_MOSFET1_KEY = "NAME_MOSFET1";
+const char *Configuration::NAME_MOSFET2_KEY = "NAME_MOSFET2";
 const char *Configuration::NOTIF_BOOT_KEY = "NOTIFICATION_BOOT";
 const char *Configuration::NOTIF_INPUT_CHANGE_KEY = "NOTIFICATION_INPUT_CHANG";
 const char *Configuration::NOTIF_EXT_CONNECT_KEY = "NOTIFICATION_EXT_DIS/CONNECTED";

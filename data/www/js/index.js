@@ -32,8 +32,9 @@ function update_names() {
     {
         $("#Name"+i).html(json.Channels[i-1].name);
     }   
-    //$("#name_mosfet1").val(json.Channels[12].name);
-    //$("#name_mosfet2").val(json.Channels[13].name);
+    $("#i1Name").html(json.NAME_INPUT);
+    $("#m1Name").html(json.NAME_MOSFET1);
+    $("#m2Name").html(json.NAME_MOSFET2);
 }
 
 

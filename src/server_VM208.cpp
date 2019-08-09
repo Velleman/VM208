@@ -61,8 +61,6 @@ void startServer()
     p = request->getParam(1);
     state = p->value();
 
-    Serial.println(relay);
-    Serial.println(state);
     Channel *c = getChannelById(relay.toInt());
 
     if (state == "0")
@@ -123,24 +121,25 @@ void startServer()
   });
 
   server.on("/email_settings", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if(request->params() == 5)
+    if (request->params() == 5)
     {
       config.setEmailServer(request->getParam(0)->value());
       config.setEmailPort(request->getParam(1)->value());
       config.setEmailUser(request->getParam(2)->value());
       config.setEmailPW(request->getParam(3)->value());
       config.setEmailRecipient(request->getParam(4)->value());
-      config.save();
-      request->send(200,"text/plain","OK");
-    }else
+      config.saveEmailSettings();
+      request->send(200, "text/plain", "OK");
+    }
+    else
     {
       request->send(400);
     }
-    
   });
+  
 
   server.on("/testmail", HTTP_POST, [](AsyncWebServerRequest *request) {
-    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);    
+    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
   });
 
   server.on("/wifisave", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -156,7 +155,8 @@ void startServer()
       config.save();
       Serial.printf("Wifi Saved\n");
       ESP.restart();
-    }else
+    }
+    else
     {
       request->send(400);
     }
@@ -206,6 +206,23 @@ void startServer()
     }
   });
 
+  server.on("/notif_setting", HTTP_POST, [](AsyncWebServerRequest *request) {
+    Serial.printf("notif_setting\n");
+    if (request->params() == 4)
+    {
+      config.setNotificationBoot(request->getParam(0)->value() == "true" ? true :false);
+      config.setNotification_ext_connected(request->getParam(1)->value() == "true" ? true :false);
+      config.setNotificationInputChange(request->getParam(2)->value() == "true" ? true :false);
+      config.setNotification_manual_input(request->getParam(3)->value() == "true" ? true :false);
+      config.saveEmailSettings();
+      request->send(200, "text/plain", "OK");
+    }
+    else
+    {
+      request->send(400);
+    }
+  });
+
   server.on("/alarm", HTTP_POST, [](AsyncWebServerRequest *request) {
     if (request->params() == 6)
     {
@@ -237,16 +254,19 @@ void startServer()
     if (request->params() == 16)
     {
       Serial.printf("names save\n");
-      Channel* c;
-      for(int i=0;i<12;i++)
+      Channel *c;
+      for (int i = 0; i < 12; i++)
       {
-        c = getChannelById(i+1);
+        c = getChannelById(i + 1);
         c->setName(request->getParam(i)->value());
       }
+      config.setMosfet1Name(request->getParam(12)->value());
+      config.setMosfet2Name(request->getParam(13)->value());
+      config.setInputName(request->getParam(14)->value());
       config.setBoardName(request->getParam(15)->value());
       config.saveAlarms();
       config.save();
-      request->send(200,"text/plain","OK");
+      request->send(200, "text/plain", "OK");
     }
     else
     {
@@ -264,7 +284,7 @@ void startServer()
       configTime(config.getTimezone(), config.getDST(), "pool.ntp.org");
       config.save();
       //applyEthNetworkSettings();
-      request->send(200,"text/plain","OK");
+      request->send(200, "text/plain", "OK");
     }
     else
     {
@@ -294,7 +314,6 @@ void startServer()
         minute = time.substring(3, 5);                                          // split minute
         param++;                                                                //increase param;
         enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-        
 
         a = c->getAlarm(alarm);
         a->setHour(hour.toInt());
@@ -309,7 +328,7 @@ void startServer()
         minute = time.substring(3, 5);
         param++;
         enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-        
+
         a = c->getAlarm(alarm);
         a->setHour(hour.toInt());
         a->setMinute(minute.toInt());
@@ -325,7 +344,7 @@ void startServer()
       minute = time.substring(3, 5);                                          // split minute
       param++;                                                                //increase param;
       enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-      
+
       a = c->getAlarm(alarm);
       a->setHour(hour.toInt());
       a->setMinute(minute.toInt());
@@ -339,7 +358,7 @@ void startServer()
       minute = time.substring(3, 5);
       param++;
       enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-      
+
       a = c->getAlarm(alarm);
       a->setHour(hour.toInt());
       a->setMinute(minute.toInt());
@@ -366,70 +385,69 @@ void startServer()
   memset(userpw, 0, 32);
   config.getUserName().toCharArray(user, 32);
   config.getUserPw().toCharArray(userpw, 32);
-  Serial.println(user);
-  Serial.println(userpw);
   server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setAuthentication(user, userpw).setFilter(ON_STA_VM208_FILTER);
   server.serveStatic("/", SPIFFS, "/ap/").setDefaultFile("index.html").setFilter(ON_AP_VM208_FILTER);
 
   server.onNotFound([](AsyncWebServerRequest *request) {
-    if(ON_AP_VM208_FILTER(nullptr))
+    if (ON_AP_VM208_FILTER(nullptr))
     {
       //Send index.htm with default content type
       request->send(SPIFFS, "/index.htm");
     }
-    else{
-    Serial.printf("NOT_FOUND: ");
-    if (request->method() == HTTP_GET)
-      Serial.printf("GET");
-    else if (request->method() == HTTP_POST)
-      Serial.printf("POST");
-    else if (request->method() == HTTP_DELETE)
-      Serial.printf("DELETE");
-    else if (request->method() == HTTP_PUT)
-      Serial.printf("PUT");
-    else if (request->method() == HTTP_PATCH)
-      Serial.printf("PATCH");
-    else if (request->method() == HTTP_HEAD)
-      Serial.printf("HEAD");
-    else if (request->method() == HTTP_OPTIONS)
-      Serial.printf("OPTIONS");
     else
-      Serial.printf("UNKNOWN");
-    Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
-    
-    if (request->contentLength())
     {
-      Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
-      Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
-    }
-
-    int headers = request->headers();
-    int i;
-    for (i = 0; i < headers; i++)
-    {
-      AsyncWebHeader *h = request->getHeader(i);
-      Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
-    }
-
-    int params = request->params();
-    for (i = 0; i < params; i++)
-    {
-      AsyncWebParameter *p = request->getParam(i);
-      if (p->isFile())
-      {
-        Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-      }
-      else if (p->isPost())
-      {
-        Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-      }
+      Serial.printf("NOT_FOUND: ");
+      if (request->method() == HTTP_GET)
+        Serial.printf("GET");
+      else if (request->method() == HTTP_POST)
+        Serial.printf("POST");
+      else if (request->method() == HTTP_DELETE)
+        Serial.printf("DELETE");
+      else if (request->method() == HTTP_PUT)
+        Serial.printf("PUT");
+      else if (request->method() == HTTP_PATCH)
+        Serial.printf("PATCH");
+      else if (request->method() == HTTP_HEAD)
+        Serial.printf("HEAD");
+      else if (request->method() == HTTP_OPTIONS)
+        Serial.printf("OPTIONS");
       else
-      {
-        Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-      }
-    }
+        Serial.printf("UNKNOWN");
+      Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
 
-    request->send(404);
+      if (request->contentLength())
+      {
+        Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
+        Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
+      }
+
+      int headers = request->headers();
+      int i;
+      for (i = 0; i < headers; i++)
+      {
+        AsyncWebHeader *h = request->getHeader(i);
+        Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
+      }
+
+      int params = request->params();
+      for (i = 0; i < params; i++)
+      {
+        AsyncWebParameter *p = request->getParam(i);
+        if (p->isFile())
+        {
+          Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
+        }
+        else if (p->isPost())
+        {
+          Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+        }
+        else
+        {
+          Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+        }
+      }
+
+      request->send(404);
     }
   });
   server.onFileUpload([](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final) {
@@ -451,13 +469,14 @@ void startServer()
 
 void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final)
 {
+  int cmd = U_FLASH;
   if (!index)
   {
     log_i("Update");
 
     // if filename includes spiffs, update the spiffs partition
 
-    int cmd = (filename.startsWith("spiffs")) ? U_SPIFFS : U_FLASH;
+    cmd = (filename.startsWith("spiffs")) ? U_SPIFFS : U_FLASH;
     cmd ? Serial.println("SPIFFS") : Serial.println("FLASH");
     if (cmd == U_FLASH)
     {
@@ -477,7 +496,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
   if (final)
   {
     AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the VM208 reboots");
-    response->addHeader("Refresh", "5");
+    response->addHeader("Refresh", "20");
     response->addHeader("Location", "/index.html");
     request->send(response);
     if (!Update.end(true))
@@ -488,7 +507,10 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     {
       Serial.println("Update complete");
       Serial.flush();
-      ESP.restart();
+      if(cmd == U_FLASH)
+      {
+        ESP.restart();
+      }
     }
   }
 }
@@ -517,7 +539,7 @@ void sendBoardInfo(AsyncWebServerRequest *request)
   String second = String((int)timeInfo->tm_sec, 10);
   String s;
   s += hour;
-  s +=":";
+  s += ":";
   s += minute;
   s += ":";
   s += second;
@@ -605,6 +627,13 @@ void sendSettings(AsyncWebServerRequest *request)
   root.set(config.WIFI_SECONDARYDNS_KEY, config.getWIFI_SecondaryDNS()); //TODO: change to interface settings
   root.set(config.TIMEZONE_KEY, config.getTimezone());
   root.set(config.DST_KEY, config.getDST());
+  root.set(config.NAME_INPUT_KEY, config.getInputName());
+  root.set(config.NAME_MOSFET1_KEY, config.getMosfet1Name());
+  root.set(config.NAME_MOSFET2_KEY, config.getMosfet2Name());
+  root.set(config.NOTIF_BOOT_KEY,config.getNotificationBoot());
+  root.set(config.NOTIF_EXT_CONNECT_KEY,config.getNotification_ext_connected());
+  root.set(config.NOTIF_INPUT_CHANGE_KEY,config.getNotificationInputChange());
+  root.set(config.NOTIF_MANUAL_INPUT_KEY,config.getNotification_manual_input());
   JsonArray &Channels = root.createNestedArray("Channels");
   Channel *c;
   Alarm *a;
@@ -620,11 +649,6 @@ void sendSettings(AsyncWebServerRequest *request)
     {
       a = c->getAlarm(j);
       JsonObject &Channels_alarms_settings = Channels_alarms.createNestedObject();
-      Serial.println(a->getWeekday());
-      Serial.println(a->getHour());
-      Serial.println(a->getMinute());
-      Serial.println(a->getState() ? "True" : "False");
-      Serial.println(a->isEnabled() ? "True" : "False");
       Channels_alarms_settings[config.ALARM_WEEKDAY_KEY] = a->getWeekday();
       Channels_alarms_settings[config.ALARM_HOUR_KEY] = a->getHour();
       Channels_alarms_settings[config.ALARM_MINUTE_KEY] = a->getMinute();

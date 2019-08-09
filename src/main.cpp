@@ -34,7 +34,7 @@
 #include <ETH.h>
 #include <DNSServer.h>
 #include "mail.hpp"
-static const char *TAG = "VM208_MAIN";
+//static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
 // Define NTP Client to get time
@@ -50,69 +50,14 @@ bool gotSTA_IP;
 SemaphoreHandle_t g_Mutex;
 SemaphoreHandle_t g_MutexChannel;
 SemaphoreHandle_t g_MutexMail;
+
+
 int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
 const PROGMEM char *ntpServer = "pool.ntp.org";
 bool wifiFirstConnected = false;
 //DNSServer dnsServer;
 void startWifi();
-
-
-static void phy_device_power_enable_via_gpio(bool enable)
-{
-  ESP_LOGI(TAG, "PHY USE POWER PIN ENABLED");
-  assert(DEFAULT_ETHERNET_PHY_CONFIG.phy_power_enable);
-
-  if (!enable)
-  {
-    /* Do the PHY-specific power_enable(false) function before powering down */
-    DEFAULT_ETHERNET_PHY_CONFIG.phy_power_enable(false);
-  }
-  if (enable)
-  {
-    gpio_pad_select_gpio(GPIO_NUM_2);
-    gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
-    gpio_set_level(GPIO_NUM_2, 1);
-  }
-  ESP_LOGI(TAG, "power pin:%d", PIN_PHY_POWER);
-  gpio_pad_select_gpio(PIN_PHY_POWER);
-  gpio_set_direction(PIN_PHY_POWER, GPIO_MODE_OUTPUT);
-  if (enable == true)
-  {
-    gpio_set_level(PIN_PHY_POWER, 1);
-    ESP_LOGI(TAG, "phy_device_power_enable(TRUE)");
-  }
-  else
-  {
-    gpio_set_level(PIN_PHY_POWER, 0);
-    ESP_LOGI(TAG, "power_enable(FALSE)");
-  }
-
-  // Allow the power up/down to take effect, min 300us
-  vTaskDelay(1);
-
-  if (enable)
-  {
-    /* Run the PHY-specific power on operations now the PHY has power */
-    DEFAULT_ETHERNET_PHY_CONFIG.phy_power_enable(true);
-  }
-}
-
-static void eth_gpio_config_rmii(void)
-{
-  // RMII data pins are fixed:
-  // TXD0 = GPIO19
-  // TXD1 = GPIO22
-  // TX_EN = GPIO21
-  // RXD0 = GPIO25
-  // RXD1 = GPIO26
-  // CLK == GPIO0
-  phy_rmii_configure_data_interface_pins();
-  // MDC is GPIO 23, MDIO is GPIO 18
-  ESP_LOGI(TAG, "MDC pin:%d", PIN_SMI_MDC);
-  ESP_LOGI(TAG, "MDIO pin:%d", PIN_SMI_MDIO);
-  phy_rmii_smi_configure_pins(PIN_SMI_MDC, PIN_SMI_MDIO);
-}
 
 /**
 * @brief event handler for ethernet
@@ -121,16 +66,17 @@ static void eth_gpio_config_rmii(void)
 * @param event
 * @return esp_err_t
 */
-static void WiFiEvent(WiFiEvent_t event)
+void WiFiEvent(WiFiEvent_t event)
 {
   switch (event)
   {
   case SYSTEM_EVENT_ETH_CONNECTED:
+    WiFi.mode(WIFI_OFF);
     ESP_LOGI(TAG, "Ethernet Link Up");
     break;
   case SYSTEM_EVENT_ETH_DISCONNECTED:
     gotETH_IP = false;
-    WiFi.reconnect();
+    startWifi();
     ESP_LOGI(TAG, "Ethernet Link Down");
     break;
   case SYSTEM_EVENT_ETH_START:
@@ -159,7 +105,6 @@ static void WiFiEvent(WiFiEvent_t event)
     Serial.println("Mbps");
     gotETH_IP = true;
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
-    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
     break;
   case SYSTEM_EVENT_ETH_STOP:
     ESP_LOGI(TAG, "Ethernet Stopped");
@@ -171,7 +116,6 @@ static void WiFiEvent(WiFiEvent_t event)
     gotSTA_IP = true;
     ESP_LOGI(TAG, "GOT_STA_IP");
     ESP_LOGI(TAG, "got ip:%s", WiFi.localIP());
-    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
     xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;
@@ -296,65 +240,16 @@ void startWifi()
     Serial.println(config.getWifiPassword());
 
     //WiFi.disconnect(false,false);
-  
+
     WiFi.begin(ssid, pw);
     while (!WiFi.isConnected())
     {
       Serial.print(".");
       delay(200);
     }
-    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
-    /*
-    if (!config.getWIFI_DHCPEnable())
-    {
-      ESP_LOGI(TAG, "WIFI DHCP DISABLED");
-      Serial.println(config.getWIFI_IPAddress());
-      Serial.println(config.getWIFI_Gateway());
-      Serial.println(config.getWIFI_SubnetMask());
-      tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_STA);
-      //static ip
-      tcpip_adapter_ip_info_t info;
-      char ip[15];
-      char gw[15];
-      char subnet[15];
-      config.getWIFI_IPAddress().toCharArray(ip, 15);
-      config.getWIFI_Gateway().toCharArray(gw, 15);
-      config.getWIFI_SubnetMask().toCharArray(subnet, 15);
-      info.ip.addr = ipaddr_addr(ip);
-      info.gw.addr = ipaddr_addr(gw);
-      info.netmask.addr = ipaddr_addr(subnet);
-      tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_STA, &info);
-      tcpip_adapter_dns_info_t info_dns;
-      char dns[15];
-      config.getWIFI_PrimaryDNS().toCharArray(dns, 15);
-      info_dns.ip.type = IPADDR_TYPE_V4;
-      info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
-      tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_STA, TCPIP_ADAPTER_DNS_MAIN, &info_dns);
-      config.getWIFI_SecondaryDNS().toCharArray(dns, 15);
-      info_dns.ip.type = IPADDR_TYPE_V4;
-      info_dns.ip.u_addr.ip4.addr = ipaddr_addr(dns);
-      tcpip_adapter_set_dns_info(TCPIP_ADAPTER_IF_STA, TCPIP_ADAPTER_DNS_BACKUP, &info_dns);
-    }
-    char ssid_arr[32];
-    char pw[64];
-    config.getSSID().toCharArray(ssid_arr, 32);
-    config.getWifiPassword().toCharArray(pw, 64);
-    ESP_LOGI(TAG, "SSID: %s", ssid_arr);
-    ESP_LOGI(TAG, "PW: %s", pw);
-    wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&init_cfg));
-    wifi_config_t cfg;
-    esp_wifi_get_config(ESP_IF_WIFI_STA, &cfg);
-    strncpy((char *)cfg.sta.password, pw, sizeof(cfg.sta.password));
-    strncpy((char *)cfg.sta.ssid, ssid_arr, sizeof(cfg.sta.ssid));
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg));
-    ESP_ERROR_CHECK(esp_wifi_start());
-    esp_wifi_connect();
-    //Load Config and connect to Wifi*/
   }
 }
-static void applyEthNetworkSettings()
+/*static void applyEthNetworkSettings()
 {
   if (!config.getETH_DHCPEnable())
   {
@@ -394,24 +289,28 @@ static void applyEthNetworkSettings()
     tcpip_adapter_dhcpc_start(TCPIP_ADAPTER_IF_ETH);
   }
 }
-
-void startEth()
+*/
+static bool startEth()
 {
-  /*esp_err_t ret;
-  applyEthNetworkSettings();
-  eth_config_t eth_config = DEFAULT_ETHERNET_PHY_CONFIG;
-  /* Set the PHY address in the example configuration *
-  eth_config.phy_addr = PHY0;
-  eth_config.gpio_config = eth_gpio_config_rmii;
-  eth_config.tcpip_input = tcpip_adapter_eth_input;
-  eth_config.clock_mode = ETH_CLOCK_GPIO0_IN;
-  eth_config.phy_power_enable = phy_device_power_enable_via_gpio;
-  ret = esp_eth_init(&eth_config);
+  // esp_err_t ret;
+  // applyEthNetworkSettings();
+  // eth_config_t eth_config = DEFAULT_ETHERNET_PHY_CONFIG;
+  // /* Set the PHY address in the example configuration */
+  // eth_config.phy_addr = PHY0;
+  // eth_config.gpio_config = eth_gpio_config_rmii;
+  // eth_config.tcpip_input = tcpip_adapter_eth_input;
+  // eth_config.clock_mode = ETH_CLOCK_GPIO0_IN;
+  // eth_config.phy_power_enable = phy_device_power_enable_via_gpio;
+  // ret = esp_eth_init(&eth_config);
 
-  if (ret == ESP_OK)
-  {
-    esp_eth_enable();
-  }*/
+  // if (ret == ESP_OK)
+  // {
+  //   esp_eth_enable();
+  // }
+
+  pinMode(GPIO_NUM_2, OUTPUT);
+  digitalWrite(GPIO_NUM_2, HIGH);
+  ETH.begin(0, PIN_PHY_POWER, 23, 18, ETH_PHY_LAN8720, ETH_CLOCK_GPIO0_IN);
   if (!config.getETH_DHCPEnable())
   {
     char ip[15];
@@ -433,10 +332,8 @@ void startEth()
 
     ETH.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS);
   }
-  pinMode(GPIO_NUM_2, OUTPUT);
-  digitalWrite(GPIO_NUM_2, HIGH);
-  ETH.begin(0, PIN_PHY_POWER, 23, 18, ETH_PHY_LAN8720, ETH_CLOCK_GPIO0_IN);
   
+  return ETH.linkUp();
 }
 
 static void checkSheduler(void *pvParameter)
@@ -556,7 +453,7 @@ void setup()
     WiFi.softAP("VM208_AP", "VellemanForMakers");
     WiFi.enableSTA(false);
     IPAddress apIP(192, 168, 4, 1);
-    
+
     // if DNSServer is started with "*" for domain name, it will reply with
     // provided IP to all DNS request
     //dnsServer.start(53, "*", apIP);
@@ -565,8 +462,10 @@ void setup()
   {
     xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
     WiFi.onEvent(WiFiEvent);
-    startEth();
-    startWifi();
+    if(!startEth())//No cable inserted
+    {
+      startWifi();
+    }
 
     xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
     //xEventGroupWaitBits(s_wifi_event_group, GOTIP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
@@ -607,16 +506,15 @@ void setup()
       MDNS.addService("http", "tcp", 80);
     }
   }
-  xTaskCreate(checkSheduler, "Sheduler", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
-  xTaskCreate(shedulerStatus, "ShedulerStatus", 2048, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  xTaskCreate(shedulerStatus, "ShedulerStatus", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
   startServer();
+  //sendBootMail();
 }
 
 void loop()
 {
   ArduinoOTA.handle();
   delay(100);
-  Serial.println(esp_get_free_heap_size());
+  //Serial.println(esp_get_free_heap_size());
 }
-
-

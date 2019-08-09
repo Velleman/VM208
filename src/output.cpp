@@ -46,7 +46,9 @@ void Output::updateTCA()
 {
     if (m_tca != nullptr && m_isAccessible)
     {
+        //portENTER_CRITICAL();
         m_tca->ts_writePin(m_pin, m_state);
+        //portEXIT_CRITICAL();
         delay(1);
     }
 }
@@ -66,6 +68,7 @@ void Output::initPin(bool checkConnection)
             if (m_tca->testConnection())
             {
                 m_isAccessible = true;
+                updateTCA();
                 m_tca->ts_setPinDirection(m_pin, TCA6424A_OUTPUT);
             }
             else

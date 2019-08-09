@@ -1,7 +1,7 @@
 #include "mail.hpp"
 
 #include "global.hpp"
-
+#include "ETH.h"
 //WiFi or HTTP client for internet connection
 HTTPClientESP32Ex http;
 
@@ -13,13 +13,13 @@ void sendCallback(SendStatus info);
 
 void sendEmail(void *pvParamaters)
 {
-  xSemaphoreTake(g_MutexMail,portMAX_DELAY);
+  xSemaphoreTake(g_MutexMail, portMAX_DELAY);
   Serial.println(config.getEmailServer());
   Serial.println(config.getEmailPort());
   Serial.println(config.getEmailUser());
   Serial.println(config.getEmailPW());
   Serial.println(config.getEmailRecipient());
- //Set the Email host, port, account and password
+  //Set the Email host, port, account and password
   smtpData.setLogin(config.getEmailServer(), config.getEmailPort().toInt(), config.getEmailUser(), config.getEmailPW());
 
   //Set the sender name and Email
@@ -32,17 +32,49 @@ void sendEmail(void *pvParamaters)
   smtpData.setSubject("ESP32 SMTP Mail Sending Test");
 
   //Set the message - normal text or html format
-  smtpData.setMessage("<div style=\"color:#ff0000;font-size:20px;\">Hello World! - From ESP32</div>", true);
+  uint8_t notification = (uint32_t)pvParamaters;
+  String message;
+  Serial.println(notification);
+  switch (notification)
+  {
+  case MAN_INPUT_MAIL:
+    message = "<div style=\"color:#ff0000;font-size:20px;\">Manual Input! - From VM208</div>";
+    break;
+  case BOOT_MAIL:
+    message = "<div style=\"color:#ff0000;font-size:20px;\">Booted Up! - From VM208</div>";
+    break;
+  case INPUT_MAIL:
+    message = "<div style=\"color:#ff0000;font-size:20px;\">Input Changed! - From VM208</div>";
+    break;
+  case EXT_MAIL:
+    message = "<div style=\"color:#ff0000;font-size:20px;\">Extension Connected! - From VM208</div>";
+    break;
+  case EXT_DIS_MAIL:
+    message = "<div style=\"color:#ff0000;font-size:20px;\">Extension Disconnected! - From VM208</div>";
+    break;
+  default:
+    message = "<div style=\"color:#ff0000;font-size:20px;\">Manual Input! - From VM208</div>";
+    break;
+  }
+  smtpData.setMessage(message, true);
 
   //Add recipients, can add more than one recipient
   smtpData.addRecipient(config.getEmailRecipient());
 
-  smtpData.setSendCallback(sendCallback);
+  //smtpData.setSendCallback(sendCallback);
 
   Serial.println("Sending Mail...");
   //Start sending Email, can be set callback function to track the status
-  if (!MailClient.sendMail(http, smtpData))
-    Serial.println("Error sending Email, " + MailClient.smtpErrorReason());
+  smtpData.setSendCallback(sendCallback);
+  try
+  {
+    if (!MailClient.sendMail(http, smtpData))
+      Serial.println("Error sending Email, " + MailClient.smtpErrorReason());
+  }
+  catch (exception &e)
+  {
+    Serial.println(e.what());
+  }
 
   //Clear all data from Email object to free memory
   smtpData.empty();
@@ -65,20 +97,44 @@ void sendCallback(SendStatus msg)
 
 void sendManualInputMail()
 {
-  
+  if (config.getNotification_manual_input())
+    xTaskCreate(sendEmail, "send_mail", 8192, (void *)MAN_INPUT_MAIL, (tskIDLE_PRIORITY + 2), NULL);
 }
 
 void sendBootMail()
 {
-
+  if (config.getNotificationBoot())
+    xTaskCreate(sendEmail, "send_mail", 8192, (void *)BOOT_MAIL, (tskIDLE_PRIORITY + 2), NULL);
 }
 
 void sendInputChangedMail()
 {
-
+  if (config.getNotificationInputChange())
+    xTaskCreate(sendEmail, "send_mail", 8192, (void *)INPUT_MAIL, (tskIDLE_PRIORITY + 2), NULL);
 }
 
 void sendExtConnectedMail()
 {
+  if (config.getNotification_ext_connected())
+  {
+    Serial.println("EXT MAIL WILL BE SEND");
+    xTaskCreate(sendEmail, "send_mail", 8192, (void *)EXT_MAIL, (tskIDLE_PRIORITY + 2), NULL);
+  }
+  else
+  {
+    Serial.println("EXT MAIL WILL BE NOT SEND");
+  }
+}
 
+void sendExtDisConnectedMail()
+{
+  if (config.getNotification_ext_connected())
+  {
+    Serial.println("EXT MAIL WILL BE SEND");
+    xTaskCreate(sendEmail, "send_mail", 8192, (void *)EXT_DIS_MAIL, (tskIDLE_PRIORITY + 2), NULL);
+  }
+  else
+  {
+    Serial.println("EXT MAIL WILL BE NOT SEND");
+  }
 }

@@ -127,9 +127,9 @@
                             <input type="text" name="server" maxlength="64" id="smtp_server" value="smtp.example.com"> </div>
                         <div class="pure-control-group">
                             <label for="smtp_port">Port:</label>
-                            <input type="text" name="port" id="smtp_port" value="25"> 
+                            <input type="text" name="port" id="smtp_port" value="25">
                         </div>
-                      
+
                     </fieldset>
                     <fieldset>
                         <legend>Authentication</legend>
@@ -154,7 +154,7 @@
             </div>
             <div class="header" id="customize">
                 <h1>Customize</h1>
-                <h2>Customize the IO's names</h2> 
+                <h2>Customize the IO's names</h2>
             </div>
             <div class="content">
                 <form id="nameSettingsForm" class="pure-form pure-form-aligned">
@@ -178,28 +178,28 @@
                         <div class="pure-control-group">
                             <label for="name_relay4">Relay 4:</label>
                             <input type="text" maxlength="16" name="name_relay4" id="name_relay4" value="Relay 4"> </div>
-                            <div class="pure-control-group">
+                        <div class="pure-control-group">
                             <label for="name_relay4">Relay 5:</label>
                             <input type="text" maxlength="16" name="name_relay5" id="name_relay5" value="Relay 5"> </div>
-                            <div class="pure-control-group">
+                        <div class="pure-control-group">
                             <label for="name_relay4">Relay 6:</label>
                             <input type="text" maxlength="16" name="name_relay6" id="name_relay6" value="Relay 6"> </div>
-                            <div class="pure-control-group">
+                        <div class="pure-control-group">
                             <label for="name_relay4">Relay 7:</label>
                             <input type="text" maxlength="16" name="name_relay7" id="name_relay7" value="Relay 7"> </div>
-                            <div class="pure-control-group">
+                        <div class="pure-control-group">
                             <label for="name_relay4">Relay 8:</label>
                             <input type="text" maxlength="16" name="name_relay8" id="name_relay8" value="Relay 8"> </div>
-                            <div class="pure-control-group">
+                        <div class="pure-control-group">
                             <label for="name_relay4">Relay 9:</label>
                             <input type="text" maxlength="16" name="name_relay9" id="name_relay9" value="Relay 9"> </div>
-                            <div class="pure-control-group">
+                        <div class="pure-control-group">
                             <label for="name_relay4">Relay 10:</label>
                             <input type="text" maxlength="16" name="name_relay10" id="name_relay10" value="Relay 10"> </div>
-                            <div class="pure-control-group">
+                        <div class="pure-control-group">
                             <label for="name_relay4">Relay 11:</label>
                             <input type="text" maxlength="16" name="name_relay11" id="name_relay11" value="Relay 11"> </div>
-                            <div class="pure-control-group">
+                        <div class="pure-control-group">
                             <label for="name_relay4">Relay 12:</label>
                             <input type="text" maxlength="16" name="name_relay12" id="name_relay12" value="Relay 12"> </div>
                     </fieldset>
@@ -207,11 +207,11 @@
                         <legend>MOSFETs</legend>
                         <div class="pure-control-group">
                             <label for="name_mosfet1">Mosfet 1:</label>
-                            <input type="text" maxlength="16" name="name_mosfet1" id="name_mosfet1" value="Mosfet 1"> 
+                            <input type="text" maxlength="16" name="name_mosfet1" id="name_mosfet1" value="Mosfet 1">
                         </div>
                         <div class="pure-control-group">
                             <label for="name_mosfet2">Mosfet 2:</label>
-                            <input type="text" maxlength="16" name="name_mosfet2" id="name_mosfet2" value="Mosfet 2"> 
+                            <input type="text" maxlength="16" name="name_mosfet2" id="name_mosfet2" value="Mosfet 2">
                         </div>
                     </fieldset>
                     <fieldset>
@@ -233,25 +233,20 @@
                     <fieldset>
                         <legend>Notifications</legend>
                         <div class="pure-control-group">
-                            <label for="notification_select">Notification</label>
-                            <select id="notification_select" name="inputs">
-                                <option value="0">Input 1 rising</option>
-                                <option value="1">Input 1 falling</option>
-                                <option value="2">Boot</option>
-                                <option value="3">Extension Connected</option>
-                                <option value="4">Extension Disconnected</option>
-                            </select>
+                            <label for="AlarmBoot" class="pure-checkbox">Boot up</label>
+                            <input id="AlarmBoot" type="checkbox">
                         </div>
                         <div class="pure-control-group">
-                            <label for="recipient_field">To:</label>
-                            <input type="text" name="recipient" id="recipient_field" maxlength="64" value="recipient@example.com"> </div>
-                        <div class="pure-control-group" id="alarmvalue_div">
-                            <label for="alarmvalue_field">Alarm value:</label>
-                            <input type="number" name="recipient" id="alarmvalue_field" value="128"> </div>
-                        <div class="pure-controls">
-                            <label for="notif_enabled_checkbox" class="pure-checkbox">
-                                <input type="checkbox" id="notif_enabled_checkbox">Enabled
-                            </label>
+                            <label for="AlarmExt" class="pure-checkbox">Extensions connected</label>
+                            <input id="AlarmExt" type="checkbox">
+                        </div>
+                        <div class="pure-control-group">
+                            <label for="AlarmInput" class="pure-checkbox">Input changed</label>
+                            <input id="AlarmInput" type="checkbox">
+                        </div>
+                        <div class="pure-control-group">
+                            <label for="AlarmManInput" class="pure-checkbox">Buttons pressed</label>
+                            <input id="AlarmManInput" type="checkbox">
                         </div>
                         <div class="pure-controls">
                             <button type="button" id="sendAlarmButton" class="pure-button pure-button-primary">Save</button>
@@ -384,31 +379,31 @@
         </div>
         <div class="content">
             <dl>
-               <dt>Board name</dt>
-               <dd>
-                  <div id="boardname">name</div>
-               </dd>
-               <dt>MAC address Wifi</dt>
-               <dd>
-                  <div id="mac_wifi">mac</div>
-               </dd>
-               <dt>MAC address Ethernet</dt>
-               <dd>
-                  <div id="mac_eth">mac</div>
-               </dd>
-               <dt>Local time</dt>
-               <dd>
-                  <div id="localtime">localtime</div>
-               </dd>
-               <dt>System up-time</dt>
-               <dd>
-                  <div id="uptime">uptime</div>
-               </dd>
-               <dt>Firmware version</dt>
-               <dd>
-                  <div id="version">version</div>
-               </dd>
-               
+                <dt>Board name</dt>
+                <dd>
+                    <div id="boardname">name</div>
+                </dd>
+                <dt>MAC address Wifi</dt>
+                <dd>
+                    <div id="mac_wifi">mac</div>
+                </dd>
+                <dt>MAC address Ethernet</dt>
+                <dd>
+                    <div id="mac_eth">mac</div>
+                </dd>
+                <dt>Local time</dt>
+                <dd>
+                    <div id="localtime">localtime</div>
+                </dd>
+                <dt>System up-time</dt>
+                <dd>
+                    <div id="uptime">uptime</div>
+                </dd>
+                <dt>Firmware version</dt>
+                <dd>
+                    <div id="version">version</div>
+                </dd>
+
             </dl>
         </div>
     </div>
