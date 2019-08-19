@@ -143,13 +143,13 @@ void IO_task(void *arg)
 
       if (io_num == INT2_PIN) //read extension
       {
-        if (millis() - previousTime > 100)
+        if (millis() - previousTime > 1)
         {
           Serial.println("EXTENSION INTERRUPT");
           if (IsExtensionConnected())
           {
             uint8_t inputs = tca_ext.readBank(TCA6424A_RA_INPUT1);
-            while (!digitalRead(INT_PIN))
+            while (!digitalRead(INT2_PIN))
             {
               tca_ext.readBank(TCA6424A_RA_INPUT1);
             }
@@ -157,10 +157,6 @@ void IO_task(void *arg)
             for (int i = 4; i < 12; i++)
             {
               currentState = (inputs >> (i - 4)) & 0x01;
-              /*/Serial.print(i);
-          Serial.print(" ");
-          currentState ? Serial.println("True") : Serial.println("False");*/
-              //bool currentState = inputs_state[i];
               if (currentState != previousInputs[i])
               {
                 if (currentState == false)
@@ -230,7 +226,11 @@ void updateIO(void *params)
 {
   for (;;)
   {
-    IsExtensionConnected();
+    if(IsExtensionConnected())
+    {
+      tca_ext.readBank(TCA6424A_RA_INPUT1);
+    }
+    
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     /*for(int i =0;i<12;i++)
     {

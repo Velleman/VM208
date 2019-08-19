@@ -136,7 +136,6 @@ void startServer()
       request->send(400);
     }
   });
-  
 
   server.on("/testmail", HTTP_POST, [](AsyncWebServerRequest *request) {
     xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
@@ -210,10 +209,10 @@ void startServer()
     Serial.printf("notif_setting\n");
     if (request->params() == 4)
     {
-      config.setNotificationBoot(request->getParam(0)->value() == "true" ? true :false);
-      config.setNotification_ext_connected(request->getParam(1)->value() == "true" ? true :false);
-      config.setNotificationInputChange(request->getParam(2)->value() == "true" ? true :false);
-      config.setNotification_manual_input(request->getParam(3)->value() == "true" ? true :false);
+      config.setNotificationBoot(request->getParam(0)->value() == "true" ? true : false);
+      config.setNotification_ext_connected(request->getParam(1)->value() == "true" ? true : false);
+      config.setNotificationInputChange(request->getParam(2)->value() == "true" ? true : false);
+      config.setNotification_manual_input(request->getParam(3)->value() == "true" ? true : false);
       config.saveEmailSettings();
       request->send(200, "text/plain", "OK");
     }
@@ -396,58 +395,66 @@ void startServer()
     }
     else
     {
-      Serial.printf("NOT_FOUND: ");
-      if (request->method() == HTTP_GET)
-        Serial.printf("GET");
-      else if (request->method() == HTTP_POST)
-        Serial.printf("POST");
-      else if (request->method() == HTTP_DELETE)
-        Serial.printf("DELETE");
-      else if (request->method() == HTTP_PUT)
-        Serial.printf("PUT");
-      else if (request->method() == HTTP_PATCH)
-        Serial.printf("PATCH");
-      else if (request->method() == HTTP_HEAD)
-        Serial.printf("HEAD");
-      else if (request->method() == HTTP_OPTIONS)
-        Serial.printf("OPTIONS");
+      if (request->method() == HTTP_POST && request->url() == "index.html")
+      {
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html");
+        request->send(response);
+      }
       else
-        Serial.printf("UNKNOWN");
-      Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
-
-      if (request->contentLength())
       {
-        Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
-        Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
-      }
-
-      int headers = request->headers();
-      int i;
-      for (i = 0; i < headers; i++)
-      {
-        AsyncWebHeader *h = request->getHeader(i);
-        Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
-      }
-
-      int params = request->params();
-      for (i = 0; i < params; i++)
-      {
-        AsyncWebParameter *p = request->getParam(i);
-        if (p->isFile())
-        {
-          Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-        }
-        else if (p->isPost())
-        {
-          Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        }
+        Serial.printf("NOT_FOUND: ");
+        if (request->method() == HTTP_GET)
+          Serial.printf("GET");
+        else if (request->method() == HTTP_POST)
+          Serial.printf("POST");
+        else if (request->method() == HTTP_DELETE)
+          Serial.printf("DELETE");
+        else if (request->method() == HTTP_PUT)
+          Serial.printf("PUT");
+        else if (request->method() == HTTP_PATCH)
+          Serial.printf("PATCH");
+        else if (request->method() == HTTP_HEAD)
+          Serial.printf("HEAD");
+        else if (request->method() == HTTP_OPTIONS)
+          Serial.printf("OPTIONS");
         else
-        {
-          Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        }
-      }
+          Serial.printf("UNKNOWN");
+        Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
 
-      request->send(404);
+        if (request->contentLength())
+        {
+          Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
+          Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
+        }
+
+        int headers = request->headers();
+        int i;
+        for (i = 0; i < headers; i++)
+        {
+          AsyncWebHeader *h = request->getHeader(i);
+          Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
+        }
+
+        int params = request->params();
+        for (i = 0; i < params; i++)
+        {
+          AsyncWebParameter *p = request->getParam(i);
+          if (p->isFile())
+          {
+            Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
+          }
+          else if (p->isPost())
+          {
+            Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+          }
+          else
+          {
+            Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+          }
+        }
+
+        request->send(404);
+      }
     }
   });
   server.onFileUpload([](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final) {
@@ -507,7 +514,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     {
       Serial.println("Update complete");
       Serial.flush();
-      if(cmd == U_FLASH)
+      if (cmd == U_FLASH)
       {
         ESP.restart();
       }
@@ -630,10 +637,10 @@ void sendSettings(AsyncWebServerRequest *request)
   root.set(config.NAME_INPUT_KEY, config.getInputName());
   root.set(config.NAME_MOSFET1_KEY, config.getMosfet1Name());
   root.set(config.NAME_MOSFET2_KEY, config.getMosfet2Name());
-  root.set(config.NOTIF_BOOT_KEY,config.getNotificationBoot());
-  root.set(config.NOTIF_EXT_CONNECT_KEY,config.getNotification_ext_connected());
-  root.set(config.NOTIF_INPUT_CHANGE_KEY,config.getNotificationInputChange());
-  root.set(config.NOTIF_MANUAL_INPUT_KEY,config.getNotification_manual_input());
+  root.set(config.NOTIF_BOOT_KEY, config.getNotificationBoot());
+  root.set(config.NOTIF_EXT_CONNECT_KEY, config.getNotification_ext_connected());
+  root.set(config.NOTIF_INPUT_CHANGE_KEY, config.getNotificationInputChange());
+  root.set(config.NOTIF_MANUAL_INPUT_KEY, config.getNotification_manual_input());
   JsonArray &Channels = root.createNestedArray("Channels");
   Channel *c;
   Alarm *a;

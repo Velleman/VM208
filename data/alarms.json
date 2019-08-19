@@ -6,13 +6,13 @@
                     "hour": 13,
                     "minute": 28,
                     "state": true,
-                    "enabled": true
+                    "enabled": false
                 }, {
                     "dow": 1,
                     "hour": 13,
                     "minute": 29,
                     "state": false,
-                    "enabled": true
+                    "enabled": false
                 }, {
                     "dow": 2,
                     "hour": 10,

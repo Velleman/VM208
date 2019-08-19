@@ -54,7 +54,7 @@ img.splashimage:empty
 	table-layout: auto;
 	margin: auto;
 	margin-top: 1em;
-	width: calc(100% - 2em);
+	//width: calc(100% - 2em);
 }
 
 .status-table-shedule
@@ -85,7 +85,6 @@ img.splashimage:empty
 
 td
 {
-	width:1px;
     white-space:nowrap;
 }
 .shedule_check{

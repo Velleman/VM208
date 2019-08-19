@@ -1,5 +1,5 @@
 #include "tca_thread_safe.hpp"
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include "global.hpp"
 
 TCA6424A_TS::TCA6424A_TS() : TCA6424A(TCA6424A_DEFAULT_ADDRESS)

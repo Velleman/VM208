@@ -185,7 +185,12 @@ function timerRelayEvent() {
 				} catch (t) {
 					console.log(t)
 				}
-			}
+			},
+            error: function(e){
+                setTimeout(function() {
+						timerRelayEvent()
+					}, 500)
+            }
 		})
 	}
 }

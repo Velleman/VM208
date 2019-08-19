@@ -30,7 +30,7 @@
 #include "input.hpp"
 #include "output.hpp"
 #include "esp_log.h"
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include <ETH.h>
 #include <DNSServer.h>
 #include "mail.hpp"
@@ -50,7 +50,6 @@ bool gotSTA_IP;
 SemaphoreHandle_t g_Mutex;
 SemaphoreHandle_t g_MutexChannel;
 SemaphoreHandle_t g_MutexMail;
-
 
 int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
@@ -239,17 +238,25 @@ void startWifi()
     Serial.println(config.getSSID());
     Serial.println(config.getWifiPassword());
 
-    //WiFi.disconnect(false,false);
-
-    WiFi.begin(ssid, pw);
-    while (!WiFi.isConnected())
+    if (WiFi.getMode() == WIFI_OFF) //coming from an Ethernet disconnect
+    {
+      WiFi.mode(WIFI_MODE_STA);
+      WiFi.disconnect(false);
+      WiFi.begin(ssid, pw);
+    }
+    else
+    {
+      WiFi.begin(ssid, pw);
+    }
+    while (!WiFi.isConnected() && !gotETH_IP)
     {
       Serial.print(".");
       delay(200);
     }
   }
 }
-/*static void applyEthNetworkSettings()
+
+static void applyEthNetworkSettings()
 {
   if (!config.getETH_DHCPEnable())
   {
@@ -289,7 +296,7 @@ void startWifi()
     tcpip_adapter_dhcpc_start(TCPIP_ADAPTER_IF_ETH);
   }
 }
-*/
+
 static bool startEth()
 {
   // esp_err_t ret;
@@ -332,7 +339,7 @@ static bool startEth()
 
     ETH.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS);
   }
-  
+
   return ETH.linkUp();
 }
 
@@ -462,7 +469,7 @@ void setup()
   {
     xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
     WiFi.onEvent(WiFiEvent);
-    if(!startEth())//No cable inserted
+    if (!startEth()) //No cable inserted
     {
       startWifi();
     }
@@ -491,9 +498,10 @@ void setup()
         Serial.write(packet.data(), packet.length());
         Serial.println();
         //reply to the client
-        char boardname[16];
-        config.getBoardName().toCharArray(boardname, 16, 0);
-        packet.printf("Aloha, My Name is:%s", boardname);
+        String message  = "Aloha, My Name is:";
+        message += config.getBoardName();
+        packet.print(message);
+        
       });
     }
     if (!MDNS.begin("VM208"))
@@ -516,5 +524,4 @@ void loop()
 {
   ArduinoOTA.handle();
   delay(100);
-  //Serial.println(esp_get_free_heap_size());
 }

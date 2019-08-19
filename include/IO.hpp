@@ -6,7 +6,7 @@
 #ifndef _IO_H_
 #define _IO_H_
 #include <stdbool.h>
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 #include "relay.hpp"
