@@ -11,10 +11,10 @@
 #include "config_vm208.hpp"
 #include <SPIFFS.h>
 #include "global.hpp"
-#include "config_vm208.hpp"
 #include <Update.h>
 #include <ETH.h>
 #include "mail.hpp"
+#include "network_VM208.hpp"
 const char *TAG = "SERVER";
 
 // SKETCH BEGIN
@@ -50,6 +50,7 @@ void startServer()
       config.setUserName(request->getParam(0)->value());
       config.setUserPw(request->getParam(1)->value());
       config.save();
+      ESP.restart();
     }
   });
 
@@ -174,7 +175,7 @@ void startServer()
       config.setETH_PrimaryDNS(request->getParam(4)->value());
       config.setETH_SecondaryDNS(request->getParam(5)->value());
       config.save();
-      //applyEthNetworkSettings();
+      applyEthNetworkSettings();
       request->send(200);
     }
     else
@@ -196,7 +197,7 @@ void startServer()
       config.setWIFI_PrimaryDNS(request->getParam(4)->value());
       config.setWIFI_SecondaryDNS(request->getParam(5)->value());
       config.save();
-      //applyWifiNetworkSettings();
+      applyWifiNetworkSettings();
       request->send(200);
     }
     else
@@ -386,7 +387,6 @@ void startServer()
   config.getUserPw().toCharArray(userpw, 32);
   server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setAuthentication(user, userpw).setFilter(ON_STA_VM208_FILTER);
   server.serveStatic("/", SPIFFS, "/ap/").setDefaultFile("index.html").setFilter(ON_AP_VM208_FILTER);
-
   server.onNotFound([](AsyncWebServerRequest *request) {
     if (ON_AP_VM208_FILTER(nullptr))
     {

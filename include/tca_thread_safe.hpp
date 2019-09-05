@@ -16,5 +16,6 @@ public:
     void ts_setPinDirection(uint16_t pin, bool direction);
     void ts_writePin(uint16_t pin, bool polarity);
     void ts_writeByte(uint8_t register, uint8_t data);
+    uint8_t ts_readBank(uint8_t reg);
 };
 #endif

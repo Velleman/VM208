@@ -84,3 +84,12 @@ void TCA6424A_TS::ts_writeByte(uint8_t reg, uint8_t data)
     I2Cdev::writeByte(devAddr, reg, data);
     xSemaphoreGive(g_Mutex);
 }
+
+uint8_t TCA6424A_TS::ts_readBank(uint8_t reg)
+{
+    xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    I2Cdev::readByte(devAddr,reg, buffer);
+    xSemaphoreGive(g_Mutex);
+    return buffer[0];
+    
+}

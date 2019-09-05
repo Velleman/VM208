@@ -36,7 +36,7 @@ void sendEmail(void *pvParamaters)
   switch (notification)
   {
   case MAN_INPUT_MAIL:
-    message = "<div style=\"color:#ff0000;font-size:20px;\">Manual Input! - From VM208</div>";
+    message = "<div style=\"color:#ff0000;font-size:20px;\">A button has been pressed in the last minute - From VM208</div>";
     break;
   case BOOT_MAIL:
     message = "<div style=\"color:#ff0000;font-size:20px;\">Booted Up! - From VM208</div>";
@@ -51,7 +51,7 @@ void sendEmail(void *pvParamaters)
     message = "<div style=\"color:#ff0000;font-size:20px;\">Extension Disconnected! - From VM208</div>";
     break;
   default:
-    message = "<div style=\"color:#ff0000;font-size:20px;\">Manual Input! - From VM208</div>";
+    message = "<div style=\"color:#ff0000;font-size:20px;\">You should not be receiving this! Oopsie :( - From VM208</div>";
     break;
   }
   smtpData.setMessage(message, true);

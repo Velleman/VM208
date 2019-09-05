@@ -56,6 +56,7 @@ void Init_IO()
     currentInputs[i] = new Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
     channels[i] = config.createChannel(i + 1, relays + i, leds + i);
   }
+  
 
   mosfets[0] = Mosfet(1, TCA6424A_P04, false, &tca);
   mosfets[1] = Mosfet(2, TCA6424A_P05, false, &tca);
@@ -98,6 +99,26 @@ void Init_IO()
   {
     ESP_LOGI(TAG, "EXTENSION CONNECTED");
     gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
+  }
+
+  for(int i =0;i<4;i++)
+  {
+    leds[i].toggle();
+  }
+  delay(2000);
+  for(int i =0;i<4;i++)
+  {
+    leds[i].toggle();
+  }
+  delay(1000);
+  for(int i =0;i<4;i++)
+  {
+    leds[i].toggle();
+  }
+  delay(2000);
+  for(int i =0;i<4;i++)
+  {
+    leds[i].toggle();
   }
 }
 
@@ -143,15 +164,15 @@ void IO_task(void *arg)
 
       if (io_num == INT2_PIN) //read extension
       {
-        if (millis() - previousTime > 1)
+        if (millis() - previousTime > 100)
         {
           Serial.println("EXTENSION INTERRUPT");
           if (IsExtensionConnected())
           {
-            uint8_t inputs = tca_ext.readBank(TCA6424A_RA_INPUT1);
+            uint8_t inputs = tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
             while (!digitalRead(INT2_PIN))
             {
-              tca_ext.readBank(TCA6424A_RA_INPUT1);
+              tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
             }
             bool currentState = false;
             for (int i = 4; i < 12; i++)
@@ -177,14 +198,16 @@ void IO_task(void *arg)
       }
       else
       {
-        if (millis() - previousTime2 > 100)
+        if (millis() - previousTime2 > 1)
         {
 
-          uint8_t inputs = tca.readBank(TCA6424A_RA_INPUT1);
+          uint8_t inputs = tca.ts_readBank(TCA6424A_RA_INPUT1);
+          uint8_t user_input = tca.ts_readBank(TCA6424A_RA_INPUT0);
+          user_input &= 0x40;
           while (!digitalRead(INT_PIN))
           {
-            tca.readBank(TCA6424A_RA_INPUT0);
-            tca.readBank(TCA6424A_RA_INPUT1);
+            tca.ts_readBank(TCA6424A_RA_INPUT0);
+            tca.ts_readBank(TCA6424A_RA_INPUT1);
           }
           Serial.println(inputs, HEX);
           bool currentState = false;
@@ -205,7 +228,7 @@ void IO_task(void *arg)
             _inputChanged = true;
             delay(1);
           }
-          currentState = currentInputs[12]->read();
+          currentState = (bool)user_input;
           if (currentState != previousInputs[12])
           {
             _userInputChanged = true;
@@ -228,8 +251,11 @@ void updateIO(void *params)
   {
     if(IsExtensionConnected())
     {
-      tca_ext.readBank(TCA6424A_RA_INPUT1);
+      tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
     }
+    tca.ts_readBank(TCA6424A_RA_INPUT0);
+    tca.ts_readBank(TCA6424A_RA_INPUT1);
+
     
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     /*for(int i =0;i<12;i++)
