@@ -27,7 +27,7 @@ void sendEmail(void *pvParamaters)
   smtpData.setPriority("High");
 
   //Set the subject
-  smtpData.setSubject("ESP32 SMTP Mail Sending Test");
+  smtpData.setSubject(config.getEmailTitle());
 
   //Set the message - normal text or html format
   uint8_t notification = (uint32_t)pvParamaters;

@@ -153,6 +153,7 @@ void Configuration::load()
             _email_user = root[EMAIL_USER_KEY].as<String>();
             _email_pw = root[EMAIL_PW_KEY].as<String>();
             _email_recipient = root[EMAIL_RECEIVER_KEY].as<String>();
+            _email_title = root[EMAIL_TITLE_KEY].as<String>();
             _notif_boot = root[NOTIF_BOOT_KEY].as<bool>();
             _notif_ext_connected = root[NOTIF_EXT_CONNECT_KEY].as<bool>();
             _notif_input_change = root[NOTIF_INPUT_CHANGE_KEY].as<bool>();
@@ -200,6 +201,7 @@ void Configuration::writeEmailSettings()
     root[EMAIL_USER_KEY] = _email_user;
     root[EMAIL_PW_KEY] = _email_pw;
     root[EMAIL_RECEIVER_KEY] = _email_recipient;
+    root[EMAIL_TITLE_KEY] = _email_title;
     root[NOTIF_BOOT_KEY] = _notif_boot;
     root[NOTIF_EXT_CONNECT_KEY] = _notif_ext_connected;
     root[NOTIF_INPUT_CHANGE_KEY] = _notif_input_change;
@@ -268,7 +270,7 @@ void Configuration::writeConfig()
     root[NAME_INPUT_KEY] = _name_input;
     root[NAME_MOSFET1_KEY] = _mosfet1_name;
     root[NAME_MOSFET2_KEY] = _mosfet2_name;
-    
+
     File file = SPIFFS.open(configPath, FILE_WRITE);
     root.printTo(file);
     file.close();
@@ -584,6 +586,15 @@ void Configuration::setEmailRecipient(String recipient)
     _email_recipient = recipient;
 }
 
+String Configuration::getEmailTitle()
+{
+    return _email_title;
+}
+void Configuration::setEmailTitle(String title)
+{
+    _email_title = title;
+}
+
 void Configuration::setMosfet1Name(String name)
 {
     _mosfet1_name = name;
@@ -686,6 +697,7 @@ const char *Configuration::EMAIL_PORT_KEY = "EMAIL_PORT";
 const char *Configuration::EMAIL_USER_KEY = "EMAIL_USER";
 const char *Configuration::EMAIL_PW_KEY = "EMAIL_PW";
 const char *Configuration::EMAIL_RECEIVER_KEY = "EMAIL_RECEIVER";
+const char *Configuration::EMAIL_TITLE_KEY = "EMAIL_TITLE";
 const char *Configuration::NAME_INPUT_KEY = "NAME_INPUT";
 const char *Configuration::NAME_MOSFET1_KEY = "NAME_MOSFET1";
 const char *Configuration::NAME_MOSFET2_KEY = "NAME_MOSFET2";

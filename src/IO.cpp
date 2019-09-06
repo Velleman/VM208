@@ -56,7 +56,6 @@ void Init_IO()
     currentInputs[i] = new Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
     channels[i] = config.createChannel(i + 1, relays + i, leds + i);
   }
-  
 
   mosfets[0] = Mosfet(1, TCA6424A_P04, false, &tca);
   mosfets[1] = Mosfet(2, TCA6424A_P05, false, &tca);
@@ -101,22 +100,22 @@ void Init_IO()
     gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
   }
 
-  for(int i =0;i<4;i++)
+  for (int i = 0; i < 4; i++)
   {
     leds[i].toggle();
   }
   delay(2000);
-  for(int i =0;i<4;i++)
+  for (int i = 0; i < 4; i++)
   {
     leds[i].toggle();
   }
   delay(1000);
-  for(int i =0;i<4;i++)
+  for (int i = 0; i < 4; i++)
   {
     leds[i].toggle();
   }
   delay(2000);
-  for(int i =0;i<4;i++)
+  for (int i = 0; i < 4; i++)
   {
     leds[i].toggle();
   }
@@ -164,7 +163,7 @@ void IO_task(void *arg)
 
       if (io_num == INT2_PIN) //read extension
       {
-        if (millis() - previousTime > 100)
+        if (millis() - previousTime > 3)
         {
           Serial.println("EXTENSION INTERRUPT");
           if (IsExtensionConnected())
@@ -174,27 +173,39 @@ void IO_task(void *arg)
             {
               tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
             }
-            bool currentState = false;
+            bool currentState[8] = {false, false, false, false, false, false, false, false};
+            uint8_t differentStates = 0;
             for (int i = 4; i < 12; i++)
             {
-              currentState = (inputs >> (i - 4)) & 0x01;
-              if (currentState != previousInputs[i])
+              currentState[i - 4] = (inputs >> (i - 4)) & 0x01;
+              if (currentState[i - 4] != previousInputs[i])
               {
-                if (currentState == false)
-                {
-                  channels[i].toggle(); //toggle state
-                  channels[i].clearTimerAndPulse();
-                  channels[i].disableSheduler();
-                  sendManualInputMail();
-                }
-                previousInputs[i] = currentState;
-                _inputChanged = true;
+                Serial.println("DIFFERENT STATE");
+                differentStates++;
               }
-              delay(1);
+            }
+            Serial.println(differentStates);
+            if (differentStates == 1)
+            {
+              for (int i = 4; i < 12; i++)
+              {
+                if (currentState[i - 4] != previousInputs[i])
+                {
+                  if (currentState[i-4] == false)
+                  {
+                    channels[i].toggle(); //toggle state
+                    channels[i].clearTimerAndPulse();
+                    channels[i].disableSheduler();
+                    sendManualInputMail();
+                  }
+                  previousInputs[i] = currentState[i-4];
+                  _inputChanged = true;
+                }
+              }
             }
           }
-          previousTime = millis();
         }
+        previousTime = millis();
       }
       else
       {
@@ -209,14 +220,23 @@ void IO_task(void *arg)
             tca.ts_readBank(TCA6424A_RA_INPUT0);
             tca.ts_readBank(TCA6424A_RA_INPUT1);
           }
-          Serial.println(inputs, HEX);
-          bool currentState = false;
+          bool currentState[8] = {false, false, false, false, false, false, false, false};
+            uint8_t differentStates = 0;
+            for (int i = 0; i < 4; i++)
+            {
+              currentState[i] = (inputs >> i) & 0x01;
+              if (currentState[i] != previousInputs[i])
+              {
+                Serial.println("DIFFERENT STATE");
+                differentStates++;
+              }
+            }
           for (int i = 0; i < 4; i++)
           {
-            currentState = (inputs >> i) & 0x01;
-            if (currentState != previousInputs[i])
+            
+            if (currentState[i] != previousInputs[i])
             {
-              if (currentState == false)
+              if (currentState[i] == false)
               {
                 channels[i].toggle(); //toggle state
                 channels[i].clearTimerAndPulse();
@@ -224,17 +244,17 @@ void IO_task(void *arg)
                 sendManualInputMail();
               }
             }
-            previousInputs[i] = currentState;
+            previousInputs[i] = currentState[i];
             _inputChanged = true;
             delay(1);
           }
-          currentState = (bool)user_input;
-          if (currentState != previousInputs[12])
+          
+          if (user_input != previousInputs[12])
           {
             _userInputChanged = true;
             ESP_LOGI(TAG, "Input has changed");
             sendInputChangedMail();
-            previousInputs[12] = currentState;
+            previousInputs[12] = user_input;
             _inputChanged = true;
           }
           previousTime2 = millis();
@@ -249,14 +269,13 @@ void updateIO(void *params)
 {
   for (;;)
   {
-    if(IsExtensionConnected())
+    if (IsExtensionConnected())
     {
       tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
     }
     tca.ts_readBank(TCA6424A_RA_INPUT0);
     tca.ts_readBank(TCA6424A_RA_INPUT1);
 
-    
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     /*for(int i =0;i<12;i++)
     {

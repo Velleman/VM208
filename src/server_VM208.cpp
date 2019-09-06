@@ -122,13 +122,14 @@ void startServer()
   });
 
   server.on("/email_settings", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if (request->params() == 5)
+    if (request->params() == 6)
     {
       config.setEmailServer(request->getParam(0)->value());
       config.setEmailPort(request->getParam(1)->value());
       config.setEmailUser(request->getParam(2)->value());
       config.setEmailPW(request->getParam(3)->value());
       config.setEmailRecipient(request->getParam(4)->value());
+      config.setEmailTitle(request->getParam(5)->value());
       config.saveEmailSettings();
       request->send(200, "text/plain", "OK");
     }

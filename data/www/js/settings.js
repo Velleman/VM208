@@ -33,12 +33,10 @@ function update_auth_settings() {
 }
 
 function update_email_settings() {
-    var e = $("#smtp_server"),
-        t = $("#smtp_port"),
-        a = $("#smtp_user"),
-        n = $("#smtp_pass"),
-        s = $("#smtp_recipient");
-    //e.val(json.email.smtpserver), t.val(json.email.smtpport), a.val(json.email.username), n.val(json.email.password), s.prop("checked", json.email.usessltls)
+        $("#smtp_server").val(json.email.smtpserver);
+        $("#smtp_port").val(json.email.smtpport);
+        $("#smtp_user").val(json.email.username);
+        $("#smtp_recipient").val(json.test);
 }
 
 function update_network_settings() {
@@ -85,7 +83,8 @@ function sendEmailSettings() {
         smtpport: $("#smtp_port").val(),
         user: $("#smtp_user").val(),
         password: $("#smtp_pass").val(),
-        recipeint: $("#smtp_recipient").val()
+        recipeint: $("#smtp_recipient").val(),
+        title: $("#smtp_title").val()
     };
     $("#sendMailSettingsButton").html("SAVING...");
     $.ajax({
