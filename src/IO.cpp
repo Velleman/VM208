@@ -104,7 +104,7 @@ void Init_IO()
   {
     leds[i].toggle();
   }
-  delay(2000);
+  delay(1000);
   for (int i = 0; i < 4; i++)
   {
     leds[i].toggle();
@@ -114,7 +114,7 @@ void Init_IO()
   {
     leds[i].toggle();
   }
-  delay(2000);
+  delay(1000);
   for (int i = 0; i < 4; i++)
   {
     leds[i].toggle();
