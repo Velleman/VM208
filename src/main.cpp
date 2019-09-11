@@ -189,7 +189,7 @@ void setup()
         Serial.write(packet.data(), packet.length());
         Serial.println();
         //reply to the client
-        String message = "Aloha, My Name is:";
+        String message = "Aloha, My Name is:\n";
         message += config.getBoardName();
         packet.print(message);
       });
