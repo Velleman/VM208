@@ -33,10 +33,10 @@ function update_auth_settings() {
 }
 
 function update_email_settings() {
-        $("#smtp_server").val(json.email.smtpserver);
+        /*$("#smtp_server").val(json.email.smtpserver);
         $("#smtp_port").val(json.email.smtpport);
         $("#smtp_user").val(json.email.username);
-        $("#smtp_recipient").val(json.test);
+        $("#smtp_recipient").val(json.test);*/
 }
 
 function update_network_settings() {
@@ -450,16 +450,26 @@ $(function() {
             if (confirm("This will turn off all the relays\r\nDo you want to proceed?")) {
                 var formData = new FormData($(this)[0]);
                 $.ajax({
+                    async: true,
                     url: '/doUpdate',
                     type: 'POST',
                     data: formData,
-                    async: false,
                     cache: false,
                     contentType: false,
                     enctype: 'multipart/form-data',
                     processData: false,
-                    success: function(response) {
-                        //alert(response);
+                    xhr: function () {
+                        var xhr = $.ajaxSettings.xhr();
+                        xhr.upload.onprogress = function (e) {
+                            // For uploads
+                            if (e.lengthComputable) {
+                                console.log(e.loaded / e.total);
+                            }
+                        };
+                        return xhr;
+                    },
+                    done: function(response) {
+                        alert("UPLOAD COMPLETE");
                     }
                 });
             }
