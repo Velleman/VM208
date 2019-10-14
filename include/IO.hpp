@@ -49,4 +49,5 @@ Relay* getRelays();
 void getLeds(Led* leds);
 Channel* getChannelById(int id);
 void updateIO(void* params);
+void disableIOacitivty();
 #endif

@@ -23,7 +23,7 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_auth_settings(), update_network_settings(), update_email_settings(), update_names(), update_notif_settings(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState(), updateTimeSettings()
+    update_auth_settings(), update_wlan_creds_settings(), update_network_settings(), update_email_settings(), update_names(), update_notif_settings(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState(), updateTimeSettings()
 }
 
 function update_auth_settings() {
@@ -32,11 +32,16 @@ function update_auth_settings() {
     e.val(json.USERNAME);
 }
 
+function update_wlan_creds_settings(){
+	$("#ssid_field").val(json.SSID);
+}
+
 function update_email_settings() {
-        /*$("#smtp_server").val(json.email.smtpserver);
-        $("#smtp_port").val(json.email.smtpport);
-        $("#smtp_user").val(json.email.username);
-        $("#smtp_recipient").val(json.test);*/
+        $("#smtp_server").val(json.smtpserver);
+        $("#smtp_port").val(json.smtpport);
+        $("#smtp_user").val(json.username);
+        $("#smtp_recipient").val(json.recipient);
+        $("#smtp_title").val(json.subject);
 }
 
 function update_network_settings() {
@@ -245,6 +250,35 @@ function sendWifiNetworkSettings() {
     } else $("#sendNetworkSettingsButton").html("INVALID IP ADDRESSES")
 }
 
+function sendWifiCredentials(){
+	$("#sendWlanCredsButton").html("SAVING..."); {
+		if($("#password_wifi_field").val() != "" && $("#ssid_field").val() != "")
+		{
+			var e = {
+				ssid: $("#ssid_field").val(),
+				pw: $("#password_wifi_field").val(),
+			};
+            $.ajax({
+                type: "POST",
+                url: "/wifi_creds_save",
+                dataType: "text",
+                data: e,
+                success: function(e) {
+                    try {
+                        "OK" == e ? ($("#sendWlanCredsButton").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE NETWORKSETTINGS")
+                    } catch (t) {
+                        console.log(t)
+                    }
+                }
+            });
+		}
+		else{
+			alert("Please fill in all the field");
+			$("#sendWlanCredsButton").html("Save and reboot")
+		}
+	}	
+}
+
 function sendNames() {
     var e = {
         r1: $("#name_relay1").val(),
@@ -402,7 +436,9 @@ $(function() {
     $("#sendMailButton").removeAttr("disabled"),
         $("#sendAuthSettingsButton").click(function() {
             return sendAuthSettings(), !1
-        }), $("#sendWifiNetworkSettingsButton").click(function() {
+        }), $("#sendWlanCredsButton").click(function() {
+            return sendWifiCredentials(), !1
+        }),$("#sendWifiNetworkSettingsButton").click(function() {
             return sendWifiNetworkSettings(), !1
         }), $("#sendEthNetworkSettingsButton").click(function() {
             return sendEthNetworkSettings(), !1
@@ -445,9 +481,10 @@ $(function() {
         $("#sendTimeSettings").click(function() {
             sendTimeSettings();
         }),
-        $("form").submit(function(evt) {
+        $("#Update").submit(function(evt) {
             evt.preventDefault();
             if (confirm("This will turn off all the relays\r\nDo you want to proceed?")) {
+                $("#update_submit").html("UPDATING...");
                 var formData = new FormData($(this)[0]);
                 $.ajax({
                     async: true,
@@ -458,18 +495,14 @@ $(function() {
                     contentType: false,
                     enctype: 'multipart/form-data',
                     processData: false,
-                    xhr: function () {
-                        var xhr = $.ajaxSettings.xhr();
-                        xhr.upload.onprogress = function (e) {
-                            // For uploads
-                            if (e.lengthComputable) {
-                                console.log(e.loaded / e.total);
-                            }
-                        };
-                        return xhr;
-                    },
-                    done: function(response) {
-                        alert("UPLOAD COMPLETE");
+                    success: function(response) {
+                        alert("UPLOAD COMPLETE\nThe site will try to reconnect in 10 seconds");
+                        setTimeout(
+                            function() 
+                            {
+                                location.href = "/index.html";
+                            }, 10000);
+                        
                     }
                 });
             }

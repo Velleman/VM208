@@ -153,7 +153,7 @@ void Configuration::load()
             _email_user = root[EMAIL_USER_KEY].as<String>();
             _email_pw = root[EMAIL_PW_KEY].as<String>();
             _email_recipient = root[EMAIL_RECEIVER_KEY].as<String>();
-            _email_title = root[EMAIL_TITLE_KEY].as<String>();
+         _email_subject = root[EMAIL_TITLE_KEY].as<String>();
             _notif_boot = root[NOTIF_BOOT_KEY].as<bool>();
             _notif_ext_connected = root[NOTIF_EXT_CONNECT_KEY].as<bool>();
             _notif_input_change = root[NOTIF_INPUT_CHANGE_KEY].as<bool>();
@@ -201,7 +201,7 @@ void Configuration::writeEmailSettings()
     root[EMAIL_USER_KEY] = _email_user;
     root[EMAIL_PW_KEY] = _email_pw;
     root[EMAIL_RECEIVER_KEY] = _email_recipient;
-    root[EMAIL_TITLE_KEY] = _email_title;
+    root[EMAIL_TITLE_KEY] = _email_subject;
     root[NOTIF_BOOT_KEY] = _notif_boot;
     root[NOTIF_EXT_CONNECT_KEY] = _notif_ext_connected;
     root[NOTIF_INPUT_CHANGE_KEY] = _notif_input_change;
@@ -586,13 +586,13 @@ void Configuration::setEmailRecipient(String recipient)
     _email_recipient = recipient;
 }
 
-String Configuration::getEmailTitle()
+String Configuration::getEmailSubject()
 {
-    return _email_title;
+    return _email_subject;
 }
-void Configuration::setEmailTitle(String title)
+void Configuration::setEmailSubject(String title)
 {
-    _email_title = title;
+ _email_subject = title;
 }
 
 void Configuration::setMosfet1Name(String name)

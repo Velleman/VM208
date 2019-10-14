@@ -165,7 +165,7 @@ void IO_task(void *arg)
       {
         if (millis() - previousTime > 3)
         {
-          Serial.println("EXTENSION INTERRUPT");
+          //Serial.println("EXTENSION INTERRUPT");
           if (IsExtensionConnected())
           {
             uint8_t inputs = tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
@@ -180,11 +180,11 @@ void IO_task(void *arg)
               currentState[i - 4] = (inputs >> (i - 4)) & 0x01;
               if (currentState[i - 4] != previousInputs[i])
               {
-                Serial.println("DIFFERENT STATE");
+                //Serial.println("DIFFERENT STATE");
                 differentStates++;
               }
             }
-            Serial.println(differentStates);
+            //Serial.println(differentStates);
             if (differentStates == 1)
             {
               for (int i = 4; i < 12; i++)
@@ -227,7 +227,7 @@ void IO_task(void *arg)
               currentState[i] = (inputs >> i) & 0x01;
               if (currentState[i] != previousInputs[i])
               {
-                Serial.println("DIFFERENT STATE");
+                //Serial.println("DIFFERENT STATE");
                 differentStates++;
               }
             }
@@ -398,4 +398,10 @@ void copyStateRelaysToLeds()
   {
     channels[i].getState() ? channels[i].turnOn() : channels[i].turnOff();
   }
+}
+
+void disableIOacitivty()
+{
+  tca.setUpdateMode();
+  tca_ext.setUpdateMode();
 }

@@ -24,4 +24,5 @@ void startWifi();
 void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
 void got_ip_task(void *pvParameter);
 void WiFiEvent(WiFiEvent_t event);
+String getMacAsString(uint8_t *mac);
 #endif

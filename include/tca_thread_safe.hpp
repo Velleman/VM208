@@ -7,7 +7,7 @@ private:
     uint8_t devAddr;
     uint8_t buffer[3];
     uint8_t registers[15];
-    
+    bool _isUpdating = false;
 public:
     TCA6424A_TS();
     TCA6424A_TS(uint8_t address);
@@ -17,5 +17,6 @@ public:
     void ts_writePin(uint16_t pin, bool polarity);
     void ts_writeByte(uint8_t register, uint8_t data);
     uint8_t ts_readBank(uint8_t reg);
+    void setUpdateMode();
 };
 #endif
