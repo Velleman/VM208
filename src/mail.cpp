@@ -27,7 +27,7 @@ void sendEmail(void *pvParamaters)
   smtpData.setPriority("High");
 
   //Set the subject
-  smtpData.setSubject(config.getEmailTitle());
+  smtpData.setSubject(config.getEmailSubject());
 
   //Set the message - normal text or html format
   uint8_t notification = (uint32_t)pvParamaters;
@@ -49,6 +49,9 @@ void sendEmail(void *pvParamaters)
     break;
   case EXT_DIS_MAIL:
     message = "<div style=\"color:#ff0000;font-size:20px;\">Extension Disconnected! - From VM208</div>";
+    break;
+  case TEST_MAIL:
+    message = "<div style=\"color:#ff0000;font-size:20px;\">Congratulations! You've received the test Mail! - From VM208</div>";
     break;
   default:
     message = "<div style=\"color:#ff0000;font-size:20px;\">You should not be receiving this! Oopsie :( - From VM208</div>";
@@ -137,4 +140,9 @@ void sendExtDisConnectedMail()
   {
     Serial.println("EXT MAIL WILL BE NOT SEND");
   }
+}
+
+void sendTestMail()
+{
+  xTaskCreate(sendEmail, "send_mail", 6144, (void *)TEST_MAIL, (tskIDLE_PRIORITY + 10), NULL);
 }

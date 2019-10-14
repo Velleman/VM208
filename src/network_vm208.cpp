@@ -207,7 +207,7 @@ void WiFiEvent(WiFiEvent_t event)
     ESP_LOGI(TAG, "Ethernet Stopped");
     break;
   case SYSTEM_EVENT_STA_START:
-    tcpip_adapter_set_hostname(TCPIP_ADAPTER_IF_STA, "VM208");
+    WiFi.setHostname("VM208");
     break;
   case SYSTEM_EVENT_STA_GOT_IP:
     gotSTA_IP = true;
@@ -219,10 +219,27 @@ void WiFiEvent(WiFiEvent_t event)
   case SYSTEM_EVENT_STA_DISCONNECTED:
     xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT | GOTIP_BIT);
     gotSTA_IP = false;
-    WiFi.reconnect();
+    if(gotETH_IP == false)
+    {
+     Serial.println("ETH GOT IP");
+     WiFi.reconnect();
+    }
     break;
   default:
     break;
   }
   //return ESP_OK;
+}
+
+String getMacAsString(uint8_t *mac)
+{
+  String str;
+  String str1(mac[0], HEX);
+  String str2(mac[1], HEX);
+  String str3(mac[2], HEX);
+  String str4(mac[3], HEX);
+  String str5(mac[4], HEX);
+  String str6(mac[5], HEX);
+  str = str1 + ":" + str2 + ":" + str3 + ":" + str4 + ":" + str5 + ":" + str6;
+  return str;
 }

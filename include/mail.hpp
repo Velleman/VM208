@@ -6,6 +6,7 @@
 #define INPUT_MAIL 3
 #define EXT_MAIL 4
 #define EXT_DIS_MAIL 5
+#define TEST_MAIL 6
 void sendEmail(void *pvParamaters);
 void sendCallback(SendStatus msg);
 void sendManualInputMail();
@@ -13,4 +14,5 @@ void sendBootMail();
 void sendInputChangedMail();
 void sendExtConnectedMail();
 void sendExtDisConnectedMail();
+void sendTestMail();
 #endif

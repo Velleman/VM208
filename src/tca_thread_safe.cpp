@@ -31,8 +31,11 @@ bool TCA6424A_TS::ts_testConnection()
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
     bool isConnected = false;
+    if(!_isUpdating)
+    {
     int8_t result = I2Cdev::readBytes(devAddr, TCA6424A_RA_INPUT0, 3, buffer);
     isConnected = (bool)(result == 3);
+    }
     xSemaphoreGive(g_Mutex);
     return isConnected;
 }
@@ -41,8 +44,11 @@ bool TCA6424A_TS::ts_readPin(uint16_t pin)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
     bool result;
-    I2Cdev::readBit(devAddr, TCA6424A_RA_INPUT0 + (pin / 8), pin % 8, buffer);
-    result = buffer[0];
+    if(!_isUpdating)
+    {
+        I2Cdev::readBit(devAddr, TCA6424A_RA_INPUT0 + (pin / 8), pin % 8, buffer);
+        result = buffer[0];
+    }
     xSemaphoreGive(g_Mutex);
     return result;
 }
@@ -58,7 +64,10 @@ void TCA6424A_TS::ts_setPinDirection(uint16_t pin, bool direction)
     }else{
         registers[reg] &= ~(0x01 << pinNumber);
     }
-    I2Cdev::writeByte(devAddr, reg, registers[reg]);
+    if(!_isUpdating)
+    {
+        I2Cdev::writeByte(devAddr, reg, registers[reg]);
+    }
     xSemaphoreGive(g_Mutex);
 }
 
@@ -73,23 +82,37 @@ void TCA6424A_TS::ts_writePin(uint16_t pin, bool polarity)
     }else{
         registers[reg] &= ~(0x01 << pinNumber);
     }
-    I2Cdev::writeByte(devAddr, TCA6424A_RA_OUTPUT0 + (pin / 8), registers[reg]);
-    
+    if(!_isUpdating)
+    {
+        I2Cdev::writeByte(devAddr, TCA6424A_RA_OUTPUT0 + (pin / 8), registers[reg]);
+    }    
     xSemaphoreGive(g_Mutex);
 }
 
 void TCA6424A_TS::ts_writeByte(uint8_t reg, uint8_t data)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
-    I2Cdev::writeByte(devAddr, reg, data);
+    if(!_isUpdating)
+    {
+        I2Cdev::writeByte(devAddr, reg, data);
+    }
     xSemaphoreGive(g_Mutex);
 }
 
 uint8_t TCA6424A_TS::ts_readBank(uint8_t reg)
 {
+    
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
-    I2Cdev::readByte(devAddr,reg, buffer);
+    if(!_isUpdating)
+    {
+        I2Cdev::readByte(devAddr,reg, buffer);
+    }
     xSemaphoreGive(g_Mutex);
     return buffer[0];
     
+}
+
+void TCA6424A_TS::setUpdateMode()
+{
+    _isUpdating = true;
 }

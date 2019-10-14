@@ -19,6 +19,7 @@
 #include "mail.hpp"
 #include "network_VM208.hpp"
 #include "time_VM208.hpp"
+#include <DNSServer.h>
 //static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
@@ -29,7 +30,7 @@ SemaphoreHandle_t g_Mutex;
 SemaphoreHandle_t g_MutexChannel;
 SemaphoreHandle_t g_MutexMail;
 EventGroupHandle_t s_wifi_event_group;
-
+DNSServer dnsServer;
 int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
 const PROGMEM char *ntpServer = "pool.ntp.org";
@@ -38,6 +39,9 @@ bool wifiFirstConnected = false;
 Configuration config;
 bool gotETH_IP;
 bool gotSTA_IP;
+
+String getMacAsString(uint8_t *mac);
+
 static void checkSheduler(void *pvParameter)
 {
   delay(500); // wait to load all channels
@@ -155,7 +159,7 @@ void setup()
 
     // if DNSServer is started with "*" for domain name, it will reply with
     // provided IP to all DNS request
-    //dnsServer.start(53, "*", apIP);
+    dnsServer.start(53, "*", WiFi.softAPIP());
   }
   else
   {
@@ -172,6 +176,7 @@ void setup()
     //#region hide
     if (udp.listen(30303))
     {
+      
       udp.onPacket([](AsyncUDPPacket packet) {
         Serial.print("UDP Packet Type: ");
         Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
@@ -191,6 +196,10 @@ void setup()
         //reply to the client
         String message = "Aloha, My Name is:\n";
         message += config.getBoardName();
+        message += "\n";
+        uint8_t mac[6];
+        esp_read_mac(mac, ESP_MAC_ETH);
+        message += getMacAsString(mac);
         packet.print(message);
       });
     }
@@ -213,6 +222,13 @@ void setup()
 
 void loop()
 {
-  ArduinoOTA.handle();
-  delay(100);
+  if(WiFi.getMode() == WIFI_MODE_AP)
+  {
+    dnsServer.processNextRequest();
+  }
+  else
+  {
+    ArduinoOTA.handle();
+  }
 }
+

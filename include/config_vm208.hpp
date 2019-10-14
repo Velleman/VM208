@@ -53,7 +53,7 @@ private:
   String _email_user;
   String _email_pw;
   String _email_recipient;
-  String _email_title;
+  String _email_subject;
 
   String _name_input;
   String _mosfet1_name;
@@ -206,8 +206,8 @@ public:
   String getEmailRecipient();
   void setEmailRecipient(String recipient);
 
-  String getEmailTitle();
-  void setEmailTitle(String title);
+  String getEmailSubject();
+  void setEmailSubject(String subject);
 
   String getInputName();
   void setInputName(String name);

@@ -27,8 +27,9 @@
             <h2>View the status of your IO's</h2>
          </div>
          <div class=content>
-         <form class="pure-form pure-form">
+         <form class="pure-form pure-form-aligned">
         <fieldset>
+		<div class="pure-control-group">
             <label for="Relay">Relay:</label>
         <select id="Relay" name="Relay">
             <option value="1">Relay1</option>
@@ -44,6 +45,7 @@
             <option value="11">Relay11</option>
             <option value="12">Relay12</option>
         </select>  
+		</div>
         <table class="pure-table status-table-shedule">
                      <colgroup>
                         <col>
@@ -105,7 +107,9 @@
                         </tr>
                      </tbody>
                   </table>                
+				<div class="pure-controls">
                 <button type="button" onClick="updateShedule()" class="pure-button pure-button-primary">Save</button>
+				</div>
             </fieldset>
             </form>
          </div>

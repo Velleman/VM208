@@ -360,4 +360,28 @@ $(function() {
     $("#shedule4Start").click(function(){
         location.href = "shedule.html?relay=4";
     })
+	$("#shedule5Start").click(function(){
+        location.href = "shedule.html?relay=5";
+    }),
+	$("#shedule6Start").click(function(){
+        location.href = "shedule.html?relay=6";
+    }),
+	$("#shedule7Start").click(function(){
+        location.href = "shedule.html?relay=7";
+    }),
+	$("#shedule8Start").click(function(){
+        location.href = "shedule.html?relay=8";
+    }),
+	$("#shedule9Start").click(function(){
+        location.href = "shedule.html?relay=9";
+    }),
+	$("#shedule10Start").click(function(){
+        location.href = "shedule.html?relay=10";
+    }),
+	$("#shedule11Start").click(function(){
+        location.href = "shedule.html?relay=11";
+    }),
+	$("#shedule12Start").click(function(){
+        location.href = "shedule.html?relay=12";
+    })
 });

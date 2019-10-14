@@ -15,6 +15,7 @@
 #include <ETH.h>
 #include "mail.hpp"
 #include "network_VM208.hpp"
+#include <DNSServer.h>
 const char *TAG = "SERVER";
 
 // SKETCH BEGIN
@@ -22,7 +23,28 @@ AsyncWebServer server(80);
 
 void sendBoardInfo(AsyncWebServerRequest *request);
 void sendIOState(AsyncWebServerRequest *request);
-String getMacAsString(uint8_t *mac);
+//String getMacAsString(uint8_t *mac);
+
+class CaptiveRequestHandler : public AsyncWebHandler {
+public:
+  CaptiveRequestHandler() {}
+  virtual ~CaptiveRequestHandler() {}
+
+  bool canHandle(AsyncWebServerRequest *request){
+    //request->addInterestingHeader("ANY");
+    return true;
+  }
+
+  void handleRequest(AsyncWebServerRequest *request) {
+      AsyncResponseStream *response = request->beginResponseStream("text/html");
+    response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
+    response->print("<p>This is out captive portal front page.</p>");
+    response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
+    response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
+    response->print("</body></html>");
+    request->send(response);
+  }
+};
 
 void startServer()
 {
@@ -129,7 +151,7 @@ void startServer()
       config.setEmailUser(request->getParam(2)->value());
       config.setEmailPW(request->getParam(3)->value());
       config.setEmailRecipient(request->getParam(4)->value());
-      config.setEmailTitle(request->getParam(5)->value());
+      config.setEmailSubject(request->getParam(5)->value());
       config.saveEmailSettings();
       request->send(200, "text/plain", "OK");
     }
@@ -140,7 +162,7 @@ void startServer()
   });
 
   server.on("/testmail", HTTP_POST, [](AsyncWebServerRequest *request) {
-    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    sendTestMail();
   });
 
   server.on("/wifisave", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -156,6 +178,22 @@ void startServer()
       config.save();
       Serial.printf("Wifi Saved\n");
       ESP.restart();
+    }
+    else
+    {
+      request->send(400);
+    }
+  });
+
+  server.on("/wifi_creds_save", HTTP_POST, [](AsyncWebServerRequest *request) {
+    Serial.printf("WifiSave\n");
+    if (request->params() == 2)
+    {
+      config.setSSID(request->getParam(0)->value());
+      config.setWifiPassword(request->getParam(1)->value());
+      config.save();
+      startWifi();
+      Serial.printf("Wifi Saved\n");
     }
     else
     {
@@ -388,6 +426,7 @@ void startServer()
   config.getUserPw().toCharArray(userpw, 32);
   server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setAuthentication(user, userpw).setFilter(ON_STA_VM208_FILTER);
   server.serveStatic("/", SPIFFS, "/ap/").setDefaultFile("index.html").setFilter(ON_AP_VM208_FILTER);
+  server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_VM208_FILTER);
   server.onNotFound([](AsyncWebServerRequest *request) {
     if (ON_AP_VM208_FILTER(nullptr))
     {
@@ -398,11 +437,13 @@ void startServer()
     {
       if (request->method() == HTTP_POST && request->url() == "index.html")
       {
+        Serial.println("POST INDEX");
         AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html");
         request->send(response);
       }
       else
       {
+        Serial.println(request->url());
         Serial.printf("NOT_FOUND: ");
         if (request->method() == HTTP_GET)
           Serial.printf("GET");
@@ -490,6 +531,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     {
       SPIFFS.end();
     }
+    disableIOacitivty();
     if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
     {
       Update.printError(Serial);
@@ -503,10 +545,10 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
 
   if (final)
   {
-    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the VM208 reboots");
-    response->addHeader("Refresh", "20");
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Please wait while the VM208 reboots");
     response->addHeader("Location", "/index.html");
     request->send(response);
+    
     if (!Update.end(true))
     {
       Update.printError(Serial);
@@ -557,19 +599,6 @@ void sendBoardInfo(AsyncWebServerRequest *request)
   jsonBuffer.clear();
 }
 
-String getMacAsString(uint8_t *mac)
-{
-  String str;
-  String str1(mac[0], HEX);
-  String str2(mac[1], HEX);
-  String str3(mac[2], HEX);
-  String str4(mac[3], HEX);
-  String str5(mac[4], HEX);
-  String str6(mac[5], HEX);
-  str = str1 + ":" + str2 + ":" + str3 + ":" + str4 + ":" + str5 + ":" + str6;
-  return str;
-}
-
 void sendIOState(AsyncWebServerRequest *request)
 {
 
@@ -606,6 +635,7 @@ void sendIOState(AsyncWebServerRequest *request)
     names.add((c + i)->getName());
   }
 
+
   root.printTo(*response);
   request->send(response);
   jsonBuffer.clear();
@@ -621,6 +651,7 @@ void sendSettings(AsyncWebServerRequest *request)
 
   root.set(config.USERNAME_KEY, config.getUserName());
   root.set(config.BOARDNAME_KEY, config.getBoardName());
+  root.set(config.SSID_KEY, config.getSSID());
   root.set(config.ETH_DHCPEN_KEY, config.getETH_DHCPEnable());
   root.set(config.ETH_IPADDR_KEY, config.getETH_IPAddress());          //TODO: change to interface settings
   root.set(config.ETH_GATEWAY_KEY, config.getETH_Gateway());           //TODO: change to interface settings
@@ -642,6 +673,11 @@ void sendSettings(AsyncWebServerRequest *request)
   root.set(config.NOTIF_EXT_CONNECT_KEY, config.getNotification_ext_connected());
   root.set(config.NOTIF_INPUT_CHANGE_KEY, config.getNotificationInputChange());
   root.set(config.NOTIF_MANUAL_INPUT_KEY, config.getNotification_manual_input());
+  root.set("smtpserver",config.getEmailServer());
+  root.set("smtpport",config.getEmailPort());
+  root.set("username",config.getEmailUser());
+  root.set("recipient",config.getEmailRecipient());
+  root.set("subject",config.getEmailSubject());
   JsonArray &Channels = root.createNestedArray("Channels");
   Channel *c;
   Alarm *a;
@@ -671,7 +707,7 @@ void sendSettings(AsyncWebServerRequest *request)
 bool ON_AP_VM208_FILTER(AsyncWebServerRequest *request)
 {
   wifi_mode_t mode = WiFi.getMode();
-  if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
+  if ((mode == WIFI_MODE_AP) || (mode == WIFI_MODE_APSTA))
   {
     return true;
   }
