@@ -1,22 +1,29 @@
 #include "output.hpp"
 
-#include "IO.hpp"
+#include "vm208_io.hpp"
 #include <list>
 #include <iterator>
 
 extern "C"
 {
 }
-Output::Output(uint8_t id, uint16_t pin, bool initState, TCA6424A_TS *tca) : m_id(id),
-                                                                             m_pin(pin),
-                                                                             m_state(initState),
-                                                                             m_tca(tca),
-                                                                             m_isAccessible(false),
-                                                                             m_pulseTime(5),
-                                                                             m_timerTime(1)
+Output::Output(uint8_t id, uint16_t pin, bool initState, TCA6424A_TS *tca, bool setState) : m_id(id),
+                                                                                            m_pin(pin),
+                                                                                            m_state(initState),
+                                                                                            m_tca(tca),
+                                                                                            m_isAccessible(false),
+                                                                                            m_pulseTime(5),
+                                                                                            m_timerTime(1)
 {
-    initPin(true);
-    updateTCA();
+    m_state = initState;
+    m_setState = setState;
+    if (m_setState == true)
+    {
+        initPin(true);
+    }else{
+        m_isAccessible = true;
+    }
+    m_setState = true;
 }
 
 uint8_t Output::getId()
@@ -46,10 +53,10 @@ void Output::updateTCA()
 {
     if (m_tca != nullptr && m_isAccessible)
     {
-        //portENTER_CRITICAL();
-        m_tca->ts_writePin(m_pin, m_state);
-        //portEXIT_CRITICAL();
-        delay(1);
+        if (m_setState)
+        {
+            m_tca->ts_writePin(m_pin, m_state);
+        }
     }
 }
 
@@ -68,8 +75,8 @@ void Output::initPin(bool checkConnection)
             if (m_tca->testConnection())
             {
                 m_isAccessible = true;
-                updateTCA();
                 m_tca->ts_setPinDirection(m_pin, TCA6424A_OUTPUT);
+                updateTCA();
             }
             else
             {

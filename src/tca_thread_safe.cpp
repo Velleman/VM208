@@ -43,7 +43,7 @@ bool TCA6424A_TS::ts_testConnection()
 bool TCA6424A_TS::ts_readPin(uint16_t pin)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
-    bool result;
+    bool result = false;
     if(!_isUpdating)
     {
         I2Cdev::readBit(devAddr, TCA6424A_RA_INPUT0 + (pin / 8), pin % 8, buffer);
@@ -115,4 +115,29 @@ uint8_t TCA6424A_TS::ts_readBank(uint8_t reg)
 void TCA6424A_TS::setUpdateMode()
 {
     _isUpdating = true;
+}
+
+void TCA6424A_TS::updateInternalRegisters()
+{
+    xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    I2Cdev::readByte(devAddr,TCA6424A_RA_OUTPUT0, buffer);
+    registers[TCA6424A_RA_OUTPUT0] = buffer[0];
+    I2Cdev::readByte(devAddr,TCA6424A_RA_OUTPUT1, buffer);
+    registers[TCA6424A_RA_OUTPUT1] = buffer[0];
+    I2Cdev::readByte(devAddr,TCA6424A_RA_OUTPUT2, buffer);
+    registers[TCA6424A_RA_OUTPUT2] = buffer[0];
+    I2Cdev::readByte(devAddr,TCA6424A_RA_CONFIG0, buffer);
+    registers[TCA6424A_RA_CONFIG0] = buffer[0];
+    I2Cdev::readByte(devAddr,TCA6424A_RA_CONFIG1, buffer);
+    registers[TCA6424A_RA_CONFIG1] = buffer[0];
+    I2Cdev::readByte(devAddr,TCA6424A_RA_CONFIG2, buffer);
+    registers[TCA6424A_RA_CONFIG2] = buffer[0];
+    Serial.println(registers[TCA6424A_RA_OUTPUT0],HEX);
+    Serial.println(registers[TCA6424A_RA_OUTPUT1],HEX);
+    Serial.println(registers[TCA6424A_RA_OUTPUT2],HEX);
+    Serial.println(registers[TCA6424A_RA_CONFIG0],HEX);
+    Serial.println(registers[TCA6424A_RA_CONFIG1],HEX);
+    Serial.println(registers[TCA6424A_RA_CONFIG2],HEX);
+    
+    xSemaphoreGive(g_Mutex);
 }

@@ -9,6 +9,7 @@
 #include "channel.hpp"
 #include "relay.hpp"
 #include "mosfet.hpp"
+#include "filesystem.hpp"
 class Configuration
 {
 private:
@@ -16,7 +17,7 @@ private:
 #define MAX_WIFI_PASSWORD_LENGTH 64
 #define MAX_BOARDNAME_LENGTH 32
 #define MAX_USERNAME_LENGTH 32
-
+  FileSystem* _fs;
   String _ssid;
   String _wifi_pw;
   String _boardName;
@@ -66,6 +67,7 @@ private:
 
 public:
   Configuration();
+  void setFileSystem(FileSystem* fs);
   static const char *SSID_KEY;
   static const char *WIFI_PW_KEY;
   static const char *BOARDNAME_KEY;

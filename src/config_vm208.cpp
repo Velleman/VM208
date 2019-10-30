@@ -1,9 +1,10 @@
 #include "config_vm208.hpp"
 
-#include "SPIFFS.h"
+#include "FS.h"
 #include "ArduinoJson.h"
 #include "alarm.hpp"
-#include "IO.hpp"
+#include "vm208_io.hpp"
+#include "filesystem.hpp"
 static const char *TAG = "CONFIGURATION";
 
 Configuration::Configuration()
@@ -18,6 +19,12 @@ Configuration::Configuration()
 
 Configuration::~Configuration()
 {
+}
+
+void Configuration::setFileSystem(FileSystem *fs)
+{
+    _fs = fs;
+    _fs->begin();
 }
 
 String Configuration::getVersion() const
@@ -92,7 +99,7 @@ String Configuration::getUserPw() const
 
 void Configuration::load()
 {
-    if (SPIFFS.exists(configPath))
+    if (_fs->exists(configPath))
     {
         ESP_LOGI(TAG, "file exist");
         File file = loadFile(configPath);
@@ -136,14 +143,10 @@ void Configuration::load()
     {
         ESP_LOGI(TAG, "file doesnt exist");
     }
-    if (SPIFFS.exists(emailPath))
+    if (_fs->exists(emailPath))
     {
         ESP_LOGI(TAG, "file exist");
         File file = loadFile(emailPath);
-        /* while (file.available())
-        {
-            Serial.write(file.read());
-        }*/
         DynamicJsonBuffer jsonBuffer;
         JsonObject &root = jsonBuffer.parseObject(file);
         if (root.containsKey(EMAIL_SERRVER_KEY))
@@ -153,7 +156,7 @@ void Configuration::load()
             _email_user = root[EMAIL_USER_KEY].as<String>();
             _email_pw = root[EMAIL_PW_KEY].as<String>();
             _email_recipient = root[EMAIL_RECEIVER_KEY].as<String>();
-         _email_subject = root[EMAIL_TITLE_KEY].as<String>();
+            _email_subject = root[EMAIL_TITLE_KEY].as<String>();
             _notif_boot = root[NOTIF_BOOT_KEY].as<bool>();
             _notif_ext_connected = root[NOTIF_EXT_CONNECT_KEY].as<bool>();
             _notif_input_change = root[NOTIF_INPUT_CHANGE_KEY].as<bool>();
@@ -189,10 +192,10 @@ void Configuration::saveEmailSettings()
 
 void Configuration::writeEmailSettings()
 {
-    if (SPIFFS.exists(emailPath))
+    if (_fs->exists(emailPath))
     {
         ESP_LOGI(TAG, "remove file");
-        SPIFFS.remove(emailPath);
+        _fs->remove(emailPath);
     }
     DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
@@ -206,7 +209,7 @@ void Configuration::writeEmailSettings()
     root[NOTIF_EXT_CONNECT_KEY] = _notif_ext_connected;
     root[NOTIF_INPUT_CHANGE_KEY] = _notif_input_change;
     root[NOTIF_MANUAL_INPUT_KEY] = _notif_manual_input;
-    File file = SPIFFS.open(emailPath, FILE_WRITE);
+    File file = _fs->open(emailPath, "w");
     if (root.printTo(file) == 0)
     {
         Serial.println("Error writing to file");
@@ -240,48 +243,51 @@ https://arduinojson.org/v5/assistant/
 
 void Configuration::writeConfig()
 {
-    if (SPIFFS.exists(configPath))
+    Serial.println("test");
+    if (_fs->exists(configPath))
     {
-        Serial.println("remove config file");
-        SPIFFS.remove(configPath);
-    }
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject &root = jsonBuffer.createObject();
-    root[SSID_KEY] = _ssid;
-    root[WIFI_PW_KEY] = _wifi_pw;
-    root[BOARDNAME_KEY] = _boardName;
-    root[USERNAME_KEY] = _username;
-    root[USERPW_KEY] = _userPW;
-    root[ETH_DHCPEN_KEY] = _ETH_DHCPEnable;
-    root[ETH_IPADDR_KEY] = _ETH_IPAddress;
-    root[ETH_GATEWAY_KEY] = _ETH_Gateway;
-    root[ETH_SUBNETMASK_KEY] = _ETH_SubnetMask;
-    root[ETH_PRIMARYDNS_KEY] = _ETH_PrimaryDNS;
-    root[ETH_SECONDARYDNS_KEY] = _ETH_SecondaryDNS;
-    root[WIFI_DHCPEN_KEY] = _WIFI_DHCPEnable;
-    root[WIFI_IPADDR_KEY] = _WIFI_IPAddress;
-    root[WIFI_GATEWAY_KEY] = _WIFI_Gateway;
-    root[WIFI_SUBNETMASK_KEY] = _WIFI_SubnetMask;
-    root[WIFI_PRIMARYDNS_KEY] = _WIFI_PrimaryDNS;
-    root[WIFI_SECONDARYDNS_KEY] = _WIFI_SecondaryDNS;
-    root[TIMEZONE_KEY] = _timezoneSeconds;
-    root[DST_KEY] = _DSTseconds;
-    root[FIRST_TIME_KEY] = _firstTime;
-    root[NAME_INPUT_KEY] = _name_input;
-    root[NAME_MOSFET1_KEY] = _mosfet1_name;
-    root[NAME_MOSFET2_KEY] = _mosfet2_name;
+        Serial.println("config file exists");
+        
+        _fs->remove(configPath);
+        Serial.println("removed config file");
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject &root = jsonBuffer.createObject();
+        root[SSID_KEY] = _ssid;
+        root[WIFI_PW_KEY] = _wifi_pw;
+        root[BOARDNAME_KEY] = _boardName;
+        root[USERNAME_KEY] = _username;
+        root[USERPW_KEY] = _userPW;
+        root[ETH_DHCPEN_KEY] = _ETH_DHCPEnable;
+        root[ETH_IPADDR_KEY] = _ETH_IPAddress;
+        root[ETH_GATEWAY_KEY] = _ETH_Gateway;
+        root[ETH_SUBNETMASK_KEY] = _ETH_SubnetMask;
+        root[ETH_PRIMARYDNS_KEY] = _ETH_PrimaryDNS;
+        root[ETH_SECONDARYDNS_KEY] = _ETH_SecondaryDNS;
+        root[WIFI_DHCPEN_KEY] = _WIFI_DHCPEnable;
+        root[WIFI_IPADDR_KEY] = _WIFI_IPAddress;
+        root[WIFI_GATEWAY_KEY] = _WIFI_Gateway;
+        root[WIFI_SUBNETMASK_KEY] = _WIFI_SubnetMask;
+        root[WIFI_PRIMARYDNS_KEY] = _WIFI_PrimaryDNS;
+        root[WIFI_SECONDARYDNS_KEY] = _WIFI_SecondaryDNS;
+        root[TIMEZONE_KEY] = _timezoneSeconds;
+        root[DST_KEY] = _DSTseconds;
+        root[FIRST_TIME_KEY] = _firstTime;
+        root[NAME_INPUT_KEY] = _name_input;
+        root[NAME_MOSFET1_KEY] = _mosfet1_name;
+        root[NAME_MOSFET2_KEY] = _mosfet2_name;
 
-    File file = SPIFFS.open(configPath, FILE_WRITE);
-    root.printTo(file);
-    file.close();
+        File file = _fs->open(configPath, FILE_WRITE);
+        root.printTo(file);
+        file.close();
+    }
 }
 
 void Configuration::writeAlarms()
 {
-    if (SPIFFS.exists(alarmPath))
+    if (_fs->exists(alarmPath))
     {
         ESP_LOGI(TAG, "remove file");
-        SPIFFS.remove(alarmPath);
+        _fs->remove(alarmPath);
     }
     DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
@@ -307,7 +313,7 @@ void Configuration::writeAlarms()
         }
     }
     //Write json file
-    File file = SPIFFS.open(alarmPath, "w");
+    File file = _fs->open(alarmPath, "w");
     root.printTo(file);
     file.close();
 }
@@ -315,7 +321,7 @@ void Configuration::writeAlarms()
 Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
 {
     Channel c;
-    if (SPIFFS.exists(alarmPath))
+    if (_fs->exists(alarmPath))
     {
 
         ESP_LOGI(TAG, "file exist");
@@ -326,7 +332,7 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
 
         String Channels_i_name = channels[id - 1]["name"]; // "Channel1"
         JsonArray &Channels_i_alarms = channels[id - 1]["alarms"];
-        c = Channel(Channels_i_name, r, l, id);
+        c =  Channel(Channels_i_name, r, l, id);
         for (int i = 0; i < 14; i++)
         {
             JsonObject &Channels_0_alarms_i = Channels_i_alarms[i];
@@ -342,13 +348,12 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
         jsonBuffer.clear();
     }
     return c;
-    SPIFFS.end();
 }
 
 Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
 {
 
-    /*if (SPIFFS.exists(alarmPath))
+    /*if (_fs->exists(alarmPath))
     {
 
         ESP_LOGI(TAG, "file exist");
@@ -379,7 +384,7 @@ Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
 
 File Configuration::loadFile(const char *path)
 {
-    return SPIFFS.open(path);
+    return _fs->open(path, "r");
 }
 
 bool Configuration::getETH_DHCPEnable() const
@@ -592,7 +597,7 @@ String Configuration::getEmailSubject()
 }
 void Configuration::setEmailSubject(String title)
 {
- _email_subject = title;
+    _email_subject = title;
 }
 
 void Configuration::setMosfet1Name(String name)

@@ -3,7 +3,7 @@
 @Author: BN
 Copyright 2019 Velleman nv
 */
-#include "IO.hpp"
+#include "vm208_io.hpp"
 #include <I2CDev.h>
 #include "tca_thread_safe.hpp"
 #include "esp_log.h"
@@ -31,7 +31,7 @@ static void gpio_isr_handler(void *arg)
   xQueueSendFromISR(int_evt_queue, &gpio_num, NULL);
 }
 
-void Init_IO()
+void Init_IO(bool setState)
 {
 
   Wire.begin(33, 32, 100000);
@@ -40,25 +40,57 @@ void Init_IO()
   gpio_pullup_en(GPIO_NUM_32);
   gpio_pulldown_dis(GPIO_NUM_33);
   gpio_pulldown_dis(GPIO_NUM_32);
+
+  if (setState == false)
+  {
+    tca.updateInternalRegisters();
+    tca_ext.updateInternalRegisters();
+  }
   //init relays,leds and buttons
   for (uint8_t i = 0; i < 4; i++)
   {
-    relays[i] = Relay(i + 1, i, false, &tca);
-    leds[i] = Led(i + 1, TCA6424A_P14 + i, true, &tca);
-    currentInputs[i] = new Input(i + 1, TCA6424A_P10 + i, &tca);
-
-    channels[i] = config.createChannel(i + 1, relays + i, leds + i);
+    if (setState == true)
+    {
+      relays[i] = Relay(i + 1, i, false, &tca);
+      leds[i] = Led(i + 1, TCA6424A_P14 + i, true, &tca);
+      currentInputs[i] = new Input(i + 1, TCA6424A_P10 + i, &tca);
+      channels[i] = config.createChannel(i + 1, relays + i, leds +i);
+    }
+    else
+    {
+      relays[i] = Relay(i + 1, i, tca.readPin(i), &tca, setState);
+      leds[i] = Led(i + 1, TCA6424A_P14 + i, tca.readPin(TCA6424A_P14 + i), &tca, setState);
+      currentInputs[i] = new Input(i + 1, TCA6424A_P10 + i, &tca);
+      channels[i] = config.createChannel(i + 1, relays + i, leds + i);
+    }
   }
   for (int i = 4; i < 12; i++)
   {
-    relays[i] = Relay(i + 1, TCA6424A_P00 + (i - 4), false, &tca_ext);
-    leds[i] = Led(i + 1, TCA6424A_P20 + (i - 4), true, &tca_ext);
-    currentInputs[i] = new Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
-    channels[i] = config.createChannel(i + 1, relays + i, leds + i);
+    if (setState == true)
+    {
+      relays[i] = Relay(i + 1, TCA6424A_P00 + (i - 4), false, &tca_ext, setState);
+      leds[i] = Led(i + 1, TCA6424A_P20 + (i - 4), true, &tca_ext, setState);
+      currentInputs[i] = new Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
+      channels[i] = config.createChannel(i + 1, relays + i, leds + i);
+    }
+    else{
+      relays[i] = Relay(i + 1, TCA6424A_P00 + (i - 4), tca_ext.readPin(TCA6424A_P00 + (i - 4)), &tca_ext, setState);
+      leds[i] = Led(i + 1, TCA6424A_P20 + (i - 4), tca_ext.readPin(TCA6424A_P20 + (i -4)), &tca_ext, setState);
+      currentInputs[i] = new Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
+      channels[i] = config.createChannel(i + 1, relays + i, leds + i);
+    }
   }
 
-  mosfets[0] = Mosfet(1, TCA6424A_P04, false, &tca);
-  mosfets[1] = Mosfet(2, TCA6424A_P05, false, &tca);
+  if (setState == true)
+  {
+    mosfets[0] = Mosfet(1, TCA6424A_P04, false, &tca, setState);
+    mosfets[1] = Mosfet(2, TCA6424A_P05, false, &tca, setState);
+  }
+  else
+  {
+    mosfets[0] = Mosfet(1, TCA6424A_P04, tca.readPin(TCA6424A_P04), &tca, setState);
+    mosfets[1] = Mosfet(2, TCA6424A_P05, tca.readPin(TCA6424A_P05), &tca, setState);
+  }
   //channels[12] = config.createMosfetChannel(13,&mosfets[0]);
   //channels[13] = config.createMosfetChannel(14,&mosfets[1]);
   currentInputs[12] = new Input(13, TCA6424A_P06, &tca);
@@ -150,7 +182,6 @@ void IO_task(void *arg)
   {
     bool currentState = currentInputs[i]->read();
     previousInputs[i] = currentState;
-    leds[i].setState(currentState);
   }
   xTaskCreate(updateIO, "checkExtension", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
   unsigned long previousTime = 0;
@@ -191,14 +222,14 @@ void IO_task(void *arg)
               {
                 if (currentState[i - 4] != previousInputs[i])
                 {
-                  if (currentState[i-4] == false)
+                  if (currentState[i - 4] == false)
                   {
                     channels[i].toggle(); //toggle state
                     channels[i].clearTimerAndPulse();
                     channels[i].disableSheduler();
                     sendManualInputMail();
                   }
-                  previousInputs[i] = currentState[i-4];
+                  previousInputs[i] = currentState[i - 4];
                   _inputChanged = true;
                 }
               }
@@ -221,19 +252,19 @@ void IO_task(void *arg)
             tca.ts_readBank(TCA6424A_RA_INPUT1);
           }
           bool currentState[8] = {false, false, false, false, false, false, false, false};
-            uint8_t differentStates = 0;
-            for (int i = 0; i < 4; i++)
-            {
-              currentState[i] = (inputs >> i) & 0x01;
-              if (currentState[i] != previousInputs[i])
-              {
-                //Serial.println("DIFFERENT STATE");
-                differentStates++;
-              }
-            }
+          uint8_t differentStates = 0;
           for (int i = 0; i < 4; i++)
           {
-            
+            currentState[i] = (inputs >> i) & 0x01;
+            if (currentState[i] != previousInputs[i])
+            {
+              //Serial.println("DIFFERENT STATE");
+              differentStates++;
+            }
+          }
+          for (int i = 0; i < 4; i++)
+          {
+
             if (currentState[i] != previousInputs[i])
             {
               if (currentState[i] == false)
@@ -248,7 +279,7 @@ void IO_task(void *arg)
             _inputChanged = true;
             delay(1);
           }
-          
+
           if (user_input != previousInputs[12])
           {
             _userInputChanged = true;
@@ -348,7 +379,7 @@ Mosfet *getMosfetById(int id)
 
 Relay *getRelayById(int id)
 {
-  return &relays[id - 1];
+  return  &relays[id - 1];
 }
 
 Channel *getChannelById(int id)
@@ -357,7 +388,7 @@ Channel *getChannelById(int id)
   if (id <= 12 && id > 0)
   {
     xSemaphoreGive(g_MutexChannel);
-    return channels + (id - 1);
+    return &channels[id - 1];
   }
   else
   {
@@ -369,7 +400,7 @@ Channel *getChannelById(int id)
 
 Led *getLedById(int id)
 {
-  return &leds[id - 1];
+  return leds + (id - 1);
 }
 
 bool inputChanged()

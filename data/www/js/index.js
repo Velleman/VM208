@@ -23,7 +23,21 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_names()
+    update_names(),update_sheduler_state()
+}
+
+function update_sheduler_state()
+{
+	for(var i =0;i<12;i++)
+	{
+		for(var j=0;j<14;i++)
+		{
+			if(json.Channels[i].alarms[j].enabled)
+			{
+				$("#dot"+(i+1)).css("background-color","#00ff00");
+			}
+		}
+	}
 }
 
 function update_names() {

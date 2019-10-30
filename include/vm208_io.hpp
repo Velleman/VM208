@@ -3,8 +3,8 @@
     @Author: BN
     Copyright 2019 Velleman nv
 */
-#ifndef _IO_H_
-#define _IO_H_
+#ifndef _VM208_IO_H_
+#define _VM208_IO_H_
 #include <stdbool.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
@@ -23,7 +23,7 @@
 #define INPUT_MAX 13
 
 //void IRAM_ATTR gpio_isr_handler(void* arg);
-void Init_IO();
+void Init_IO(bool setState);
 void setMOSFET(Mosfet* mosfet);
 //void setLeds(led_t* leds);
 void readButton();

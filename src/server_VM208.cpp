@@ -2,7 +2,7 @@
 
 #define ARDUINOJSON_USE_LONG_LONG 1
 
-#include "IO.hpp"
+#include "vm208_io.hpp"
 #include "AsyncJson.h"
 #include "ArduinoJson.h"
 #include "esp_log.h"
@@ -202,19 +202,20 @@ void startServer()
   });
 
   server.on("/eth_ip_save", HTTP_POST, [](AsyncWebServerRequest *request) {
-    Serial.printf("eth_ip_save\n");
     if (request->params() == 6)
     {
-      Serial.print("eth_ip_save ");
-      Serial.println(request->getParam(0)->value());
+      Serial.println ("eth_ip_save ");
       config.setETH_DHCPEnable(request->getParam(0)->value() == "true" ? true : false);
+      Serial.println("test ");
       config.setETH_IPAddress(request->getParam(1)->value());
       config.setETH_Gateway(request->getParam(2)->value());
       config.setETH_SubnetMask(request->getParam(3)->value());
       config.setETH_PrimaryDNS(request->getParam(4)->value());
       config.setETH_SecondaryDNS(request->getParam(5)->value());
       config.save();
+      Serial.println("test2");
       applyEthNetworkSettings();
+      Serial.println("test3");
       request->send(200);
     }
     else
@@ -337,7 +338,6 @@ void startServer()
     {
       String relay = request->getParam(0)->value();
       Channel *c = getChannelById(relay.toInt());
-      bool state = true;
       int param = 1;
       String time;
       String hour;
@@ -358,10 +358,10 @@ void startServer()
         a->setHour(hour.toInt());
         a->setMinute(minute.toInt());
         a->setEnabled(enabled);
-        state = !state;
         alarm++;
-        //Turn Off Alarm
         param++;
+        
+        //Turn Off Alarm
         time = request->getParam(param)->value();
         hour = time.substring(0, 2);
         minute = time.substring(3, 5);
@@ -372,7 +372,6 @@ void startServer()
         a->setHour(hour.toInt());
         a->setMinute(minute.toInt());
         a->setEnabled(enabled);
-        state = !state;
         alarm++;
         param++;
       }
@@ -388,7 +387,6 @@ void startServer()
       a->setHour(hour.toInt());
       a->setMinute(minute.toInt());
       a->setEnabled(enabled);
-      state = !state;
       alarm++;
       //Turn Off Alarm
       param++;
@@ -402,8 +400,6 @@ void startServer()
       a->setHour(hour.toInt());
       a->setMinute(minute.toInt());
       a->setEnabled(enabled);
-      state = !state;
-
       config.saveAlarms();
       sendSettings(request);
     }
@@ -568,9 +564,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
 void sendBoardInfo(AsyncWebServerRequest *request)
 {
   AsyncResponseStream *response = request->beginResponseStream("application/json");
-  Serial.println(config.getBoardName());
-  const size_t capacity = JSON_OBJECT_SIZE(5);
-  DynamicJsonBuffer jsonBuffer(capacity);
+  DynamicJsonBuffer jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   root.set("time", (uint64_t)esp_timer_get_time());
   root.set("firmware", config.getVersion());
@@ -629,7 +623,7 @@ void sendIOState(AsyncWebServerRequest *request)
   root.set("mosfet1", m1->getState());
   root.set("mosfet2", m2->getState());
   root.set("name1", c->getName());
-  JsonArray &names = root.createNestedArray("names");
+  JsonArray &names = root.createNestedArray("names"); 
   for (int i = 0; i < 12; i++)
   {
     names.add((c + i)->getName());

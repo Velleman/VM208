@@ -6,7 +6,7 @@
 #include <FS.h>
 
 #include "server_VM208.h"
-#include "IO.hpp"
+#include "vm208_io.hpp"
 #include "AsyncUDP.h"
 #include <SPIFFS.h>
 #include "config_vm208.hpp"
@@ -20,6 +20,7 @@
 #include "network_VM208.hpp"
 #include "time_VM208.hpp"
 #include <DNSServer.h>
+#include "SPIFFS_FS.hpp"
 //static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
@@ -36,6 +37,7 @@ int8_t minutesTimeZone = 0;
 const PROGMEM char *ntpServer = "pool.ntp.org";
 bool wifiFirstConnected = false;
 //DNSServer dnsServer;
+SPIFFS_Fs filesystem;
 Configuration config;
 bool gotETH_IP;
 bool gotSTA_IP;
@@ -125,21 +127,28 @@ static void shedulerStatus(void *pvParameter)
 
 void setup()
 {
+
   g_Mutex = xSemaphoreCreateMutex();
   g_MutexChannel = xSemaphoreCreateMutex();
   g_MutexMail = xSemaphoreCreateMutex();
   Serial.begin(115200);
   Serial.setDebugOutput(true);
+  esp_reset_reason_t reason = esp_reset_reason();
+  bool setState = true;
+  if (reason == ESP_RST_TASK_WDT || reason == ESP_RST_PANIC || reason == ESP_RST_UNKNOWN)
+  {
+    Serial.println("reset because of WDT");
+    setState = false;
+  }
   delay(10);
-  Serial.printf("START\n");
 
   ESP_LOGI(TAG, "APP MAIN ENTRY");
-  SPIFFS.begin();
-  Init_IO();
+  SPIFFS_Fs fs;
+  config.setFileSystem(&fs);
+  Init_IO(setState);
 
   s_wifi_event_group = xEventGroupCreate();
 
-  //ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
   config.load();
 
   Input **inputs;
@@ -176,7 +185,7 @@ void setup()
     //#region hide
     if (udp.listen(30303))
     {
-      
+
       udp.onPacket([](AsyncUDPPacket packet) {
         Serial.print("UDP Packet Type: ");
         Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
@@ -216,13 +225,13 @@ void setup()
   xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
   xTaskCreate(shedulerStatus, "ShedulerStatus", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
   startServer();
-  if(WiFi.getMode() != WIFI_MODE_AP)
+  if (WiFi.getMode() != WIFI_MODE_AP)
     sendBootMail();
 }
 
 void loop()
 {
-  if(WiFi.getMode() == WIFI_MODE_AP)
+  if (WiFi.getMode() == WIFI_MODE_AP)
   {
     dnsServer.processNextRequest();
   }
@@ -231,4 +240,3 @@ void loop()
     ArduinoOTA.handle();
   }
 }
-

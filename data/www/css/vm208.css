@@ -99,6 +99,13 @@ td
 .col5{
 	/*display:none;*/
 }
+.dot {
+  height: 17px;
+  width: 17px;
+  background-color: #ff0000;
+  border-radius: 50%;
+  display: inline-block;
+}
 
 /*Mobile View*/
 @media only screen and  (max-width: 760px) {
