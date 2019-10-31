@@ -19,11 +19,12 @@ protected:
   bool m_isAccessible;
   uint64_t m_pulseTime;
   uint64_t m_timerTime;
+  bool m_setState;
   
   void TaskTimer(void *pvParameters);
   void startSheduler();
 public:
-  Output(uint8_t id = 0, uint16_t pin = 0, bool initState = 0, TCA6424A_TS *tca = nullptr);
+  Output(uint8_t id = 0, uint16_t pin = 0, bool initState = 0, TCA6424A_TS *tca = nullptr,bool setState = true);
 
   uint8_t getId();
 

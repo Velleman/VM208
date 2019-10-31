@@ -23,7 +23,7 @@
 #define INPUT_MAX 13
 
 //void IRAM_ATTR gpio_isr_handler(void* arg);
-void Init_IO();
+void Init_IO(bool setState);
 void setMOSFET(Mosfet* mosfet);
 //void setLeds(led_t* leds);
 void readButton();

@@ -130,12 +130,20 @@ void setup()
   g_MutexMail = xSemaphoreCreateMutex();
   Serial.begin(115200);
   Serial.setDebugOutput(true);
+
+  esp_reset_reason_t reason = esp_reset_reason();
+  bool setState = true;
+  if (reason == ESP_RST_TASK_WDT || reason == ESP_RST_PANIC || reason == ESP_RST_UNKNOWN)
+  {
+    Serial.println("reset because of WDT");
+    setState = false;
+  }
   delay(10);
   Serial.printf("START\n");
 
   ESP_LOGI(TAG, "APP MAIN ENTRY");
   SPIFFS.begin();
-  Init_IO();
+  Init_IO(setState);
 
   s_wifi_event_group = xEventGroupCreate();
 

@@ -18,5 +18,6 @@ public:
     void ts_writeByte(uint8_t register, uint8_t data);
     uint8_t ts_readBank(uint8_t reg);
     void setUpdateMode();
+    void updateInternalRegisters();
 };
 #endif
