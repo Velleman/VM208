@@ -30,7 +30,7 @@ function update_sheduler_state()
 {
 	for(var i =0;i<12;i++)
 	{
-		for(var j=0;j<14;i++)
+		for(var j=0;j<14;j++)
 		{
 			if(json.Channels[i].alarms[j].enabled)
 			{
