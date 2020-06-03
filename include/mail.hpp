@@ -1,6 +1,7 @@
 #ifndef _MAIL_HPP
 #define _MAIL_HPP
 #include "ESP32_MailClient.h"
+
 #define MAN_INPUT_MAIL 1
 #define BOOT_MAIL 2
 #define INPUT_MAIL 3

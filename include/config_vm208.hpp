@@ -34,7 +34,7 @@ private:
   String _WIFI_SubnetMask;
   String _WIFI_PrimaryDNS;
   String _WIFI_SecondaryDNS;
-  String _version = "0.1.1";
+  String _version = "1.0.1";
   long _timezoneSeconds;
   int _DSTseconds;
   const char *configPath = "/config.json";

@@ -3,7 +3,6 @@
 #include "global.hpp"
 #include "ETH.h"
 //WiFi or HTTP client for internet connection
-HTTPClientESP32Ex http;
 
 //The Email Sending data object contains config and data to send
 SMTPData smtpData;
@@ -68,7 +67,7 @@ void sendEmail(void *pvParamaters)
   smtpData.setSendCallback(sendCallback);
   try
   {
-    if (!MailClient.sendMail(http, smtpData))
+    if (!MailClient.sendMail(smtpData))
       Serial.println("Error sending Email, " + MailClient.smtpErrorReason());
   }
   catch (exception &e)
