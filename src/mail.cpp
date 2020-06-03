@@ -2,7 +2,6 @@
 
 #include "global.hpp"
 #include "ETH.h"
-//WiFi or HTTP client for internet connection
 
 //The Email Sending data object contains config and data to send
 SMTPData smtpData;
@@ -28,7 +27,7 @@ void sendEmail(void *pvParamaters)
   smtpData.setPriority("High");
 
   //Set the subject
-  smtpData.setSubject("ESP32 SMTP Mail Sending Test");
+  smtpData.setSubject(config.getEmailSubject());
 
   //Set the message - normal text or html format
   uint8_t notification = (uint32_t)pvParamaters;
@@ -37,7 +36,7 @@ void sendEmail(void *pvParamaters)
   switch (notification)
   {
   case MAN_INPUT_MAIL:
-    message = "<div style=\"color:#ff0000;font-size:20px;\">Manual Input! - From VM208</div>";
+    message = "<div style=\"color:#ff0000;font-size:20px;\">A button has been pressed in the last minute - From VM208</div>";
     break;
   case BOOT_MAIL:
     message = "<div style=\"color:#ff0000;font-size:20px;\">Booted Up! - From VM208</div>";
@@ -51,8 +50,11 @@ void sendEmail(void *pvParamaters)
   case EXT_DIS_MAIL:
     message = "<div style=\"color:#ff0000;font-size:20px;\">Extension Disconnected! - From VM208</div>";
     break;
+  case TEST_MAIL:
+    message = "<div style=\"color:#ff0000;font-size:20px;\">Congratulations! You've received the test Mail! - From VM208</div>";
+    break;
   default:
-    message = "<div style=\"color:#ff0000;font-size:20px;\">Manual Input! - From VM208</div>";
+    message = "<div style=\"color:#ff0000;font-size:20px;\">You should not be receiving this! Oopsie :( - From VM208</div>";
     break;
   }
   smtpData.setMessage(message, true);
@@ -65,15 +67,9 @@ void sendEmail(void *pvParamaters)
   Serial.println("Sending Mail...");
   //Start sending Email, can be set callback function to track the status
   smtpData.setSendCallback(sendCallback);
-  try
-  {
-    if (!MailClient.sendMail(smtpData))
-      Serial.println("Error sending Email, " + MailClient.smtpErrorReason());
-  }
-  catch (exception &e)
-  {
-    Serial.println(e.what());
-  }
+
+  if (!MailClient.sendMail(smtpData))
+    Serial.println("Error sending Email, " + MailClient.smtpErrorReason());
 
   //Clear all data from Email object to free memory
   smtpData.empty();
@@ -96,20 +92,28 @@ void sendCallback(SendStatus msg)
 
 void sendManualInputMail()
 {
+  static unsigned long previousTime = 0;
   if (config.getNotification_manual_input())
-    xTaskCreate(sendEmail, "send_mail", 8192, (void *)MAN_INPUT_MAIL, (tskIDLE_PRIORITY + 2), NULL);
+  {
+    //check if a minute has passed
+    if((millis() - previousTime) > 60000)
+    {
+      xTaskCreate(sendEmail, "send_mail", 6144, (void *)MAN_INPUT_MAIL, (tskIDLE_PRIORITY +  10), NULL);
+      previousTime = millis();
+    }
+  }
 }
 
 void sendBootMail()
 {
   if (config.getNotificationBoot())
-    xTaskCreate(sendEmail, "send_mail", 8192, (void *)BOOT_MAIL, (tskIDLE_PRIORITY + 2), NULL);
+    xTaskCreate(sendEmail, "send_mail", 6144, (void *)BOOT_MAIL, (tskIDLE_PRIORITY + 10), NULL);
 }
 
 void sendInputChangedMail()
 {
   if (config.getNotificationInputChange())
-    xTaskCreate(sendEmail, "send_mail", 8192, (void *)INPUT_MAIL, (tskIDLE_PRIORITY + 2), NULL);
+    xTaskCreate(sendEmail, "send_mail", 6144, (void *)INPUT_MAIL, (tskIDLE_PRIORITY + 10), NULL);
 }
 
 void sendExtConnectedMail()
@@ -117,7 +121,7 @@ void sendExtConnectedMail()
   if (config.getNotification_ext_connected())
   {
     Serial.println("EXT MAIL WILL BE SEND");
-    xTaskCreate(sendEmail, "send_mail", 8192, (void *)EXT_MAIL, (tskIDLE_PRIORITY + 2), NULL);
+    xTaskCreate(sendEmail, "send_mail", 6144, (void *)EXT_MAIL, (tskIDLE_PRIORITY + 10), NULL);
   }
   else
   {
@@ -130,10 +134,15 @@ void sendExtDisConnectedMail()
   if (config.getNotification_ext_connected())
   {
     Serial.println("EXT MAIL WILL BE SEND");
-    xTaskCreate(sendEmail, "send_mail", 8192, (void *)EXT_DIS_MAIL, (tskIDLE_PRIORITY + 2), NULL);
+    xTaskCreate(sendEmail, "send_mail", 6144, (void *)EXT_DIS_MAIL, (tskIDLE_PRIORITY + 10), NULL);
   }
   else
   {
     Serial.println("EXT MAIL WILL BE NOT SEND");
   }
+}
+
+void sendTestMail()
+{
+  xTaskCreate(sendEmail, "send_mail", 6144, (void *)TEST_MAIL, (tskIDLE_PRIORITY + 10), NULL);
 }

@@ -54,15 +54,15 @@ img.splashimage:empty
 	table-layout: auto;
 	margin: auto;
 	margin-top: 1em;
-	width: calc(100% - 2em);
+	/*width: calc(100% - 2em);*/
 }
 
 .status-table-shedule
 {
 	/* full width with 1em margin (left, right and top) */
 	table-layout: auto;
+	margin: auto;
 	margin-top: 1em;
-    margin-bottom: 1em;
 }
 .status-table td
 {
@@ -85,11 +85,84 @@ img.splashimage:empty
 
 td
 {
-	width:1px;
     white-space:nowrap;
 }
 .shedule_check{
     margin-left:1em;
+}
+.col3{
+	/*display:none;*/
+}
+.col4{
+	/*display:none;*/
+}
+.col5{
+	/*display:none;*/
+}
+.dot {
+  height: 17px;
+  width: 17px;
+  background-color: #D1001C;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.textMobile{
+	display:none;
+}
+
+/*Mobile View*/
+@media only screen and  (max-width: 760px) {
+
+td, tr { display: block; }
+
+/* Hide table headers (but not display: none;, for accessibility) */
+
+thead tr {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+}
+
+tr { border: 1px solid #000000; }
+
+tr + tr { margin-top: 1.5em; }
+
+td {
+  /* make like a "row" */
+  border: none;
+  border-bottom: 1px solid #000;
+  position: relative;
+  padding-left: 50%;
+  background-color: #F8D9D5;
+  text-align: left;
+}
+
+td:before {
+  content: attr(data-label);
+  display: inline-block;
+  line-height: 1.5;
+  margin-left: -100%;
+  width: 100%;
+  white-space: nowrap;
+}
+
+#top_ext_table{
+	margin-top:0.5em;
+}
+.pure-table{
+	border: 0px solid;
+}
+.pure-table td{
+	border-left: 0px solid;
+	
+}
+.pure-table tr{
+	border-radius : 2px;
+}
+.textMobile{
+	display:inline;
+}
 }
 
 	

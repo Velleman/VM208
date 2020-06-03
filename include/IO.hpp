@@ -6,7 +6,7 @@
 #ifndef _IO_H_
 #define _IO_H_
 #include <stdbool.h>
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 #include "relay.hpp"
@@ -23,7 +23,7 @@
 #define INPUT_MAX 13
 
 //void IRAM_ATTR gpio_isr_handler(void* arg);
-void Init_IO();
+void Init_IO(bool setState);
 void setMOSFET(Mosfet* mosfet);
 //void setLeds(led_t* leds);
 void readButton();
@@ -49,4 +49,5 @@ Relay* getRelays();
 void getLeds(Led* leds);
 Channel* getChannelById(int id);
 void updateIO(void* params);
+void disableIOacitivty();
 #endif

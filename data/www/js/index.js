@@ -23,7 +23,21 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_names()
+    update_names(),update_sheduler_state()
+}
+
+function update_sheduler_state()
+{
+	for(var i =0;i<12;i++)
+	{
+		for(var j=0;j<14;j++)
+		{
+			if(json.Channels[i].alarms[j].enabled)
+			{
+				$("#dot"+(i+1)).css("background-color","#3f9f31");
+			}
+		}
+	}
 }
 
 function update_names() {
@@ -185,7 +199,12 @@ function timerRelayEvent() {
 				} catch (t) {
 					console.log(t)
 				}
-			}
+			},
+            error: function(e){
+                setTimeout(function() {
+						timerRelayEvent()
+					}, 500)
+            }
 		})
 	}
 }
@@ -354,5 +373,29 @@ $(function() {
     }),
     $("#shedule4Start").click(function(){
         location.href = "shedule.html?relay=4";
+    })
+	$("#shedule5Start").click(function(){
+        location.href = "shedule.html?relay=5";
+    }),
+	$("#shedule6Start").click(function(){
+        location.href = "shedule.html?relay=6";
+    }),
+	$("#shedule7Start").click(function(){
+        location.href = "shedule.html?relay=7";
+    }),
+	$("#shedule8Start").click(function(){
+        location.href = "shedule.html?relay=8";
+    }),
+	$("#shedule9Start").click(function(){
+        location.href = "shedule.html?relay=9";
+    }),
+	$("#shedule10Start").click(function(){
+        location.href = "shedule.html?relay=10";
+    }),
+	$("#shedule11Start").click(function(){
+        location.href = "shedule.html?relay=11";
+    }),
+	$("#shedule12Start").click(function(){
+        location.href = "shedule.html?relay=12";
     })
 });

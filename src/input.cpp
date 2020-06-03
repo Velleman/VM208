@@ -43,6 +43,7 @@ void Input::initPin(bool CheckConnection)
             }
         }
         else{
+            m_isAccessible = true;
             m_tca->ts_setPinDirection(m_pin, TCA6424A_INPUT);
         }
     }

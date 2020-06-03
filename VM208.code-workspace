@@ -1,0 +1,69 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"terminal.integrated.env.windows": {
+			"PATH": "C:\\Users\\bn\\.platformio\\penv\\Scripts;C:\\Users\\bn\\.platformio\\penv;C:\\Program Files (x86)\\Intel\\iCLS Client\\;C:\\Program Files\\Intel\\iCLS Client\\;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Tools;C:\\Program Files\\Sybase\\Shared\\PowerBuilder\\11.5;C:\\Program Files (x86)\\Sybase\\Shared\\PowerBuilder\\11.5;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\Git\\cmd;C:\\Program Files\\dotnet\\;C:\\Program Files\\TortoiseSVN\\bin;C:\\Program Files (x86)\\Microchip\\xc8\\v2.10\\bin;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Users\\bn\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Users\\bn\\AppData\\Local\\GitHubDesktop\\bin;C:\\Program Files (x86)\\Intel\\iCLS Client\\;C:\\Program Files\\Intel\\iCLS Client\\;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Tools;C:\\Program Files\\Sybase\\Shared\\PowerBuilder\\11.5;C:\\Program Files (x86)\\Sybase\\Shared\\PowerBuilder\\11.5;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\Git\\cmd;C:\\Program Files\\dotnet\\;C:\\Program Files\\TortoiseSVN\\bin;C:\\Program Files (x86)\\Microchip\\xc8\\v2.10\\bin;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\DAL;C:\\Program Files (x86)\\Intel\\Intel(R) Management Engine Components\\IPT;C:\\Users\\bn\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Users\\bn\\AppData\\Local\\GitHubDesktop\\bin",
+			"PLATFORMIO_CALLER": "vscode"
+		},
+		"files.associations": {
+			"*.c": "c",
+			"functional": "cpp",
+			"vector": "cpp",
+			"i2cdev.h": "c",
+			"io.h": "c",
+			"tca6424a.h": "c",
+			"input.hpp": "c",
+			"relay.hpp": "c",
+			"output.hpp": "c",
+			"stdint.h": "c",
+			"ratio": "cpp",
+			"system_error": "cpp",
+			"type_traits": "cpp",
+			"array": "cpp",
+			"atomic": "cpp",
+			"*.tcc": "cpp",
+			"cctype": "cpp",
+			"chrono": "cpp",
+			"clocale": "cpp",
+			"cmath": "cpp",
+			"condition_variable": "cpp",
+			"csignal": "cpp",
+			"cstddef": "cpp",
+			"cstdint": "cpp",
+			"cstdio": "cpp",
+			"cstdlib": "cpp",
+			"cstring": "cpp",
+			"ctime": "cpp",
+			"cwchar": "cpp",
+			"cwctype": "cpp",
+			"deque": "cpp",
+			"list": "cpp",
+			"unordered_map": "cpp",
+			"exception": "cpp",
+			"string_view": "cpp",
+			"fstream": "cpp",
+			"initializer_list": "cpp",
+			"iosfwd": "cpp",
+			"istream": "cpp",
+			"limits": "cpp",
+			"memory": "cpp",
+			"mutex": "cpp",
+			"new": "cpp",
+			"ostream": "cpp",
+			"numeric": "cpp",
+			"sstream": "cpp",
+			"stdexcept": "cpp",
+			"streambuf": "cpp",
+			"thread": "cpp",
+			"tuple": "cpp",
+			"typeinfo": "cpp",
+			"utility": "cpp"
+		},
+		"debug.openExplorerOnEnd": true,
+		"debug.toolBarLocation": "docked"
+	}
+}

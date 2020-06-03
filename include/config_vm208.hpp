@@ -53,6 +53,7 @@ private:
   String _email_user;
   String _email_pw;
   String _email_recipient;
+  String _email_subject;
 
   String _name_input;
   String _mosfet1_name;
@@ -97,6 +98,7 @@ public:
   static const char *EMAIL_USER_KEY;
   static const char *EMAIL_PW_KEY;
   static const char *EMAIL_RECEIVER_KEY;
+  static const char *EMAIL_TITLE_KEY;
   static const char *NAME_INPUT_KEY;
   static const char *NAME_MOSFET1_KEY;
   static const char *NAME_MOSFET2_KEY;
@@ -203,6 +205,9 @@ public:
 
   String getEmailRecipient();
   void setEmailRecipient(String recipient);
+
+  String getEmailSubject();
+  void setEmailSubject(String subject);
 
   String getInputName();
   void setInputName(String name);

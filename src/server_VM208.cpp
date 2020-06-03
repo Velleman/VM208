@@ -11,10 +11,11 @@
 #include "config_vm208.hpp"
 #include <SPIFFS.h>
 #include "global.hpp"
-#include "config_vm208.hpp"
 #include <Update.h>
 #include <ETH.h>
 #include "mail.hpp"
+#include "network_VM208.hpp"
+#include <DNSServer.h>
 const char *TAG = "SERVER";
 
 // SKETCH BEGIN
@@ -22,7 +23,28 @@ AsyncWebServer server(80);
 
 void sendBoardInfo(AsyncWebServerRequest *request);
 void sendIOState(AsyncWebServerRequest *request);
-String getMacAsString(uint8_t *mac);
+//String getMacAsString(uint8_t *mac);
+
+class CaptiveRequestHandler : public AsyncWebHandler {
+public:
+  CaptiveRequestHandler() {}
+  virtual ~CaptiveRequestHandler() {}
+
+  bool canHandle(AsyncWebServerRequest *request){
+    //request->addInterestingHeader("ANY");
+    return true;
+  }
+
+  void handleRequest(AsyncWebServerRequest *request) {
+      AsyncResponseStream *response = request->beginResponseStream("text/html");
+    response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
+    response->print("<p>This is out captive portal front page.</p>");
+    response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
+    response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
+    response->print("</body></html>");
+    request->send(response);
+  }
+};
 
 void startServer()
 {
@@ -50,6 +72,7 @@ void startServer()
       config.setUserName(request->getParam(0)->value());
       config.setUserPw(request->getParam(1)->value());
       config.save();
+      ESP.restart();
     }
   });
 
@@ -121,13 +144,14 @@ void startServer()
   });
 
   server.on("/email_settings", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if (request->params() == 5)
+    if (request->params() == 6)
     {
       config.setEmailServer(request->getParam(0)->value());
       config.setEmailPort(request->getParam(1)->value());
       config.setEmailUser(request->getParam(2)->value());
       config.setEmailPW(request->getParam(3)->value());
       config.setEmailRecipient(request->getParam(4)->value());
+      config.setEmailSubject(request->getParam(5)->value());
       config.saveEmailSettings();
       request->send(200, "text/plain", "OK");
     }
@@ -136,10 +160,9 @@ void startServer()
       request->send(400);
     }
   });
-  
 
   server.on("/testmail", HTTP_POST, [](AsyncWebServerRequest *request) {
-    xTaskCreate(sendEmail, "send_mail", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    sendTestMail();
   });
 
   server.on("/wifisave", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -162,6 +185,22 @@ void startServer()
     }
   });
 
+  server.on("/wifi_creds_save", HTTP_POST, [](AsyncWebServerRequest *request) {
+    Serial.printf("WifiSave\n");
+    if (request->params() == 2)
+    {
+      config.setSSID(request->getParam(0)->value());
+      config.setWifiPassword(request->getParam(1)->value());
+      config.save();
+      startWifi();
+      Serial.printf("Wifi Saved\n");
+    }
+    else
+    {
+      request->send(400);
+    }
+  });
+
   server.on("/eth_ip_save", HTTP_POST, [](AsyncWebServerRequest *request) {
     Serial.printf("eth_ip_save\n");
     if (request->params() == 6)
@@ -175,7 +214,7 @@ void startServer()
       config.setETH_PrimaryDNS(request->getParam(4)->value());
       config.setETH_SecondaryDNS(request->getParam(5)->value());
       config.save();
-      //applyEthNetworkSettings();
+      applyEthNetworkSettings();
       request->send(200);
     }
     else
@@ -197,7 +236,7 @@ void startServer()
       config.setWIFI_PrimaryDNS(request->getParam(4)->value());
       config.setWIFI_SecondaryDNS(request->getParam(5)->value());
       config.save();
-      //applyWifiNetworkSettings();
+      applyWifiNetworkSettings();
       request->send(200);
     }
     else
@@ -210,10 +249,10 @@ void startServer()
     Serial.printf("notif_setting\n");
     if (request->params() == 4)
     {
-      config.setNotificationBoot(request->getParam(0)->value() == "true" ? true :false);
-      config.setNotification_ext_connected(request->getParam(1)->value() == "true" ? true :false);
-      config.setNotificationInputChange(request->getParam(2)->value() == "true" ? true :false);
-      config.setNotification_manual_input(request->getParam(3)->value() == "true" ? true :false);
+      config.setNotificationBoot(request->getParam(0)->value() == "true" ? true : false);
+      config.setNotification_ext_connected(request->getParam(1)->value() == "true" ? true : false);
+      config.setNotificationInputChange(request->getParam(2)->value() == "true" ? true : false);
+      config.setNotification_manual_input(request->getParam(3)->value() == "true" ? true : false);
       config.saveEmailSettings();
       request->send(200, "text/plain", "OK");
     }
@@ -387,7 +426,7 @@ void startServer()
   config.getUserPw().toCharArray(userpw, 32);
   server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html").setAuthentication(user, userpw).setFilter(ON_STA_VM208_FILTER);
   server.serveStatic("/", SPIFFS, "/ap/").setDefaultFile("index.html").setFilter(ON_AP_VM208_FILTER);
-
+  server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_VM208_FILTER);
   server.onNotFound([](AsyncWebServerRequest *request) {
     if (ON_AP_VM208_FILTER(nullptr))
     {
@@ -396,58 +435,68 @@ void startServer()
     }
     else
     {
-      Serial.printf("NOT_FOUND: ");
-      if (request->method() == HTTP_GET)
-        Serial.printf("GET");
-      else if (request->method() == HTTP_POST)
-        Serial.printf("POST");
-      else if (request->method() == HTTP_DELETE)
-        Serial.printf("DELETE");
-      else if (request->method() == HTTP_PUT)
-        Serial.printf("PUT");
-      else if (request->method() == HTTP_PATCH)
-        Serial.printf("PATCH");
-      else if (request->method() == HTTP_HEAD)
-        Serial.printf("HEAD");
-      else if (request->method() == HTTP_OPTIONS)
-        Serial.printf("OPTIONS");
+      if (request->method() == HTTP_POST && request->url() == "index.html")
+      {
+        Serial.println("POST INDEX");
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html");
+        request->send(response);
+      }
       else
-        Serial.printf("UNKNOWN");
-      Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
-
-      if (request->contentLength())
       {
-        Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
-        Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
-      }
-
-      int headers = request->headers();
-      int i;
-      for (i = 0; i < headers; i++)
-      {
-        AsyncWebHeader *h = request->getHeader(i);
-        Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
-      }
-
-      int params = request->params();
-      for (i = 0; i < params; i++)
-      {
-        AsyncWebParameter *p = request->getParam(i);
-        if (p->isFile())
-        {
-          Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-        }
-        else if (p->isPost())
-        {
-          Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        }
+        Serial.println(request->url());
+        Serial.printf("NOT_FOUND: ");
+        if (request->method() == HTTP_GET)
+          Serial.printf("GET");
+        else if (request->method() == HTTP_POST)
+          Serial.printf("POST");
+        else if (request->method() == HTTP_DELETE)
+          Serial.printf("DELETE");
+        else if (request->method() == HTTP_PUT)
+          Serial.printf("PUT");
+        else if (request->method() == HTTP_PATCH)
+          Serial.printf("PATCH");
+        else if (request->method() == HTTP_HEAD)
+          Serial.printf("HEAD");
+        else if (request->method() == HTTP_OPTIONS)
+          Serial.printf("OPTIONS");
         else
-        {
-          Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        }
-      }
+          Serial.printf("UNKNOWN");
+        Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
 
-      request->send(404);
+        if (request->contentLength())
+        {
+          Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
+          Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
+        }
+
+        int headers = request->headers();
+        int i;
+        for (i = 0; i < headers; i++)
+        {
+          AsyncWebHeader *h = request->getHeader(i);
+          Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
+        }
+
+        int params = request->params();
+        for (i = 0; i < params; i++)
+        {
+          AsyncWebParameter *p = request->getParam(i);
+          if (p->isFile())
+          {
+            Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
+          }
+          else if (p->isPost())
+          {
+            Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+          }
+          else
+          {
+            Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+          }
+        }
+
+        request->send(404);
+      }
     }
   });
   server.onFileUpload([](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final) {
@@ -482,6 +531,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     {
       SPIFFS.end();
     }
+    disableIOacitivty();
     if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
     {
       Update.printError(Serial);
@@ -495,10 +545,10 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
 
   if (final)
   {
-    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the VM208 reboots");
-    response->addHeader("Refresh", "20");
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Please wait while the VM208 reboots");
     response->addHeader("Location", "/index.html");
     request->send(response);
+    
     if (!Update.end(true))
     {
       Update.printError(Serial);
@@ -507,7 +557,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     {
       Serial.println("Update complete");
       Serial.flush();
-      if(cmd == U_FLASH)
+      if (cmd == U_FLASH)
       {
         ESP.restart();
       }
@@ -549,19 +599,6 @@ void sendBoardInfo(AsyncWebServerRequest *request)
   jsonBuffer.clear();
 }
 
-String getMacAsString(uint8_t *mac)
-{
-  String str;
-  String str1(mac[0], HEX);
-  String str2(mac[1], HEX);
-  String str3(mac[2], HEX);
-  String str4(mac[3], HEX);
-  String str5(mac[4], HEX);
-  String str6(mac[5], HEX);
-  str = str1 + ":" + str2 + ":" + str3 + ":" + str4 + ":" + str5 + ":" + str6;
-  return str;
-}
-
 void sendIOState(AsyncWebServerRequest *request)
 {
 
@@ -598,6 +635,7 @@ void sendIOState(AsyncWebServerRequest *request)
     names.add((c + i)->getName());
   }
 
+
   root.printTo(*response);
   request->send(response);
   jsonBuffer.clear();
@@ -613,6 +651,7 @@ void sendSettings(AsyncWebServerRequest *request)
 
   root.set(config.USERNAME_KEY, config.getUserName());
   root.set(config.BOARDNAME_KEY, config.getBoardName());
+  root.set(config.SSID_KEY, config.getSSID());
   root.set(config.ETH_DHCPEN_KEY, config.getETH_DHCPEnable());
   root.set(config.ETH_IPADDR_KEY, config.getETH_IPAddress());          //TODO: change to interface settings
   root.set(config.ETH_GATEWAY_KEY, config.getETH_Gateway());           //TODO: change to interface settings
@@ -630,10 +669,15 @@ void sendSettings(AsyncWebServerRequest *request)
   root.set(config.NAME_INPUT_KEY, config.getInputName());
   root.set(config.NAME_MOSFET1_KEY, config.getMosfet1Name());
   root.set(config.NAME_MOSFET2_KEY, config.getMosfet2Name());
-  root.set(config.NOTIF_BOOT_KEY,config.getNotificationBoot());
-  root.set(config.NOTIF_EXT_CONNECT_KEY,config.getNotification_ext_connected());
-  root.set(config.NOTIF_INPUT_CHANGE_KEY,config.getNotificationInputChange());
-  root.set(config.NOTIF_MANUAL_INPUT_KEY,config.getNotification_manual_input());
+  root.set(config.NOTIF_BOOT_KEY, config.getNotificationBoot());
+  root.set(config.NOTIF_EXT_CONNECT_KEY, config.getNotification_ext_connected());
+  root.set(config.NOTIF_INPUT_CHANGE_KEY, config.getNotificationInputChange());
+  root.set(config.NOTIF_MANUAL_INPUT_KEY, config.getNotification_manual_input());
+  root.set("smtpserver",config.getEmailServer());
+  root.set("smtpport",config.getEmailPort());
+  root.set("username",config.getEmailUser());
+  root.set("recipient",config.getEmailRecipient());
+  root.set("subject",config.getEmailSubject());
   JsonArray &Channels = root.createNestedArray("Channels");
   Channel *c;
   Alarm *a;
@@ -663,7 +707,7 @@ void sendSettings(AsyncWebServerRequest *request)
 bool ON_AP_VM208_FILTER(AsyncWebServerRequest *request)
 {
   wifi_mode_t mode = WiFi.getMode();
-  if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
+  if ((mode == WIFI_MODE_AP) || (mode == WIFI_MODE_APSTA))
   {
     return true;
   }

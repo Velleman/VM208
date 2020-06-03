@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="The VM208 settings page">
     <title>VM208 Settings Page</title>
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="stylesheet" href="css/pure-min.css">
     <link rel="stylesheet" href="css/layouts/side-menu.css">
     <link rel="stylesheet" href="css/grids.css">
@@ -25,6 +26,7 @@
                 <ul class="pure-menu-list">
                     <li class="pure-menu-item"><a class="pure-menu-link" href="index.html">Control</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#authentication">Authentication</a> </li>
+					<li class="pure-menu-item"><a class="pure-menu-link" href="#WLAN credentials">WLAN Credentials</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#network">Network</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#email">E-mail</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#customize">Customize</a> </li>
@@ -47,9 +49,28 @@
                             <input type="text" maxlength="32" name="login_field" id="login_field" value=""> </div>
                         <div class="pure-control-group">
                             <label for="password_field">Password:</label>
-                            <input type="password" maxlength="32" name="password_field" id="password_field" value="placebo"> </div>
+                            <input type="password" maxlength="32" name="password_field" id="password_field" placeholder ="Your password"> </div>
                         <div class="pure-controls">
                             <button type="submit" id="sendAuthSettingsButton" class="pure-button pure-button-primary">Save and reboot</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+			<div class="header" id="WLAN credentials">
+                <h1>WLAN credentials</h1>
+                <h2>Configuring the WLAN Credentials</h2> </div>
+            <div class="content">
+                <form id="wlanCredsForm" class="pure-form pure-form-aligned">
+                    <fieldset>
+                        <legend>Credentials</legend>
+                        <div class="pure-control-group">
+                            <label for="ssid_field">SSID:</label>
+                            <input type="text" maxlength="32" name="ssid_field" id="ssid_field" value=""> </div>
+                        <div class="pure-control-group">
+                            <label for="password_wifi_field">Password:</label>
+                            <input type="password" maxlength="32" name="password_wifi_field" id="password_wifi_field" placeholder ="Your password"> </div>
+                        <div class="pure-controls">
+                            <button type="submit" id="sendWlanCredsButton" class="pure-button pure-button-primary">Save and reboot</button>
                         </div>
                     </fieldset>
                 </form>
@@ -144,7 +165,11 @@
                         <legend>Receiver</legend>
                         <div class="pure-control-group">
                             <label for="smtp_user">Recipient:</label>
-                            <input type="text" maxlength="64" name="recipient" value="recipient" id="smtp_recipient"> </div>
+                            <input type="text" maxlength="64" name="recipient" value="recipient" id="smtp_recipient"></div>
+                            <div class="pure-control-group">
+                            <label for="smtp_title">Subject:</label>
+                            <input type="text" maxlength="64" name="title" value="title" id="smtp_title"> 
+                            </div>
                     </fieldset>
                     <div class="pure-controls">
                         <button type="submit" id="sendMailSettingsButton" class="pure-button pure-button-primary">Save</button>
@@ -365,11 +390,11 @@
             <h2>Upload new Firmware</h2>
         </div>
         <div class="content">
-            <form id="Update" method="POST" action='/doUpdate' class="pure-form pure-form-aligned" enctype='multipart/form-data'>
+            <form id="Update" class="pure-form pure-form-aligned" enctype='multipart/form-data'>
                 <fieldset>
                     <legend>Update</legend>
                     <input type='file' name='update'>
-                    <input type='submit' value='Update' class="pure-button pure-button-primary">
+                    <input type='submit' id="update_submit" value='Update' class="pure-button pure-button-primary">
                 </fieldset>
             </form>
         </div>
