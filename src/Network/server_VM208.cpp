@@ -176,6 +176,8 @@ void startServer()
       config.setUserPw(request->getParam(4)->value());
       config.setFirstTime(false);
       config.save();
+      Serial.printf("%s",config.getSSID());
+      Serial.printf("%s",config.getWifiPassword());
       Serial.printf("Wifi Saved\n");
       ESP.restart();
     }

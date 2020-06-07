@@ -322,19 +322,6 @@ void updateIO(void *params)
   vTaskDelete(NULL);
 }
 
-bool convertInputToRelay(Input input)
-{
-
-  if (input.read() == false)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
-
 Relay *getRelays()
 {
   return relays;

@@ -4,7 +4,7 @@
 #include "esp_timer.h"
 #include "global.hpp"
 #include "config_vm208.hpp"
-
+#include <list>
 extern "C"
 {
 
@@ -52,7 +52,7 @@ extern "C"
 }
 
 Channel::Channel(String name, Relay *relay, Led *led, uint8_t id) : m_name(name), m_relay(relay), m_led(led), m_id(id), m_isTimerActive(false), m_isPulseActive(false)
-{
+{ 
 }
 
 void Channel::loadShedule()

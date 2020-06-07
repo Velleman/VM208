@@ -29,7 +29,6 @@ WiFiUDP ntpUDP;
 SemaphoreHandle_t g_Mutex;
 SemaphoreHandle_t g_MutexChannel;
 SemaphoreHandle_t g_MutexMail;
-EventGroupHandle_t s_wifi_event_group;
 DNSServer dnsServer;
 int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
@@ -157,7 +156,7 @@ void setup()
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
   ESP_LOGI(TAG, "Check Buttons");
-  if (((inputs[0]->read() == false) && (inputs[3]->read() == false)) || config.getFirstTime())
+  /*if (((inputs[0]->read() == false) && (inputs[3]->read() == false)) || config.getFirstTime())
   {
     startEth();
     ESP_LOGI(TAG, "Start AP");
@@ -170,67 +169,69 @@ void setup()
     dnsServer.start(53, "*", WiFi.softAPIP());
   }
   else
+  {*/
+  Serial.printf("%s", config.getSSID());
+  Serial.printf("%s", config.getWifiPassword());
+  xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  WiFi.onEvent(WiFiEvent);
+  if (!startEth()) //No cable inserted
   {
-    xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
-    WiFi.onEvent(WiFiEvent);
-    if (!startEth()) //No cable inserted
-    {
-      startWifi();
-    }
-
-    xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
-    xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
-
-    //#region hide
-    if (udp.listen(30303))
-    {
-      
-      udp.onPacket([](AsyncUDPPacket packet) {
-        Serial.print("UDP Packet Type: ");
-        Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
-        Serial.print(", From: ");
-        Serial.print(packet.remoteIP());
-        Serial.print(":");
-        Serial.print(packet.remotePort());
-        Serial.print(", To: ");
-        Serial.print(packet.localIP());
-        Serial.print(":");
-        Serial.print(packet.localPort());
-        Serial.print(", Length: ");
-        Serial.print(packet.length());
-        Serial.print(", Data: ");
-        Serial.write(packet.data(), packet.length());
-        Serial.println();
-        //reply to the client
-        String message = "Aloha, My Name is:\n";
-        message += config.getBoardName();
-        message += "\n";
-        uint8_t mac[6];
-        esp_read_mac(mac, ESP_MAC_ETH);
-        message += getMacAsString(mac);
-        packet.print(message);
-      });
-    }
-    if (!MDNS.begin("VM208"))
-    {
-      ESP_LOGI(TAG, "Error setting up MDNS responder!");
-    }
-    else
-    {
-      //#endregion hide
-      MDNS.addService("http", "tcp", 80);
-    }
+    startWifi();
   }
+
+  xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
+
+  //#region hide
+  if (udp.listen(30303))
+  {
+
+    udp.onPacket([](AsyncUDPPacket packet) {
+      Serial.print("UDP Packet Type: ");
+      Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
+      Serial.print(", From: ");
+      Serial.print(packet.remoteIP());
+      Serial.print(":");
+      Serial.print(packet.remotePort());
+      Serial.print(", To: ");
+      Serial.print(packet.localIP());
+      Serial.print(":");
+      Serial.print(packet.localPort());
+      Serial.print(", Length: ");
+      Serial.print(packet.length());
+      Serial.print(", Data: ");
+      Serial.write(packet.data(), packet.length());
+      Serial.println();
+      //reply to the client
+      String message = "Aloha, My Name is:\n";
+      message += config.getBoardName();
+      message += "\n";
+      uint8_t mac[6];
+      esp_read_mac(mac, ESP_MAC_ETH);
+      message += getMacAsString(mac);
+      packet.print(message);
+    });
+  }
+  if (!MDNS.begin("VM208"))
+  {
+    ESP_LOGI(TAG, "Error setting up MDNS responder!");
+  }
+  else
+  {
+    //#endregion hide
+    MDNS.addService("http", "tcp", 80);
+  }
+  //}
   xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
   xTaskCreate(shedulerStatus, "ShedulerStatus", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
   startServer();
-  if(WiFi.getMode() != WIFI_MODE_AP)
+  if (WiFi.getMode() != WIFI_MODE_AP)
     sendBootMail();
 }
 
 void loop()
 {
-  if(WiFi.getMode() == WIFI_MODE_AP)
+  if (WiFi.getMode() == WIFI_MODE_AP)
   {
     dnsServer.processNextRequest();
   }
@@ -239,4 +240,3 @@ void loop()
     ArduinoOTA.handle();
   }
 }
-

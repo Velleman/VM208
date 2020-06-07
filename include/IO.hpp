@@ -29,7 +29,6 @@ void setMOSFET(Mosfet* mosfet);
 void readButton();
 Input** readInputs(Input** inputs);
 void IO_task(void* arg);
-bool convertInputToRelay(Input input);
 bool IsExtensionConnected();
 //Relay* getRelayFromRelayKey(const char* key);
 //void setRelay(uint8_t index,relay_state_t state);
