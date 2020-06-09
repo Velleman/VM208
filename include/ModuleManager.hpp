@@ -5,8 +5,8 @@ using namespace std;
 class ModuleManager{
     public:
         ModuleManager();
+        void DetectModules();
         ~ModuleManager();
     private:
         list<VM208EX> _modules;
-
 };

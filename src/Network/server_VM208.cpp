@@ -533,7 +533,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     {
       SPIFFS.end();
     }
-    disableIOacitivty();
+    //disableIOacitivty();
     if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
     {
       Update.printError(Serial);
@@ -609,8 +609,8 @@ void sendIOState(AsyncWebServerRequest *request)
   DynamicJsonBuffer jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   Relay *relays = getRelays();
-  Input **inputs;
-  inputs = getCurrentInputs();
+  //Input **inputs;
+  //inputs = getCurrentInputs();
   Mosfet *m1 = getMosfetById(1);
   Mosfet *m2 = getMosfetById(2);
   Channel *c = getChannelById(1);
@@ -627,7 +627,7 @@ void sendIOState(AsyncWebServerRequest *request)
   root.set("relay11", relays[10].getState());
   root.set("relay12", relays[11].getState());
   root.set("isExtConnected", IsExtensionConnected());
-  root.set("input", inputs[12]->read());
+  root.set("input", false);
   root.set("mosfet1", m1->getState());
   root.set("mosfet2", m2->getState());
   root.set("name1", c->getName());

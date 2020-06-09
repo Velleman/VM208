@@ -43,7 +43,7 @@ bool TCA6424A_TS::ts_testConnection()
 bool TCA6424A_TS::ts_readPin(uint16_t pin)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
-    bool result;
+    bool result = false;
     if(!_isUpdating)
     {
         I2Cdev::readBit(devAddr, TCA6424A_RA_INPUT0 + (pin / 8), pin % 8, buffer);

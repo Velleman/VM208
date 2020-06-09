@@ -149,10 +149,6 @@ void setup()
   //ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
   config.load();
 
-  Input **inputs;
-  inputs = getCurrentInputs();
-  readInputs(inputs);
-
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
   ESP_LOGI(TAG, "Check Buttons");
@@ -179,8 +175,8 @@ void setup()
     startWifi();
   }
 
-  xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
-  xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  //xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  //xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
   //#region hide
   if (udp.listen(30303))
@@ -222,8 +218,8 @@ void setup()
     MDNS.addService("http", "tcp", 80);
   }
   //}
-  xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
-  xTaskCreate(shedulerStatus, "ShedulerStatus", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  //xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  //xTaskCreate(shedulerStatus, "ShedulerStatus", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
   startServer();
   if (WiFi.getMode() != WIFI_MODE_AP)
     sendBootMail();

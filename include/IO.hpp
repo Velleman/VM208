@@ -9,11 +9,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "driver/gpio.h"
-#include "relay.hpp"
 #include "input.hpp"
 #include "mosfet.hpp"
 #include "led.hpp"
 #include "channel.hpp"
+#include "VM208.h"
 #define INT_PIN   GPIO_NUM_4
 #define INT2_PIN  GPIO_NUM_35
 
@@ -49,4 +49,6 @@ void getLeds(Led* leds);
 Channel* getChannelById(int id);
 void updateIO(void* params);
 void disableIOacitivty();
+void toggleChannel(VM208 &ex, uint8_t channel);
+VM208* getVM208();
 #endif

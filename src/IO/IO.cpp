@@ -10,20 +10,9 @@ Copyright 2019 Velleman nv
 #include "global.hpp"
 #include "mail.hpp"
 #include "ETH.h"
+#include "VM208.h"
+VM208 vm208;
 xQueueHandle int_evt_queue = NULL;
-
-Channel channels[14];
-Relay relays[12];
-Mosfet mosfets[2];
-Led leds[12];
-bool previousInputs[13];
-Input *currentInputs[13];
-bool _inputChanged = false;
-bool _userInputChanged = false;
-//static const char *TAG = "IO";
-bool previousExtConnectedState = false;
-TCA6424A_TS tca;
-TCA6424A_TS tca_ext(TCA6424A_ADDRESS_ADDR_HIGH);
 
 static void gpio_isr_handler(void *arg)
 {
@@ -35,73 +24,12 @@ void Init_IO(bool setState)
 {
 
   Wire.begin(33, 32, 100000);
+  vm208 = *(new VM208());
 
-  gpio_pullup_en(GPIO_NUM_33);
+  /*gpio_pullup_en(GPIO_NUM_33);
   gpio_pullup_en(GPIO_NUM_32);
   gpio_pulldown_dis(GPIO_NUM_33);
-  gpio_pulldown_dis(GPIO_NUM_32);
-
-  if (setState == false)
-  {
-    tca.updateInternalRegisters();
-    tca_ext.updateInternalRegisters();
-  }
-  //init relays,leds and buttons
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    if (setState == true)
-    {
-      relays[i] = Relay(i + 1, i, false, &tca);
-      leds[i] = Led(i + 1, TCA6424A_P14 + i, true, &tca);
-      currentInputs[i] = new Input(i + 1, TCA6424A_P10 + i, &tca);
-      channels[i] = config.createChannel(i + 1, relays + i, leds +i);
-    }
-    else
-    {
-      relays[i] = Relay(i + 1, i, tca.readPin(i), &tca, setState);
-      leds[i] = Led(i + 1, TCA6424A_P14 + i, tca.readPin(TCA6424A_P14 + i), &tca, setState);
-      currentInputs[i] = new Input(i + 1, TCA6424A_P10 + i, &tca);
-      channels[i] = config.createChannel(i + 1, relays + i, leds + i);
-    }
-  }
-  for (int i = 4; i < 12; i++)
-  {
-    if (setState == true)
-    {
-      relays[i] = Relay(i + 1, TCA6424A_P00 + (i - 4), false, &tca_ext, setState);
-      leds[i] = Led(i + 1, TCA6424A_P20 + (i - 4), true, &tca_ext, setState);
-      currentInputs[i] = new Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
-      channels[i] = config.createChannel(i + 1, relays + i, leds + i);
-    }
-    else{
-      relays[i] = Relay(i + 1, TCA6424A_P00 + (i - 4), tca_ext.readPin(TCA6424A_P00 + (i - 4)), &tca_ext, setState);
-      leds[i] = Led(i + 1, TCA6424A_P20 + (i - 4), tca_ext.readPin(TCA6424A_P20 + (i -4)), &tca_ext, setState);
-      currentInputs[i] = new Input(i + 1, TCA6424A_P10 + (i - 4), &tca_ext);
-      channels[i] = config.createChannel(i + 1, relays + i, leds + i);
-    }
-  }
-
-  if (setState == true)
-  {
-    mosfets[0] = Mosfet(1, TCA6424A_P04, false, &tca, setState);
-    mosfets[1] = Mosfet(2, TCA6424A_P05, false, &tca, setState);
-  }
-  else
-  {
-    mosfets[0] = Mosfet(1, TCA6424A_P04, tca.readPin(TCA6424A_P04), &tca, setState);
-    mosfets[1] = Mosfet(2, TCA6424A_P05, tca.readPin(TCA6424A_P05), &tca, setState);
-  }
-  //channels[12] = config.createMosfetChannel(13,&mosfets[0]);
-  //channels[13] = config.createMosfetChannel(14,&mosfets[1]);
-  currentInputs[12] = new Input(13, TCA6424A_P06, &tca);
-
-  //set floating pins as output
-  tca.setPinDirection(TCA6424A_P07, TCA6424A_OUTPUT);
-  for (size_t i = 0; i < 8; i++)
-  {
-    tca.ts_setPinDirection(TCA6424A_P20 + i, TCA6424A_OUTPUT);
-    tca.ts_writePin(TCA6424A_P20 + i, TCA6424A_LOW);
-  }
+  gpio_pulldown_dis(GPIO_NUM_32);*/
 
   pinMode(4, INPUT);
 
@@ -126,42 +54,46 @@ void Init_IO(bool setState)
   //install gpio isr service
   gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
   gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
-  if (tca_ext.ts_testConnection())
+  /*if (tca_ext.ts_testConnection())
   {
     ESP_LOGI(TAG, "EXTENSION CONNECTED");
     gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
-  }
-
+  }*/
+  Serial.println("Blink start");
   for (int i = 0; i < 4; i++)
   {
-    leds[i].toggle();
+    
+  }
+  vm208.turnAllChannelsOn();
+  delay(1000);
+  for (int i = 0; i < 4; i++)
+  {
+    //vm208[i].turnLedOff();
+  }
+  vm208.turnAllChannelsOff();
+  delay(1000);
+  for (int i = 0; i < 4; i++)
+  {
+    vm208[i].turnLedOn();
   }
   delay(1000);
   for (int i = 0; i < 4; i++)
   {
-    leds[i].toggle();
+    vm208[i].turnLedOff();
   }
-  delay(1000);
-  for (int i = 0; i < 4; i++)
-  {
-    leds[i].toggle();
-  }
-  delay(1000);
-  for (int i = 0; i < 4; i++)
-  {
-    leds[i].toggle();
-  }
+  vm208.turnAllChannelsOn();
+  Serial.println("Blink end");
 }
 
 void initExtPinDirections()
 {
-  ESP_LOGI(TAG, "initExtPinDirections");
+  /*ESP_LOGI(TAG, "initExtPinDirections");
   for (int i = 4; i < 12; i++)
   {
     currentInputs[i]->initPin(false);
     relays[i].initPin(false);
     leds[i].initPin(false);
-  }
+  }*/
 }
 
 Input **readInputs(Input **inputs)
@@ -177,136 +109,42 @@ void IO_task(void *arg)
 {
 
   uint32_t io_num;
-  //bool inputs_state[13];
-  for (int i = 0; i < 12; i++)
-  {
-    bool currentState = currentInputs[i]->read();
-    previousInputs[i] = currentState;
-  }
-  xTaskCreate(updateIO, "checkExtension", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  //xTaskCreate(updateIO, "checkExtension", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
   unsigned long previousTime = 0;
   unsigned long previousTime2 = 0;
   while (1)
   {
 
-    if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY))
+    if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY)||digitalRead(INT_PIN) == LOW)
     {
 
       if (io_num == INT2_PIN) //read extension
       {
-        if (millis() - previousTime > 3)
-        {
-          //Serial.println("EXTENSION INTERRUPT");
-          if (IsExtensionConnected())
-          {
-            uint8_t inputs = tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
-            while (!digitalRead(INT2_PIN))
-            {
-              tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
-            }
-            bool currentState[8] = {false, false, false, false, false, false, false, false};
-            uint8_t differentStates = 0;
-            for (int i = 4; i < 12; i++)
-            {
-              currentState[i - 4] = (inputs >> (i - 4)) & 0x01;
-              if (currentState[i - 4] != previousInputs[i])
-              {
-                //Serial.println("DIFFERENT STATE");
-                differentStates++;
-              }
-            }
-            //Serial.println(differentStates);
-            if (differentStates == 1)
-            {
-              for (int i = 4; i < 12; i++)
-              {
-                if (currentState[i - 4] != previousInputs[i])
-                {
-                  if (currentState[i - 4] == false)
-                  {
-                    channels[i].toggle(); //toggle state
-                    channels[i].clearTimerAndPulse();
-                    channels[i].disableSheduler();
-                    sendManualInputMail();
-                  }
-                  previousInputs[i] = currentState[i - 4];
-                  _inputChanged = true;
-                }
-              }
-            }
-          }
-        }
-        previousTime = millis();
+        
       }
       else
       {
-        if (millis() - previousTime2 > 1)
-        {
-
-          uint8_t inputs = tca.ts_readBank(TCA6424A_RA_INPUT1);
-          uint8_t user_input = tca.ts_readBank(TCA6424A_RA_INPUT0);
-          user_input &= 0x40;
-          while (!digitalRead(INT_PIN))
-          {
-            tca.ts_readBank(TCA6424A_RA_INPUT0);
-            tca.ts_readBank(TCA6424A_RA_INPUT1);
-          }
-          bool currentState[8] = {false, false, false, false, false, false, false, false};
-          uint8_t differentStates = 0;
-          for (int i = 0; i < 4; i++)
-          {
-            currentState[i] = (inputs >> i) & 0x01;
-            if (currentState[i] != previousInputs[i])
-            {
-              //Serial.println("DIFFERENT STATE");
-              differentStates++;
-            }
-          }
-          for (int i = 0; i < 4; i++)
-          {
-
-            if (currentState[i] != previousInputs[i])
-            {
-              if (currentState[i] == false)
-              {
-                channels[i].toggle(); //toggle state
-                channels[i].clearTimerAndPulse();
-                channels[i].disableSheduler();
-                sendManualInputMail();
-              }
-            }
-            previousInputs[i] = currentState[i];
-            _inputChanged = true;
-            delay(1);
-          }
-
-          if (user_input != previousInputs[12])
-          {
-            _userInputChanged = true;
-            ESP_LOGI(TAG, "Input has changed");
-            sendInputChangedMail();
-            previousInputs[12] = user_input;
-            _inputChanged = true;
-          }
-          previousTime2 = millis();
-        }
+          toggleChannel(vm208, vm208.getPressedButton());
       }
     }
+    io_num = 0;
   }
   delay(100);
+}
+
+void toggleChannel(VM208 &ex, uint8_t channel)
+{
+  if (channel)
+  {
+    ex[channel - 1].toggle();
+  }
 }
 
 void updateIO(void *params)
 {
   for (;;)
   {
-    if (IsExtensionConnected())
-    {
-      tca_ext.ts_readBank(TCA6424A_RA_INPUT1);
-    }
-    tca.ts_readBank(TCA6424A_RA_INPUT0);
-    tca.ts_readBank(TCA6424A_RA_INPUT1);
-
+    
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     /*for(int i =0;i<12;i++)
     {
@@ -324,17 +162,17 @@ void updateIO(void *params)
 
 Relay *getRelays()
 {
-  return relays;
+  return nullptr;
 }
 
 void getLeds(Led *pLeds)
 {
-  pLeds = leds;
+  pLeds = nullptr;
 }
 
 bool IsExtensionConnected()
 {
-  bool currentState = tca_ext.ts_testConnection();
+  /*bool currentState = tca_ext.ts_testConnection();
   if (currentState == true && previousExtConnectedState == false)
   {
     delay(1000);
@@ -356,22 +194,23 @@ bool IsExtensionConnected()
       sendExtDisConnectedMail();
   }
   previousExtConnectedState = currentState;
-  return currentState;
+  return currentState;*/
+  return false;
 }
 
 Mosfet *getMosfetById(int id)
 {
-  return &mosfets[id - 1];
+   return nullptr;
 }
 
 Relay *getRelayById(int id)
 {
-  return  &relays[id - 1];
+  return nullptr;
 }
 
 Channel *getChannelById(int id)
 {
-  xSemaphoreTake(g_MutexChannel, portMAX_DELAY);
+  /*xSemaphoreTake(g_MutexChannel, portMAX_DELAY);
   if (id <= 12 && id > 0)
   {
     xSemaphoreGive(g_MutexChannel);
@@ -382,44 +221,11 @@ Channel *getChannelById(int id)
     ESP_LOGE("IO", "Channel ID is invalid: id is %i", id);
     xSemaphoreGive(g_MutexChannel);
     return nullptr;
-  }
+  }*/
+  return nullptr;
 }
 
-Led *getLedById(int id)
+VM208* getVM208()
 {
-  return leds + (id - 1);
-}
-
-bool inputChanged()
-{
-  return _inputChanged;
-}
-void clearInputChanged()
-{
-  _inputChanged = false;
-  _userInputChanged = false;
-}
-
-bool isUserInputChanged()
-{
-  return _userInputChanged;
-}
-
-Input **getCurrentInputs()
-{
-  return currentInputs;
-}
-
-void copyStateRelaysToLeds()
-{
-  for (int i = 0; i < 12; i++)
-  {
-    channels[i].getState() ? channels[i].turnOn() : channels[i].turnOff();
-  }
-}
-
-void disableIOacitivty()
-{
-  tca.setUpdateMode();
-  tca_ext.setUpdateMode();
+  return &vm208;
 }
