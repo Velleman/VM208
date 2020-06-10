@@ -11,7 +11,9 @@ Copyright 2019 Velleman nv
 #include "mail.hpp"
 #include "ETH.h"
 #include "VM208.h"
+#include "VM208EX.h"
 VM208 vm208;
+VM208EX vm208ex;
 xQueueHandle int_evt_queue = NULL;
 
 static void gpio_isr_handler(void *arg)
@@ -25,6 +27,7 @@ void Init_IO(bool setState)
 
   Wire.begin(33, 32, 100000);
   vm208 = *(new VM208());
+  vm208ex = *(new VM208EX());
 
   /*gpio_pullup_en(GPIO_NUM_33);
   gpio_pullup_en(GPIO_NUM_32);
@@ -65,23 +68,16 @@ void Init_IO(bool setState)
     
   }
   vm208.turnAllChannelsOn();
+  vm208ex.turnAllChannelsOn();
   delay(1000);
-  for (int i = 0; i < 4; i++)
-  {
-    //vm208[i].turnLedOff();
-  }
   vm208.turnAllChannelsOff();
+  vm208ex.turnAllChannelsOff();
   delay(1000);
-  for (int i = 0; i < 4; i++)
-  {
-    vm208[i].turnLedOn();
-  }
-  delay(1000);
-  for (int i = 0; i < 4; i++)
-  {
-    vm208[i].turnLedOff();
-  }
   vm208.turnAllChannelsOn();
+  vm208ex.turnAllChannelsOn();
+  delay(1000);
+  vm208.turnAllChannelsOff();
+  vm208ex.turnAllChannelsOff();
   Serial.println("Blink end");
 }
 

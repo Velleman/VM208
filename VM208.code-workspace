@@ -61,7 +61,12 @@
 			"thread": "cpp",
 			"tuple": "cpp",
 			"typeinfo": "cpp",
-			"utility": "cpp"
+			"utility": "cpp",
+			"cstdarg": "cpp",
+			"unordered_set": "cpp",
+			"algorithm": "cpp",
+			"iomanip": "cpp",
+			"cinttypes": "cpp"
 		},
 		"debug.openExplorerOnEnd": true,
 		"debug.toolBarLocation": "docked"
