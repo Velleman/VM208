@@ -10,8 +10,6 @@ Copyright 2019 Velleman nv
 #include "global.hpp"
 #include "mail.hpp"
 #include "ETH.h"
-#include "VM208.h"
-#include "VM208EX.h"
 VM208 vm208;
 VM208EX vm208ex;
 xQueueHandle int_evt_queue = NULL;
@@ -26,8 +24,8 @@ void Init_IO(bool setState)
 {
 
   Wire.begin(33, 32, 100000);
-  vm208 = *(new VM208());
-  vm208ex = *(new VM208EX());
+  vm208.initialize();
+  vm208ex.initialize();
 
   /*gpio_pullup_en(GPIO_NUM_33);
   gpio_pullup_en(GPIO_NUM_32);
@@ -62,6 +60,7 @@ void Init_IO(bool setState)
     ESP_LOGI(TAG, "EXTENSION CONNECTED");
     gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
   }*/
+  gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
   Serial.println("Blink start");
   for (int i = 0; i < 4; i++)
   {
@@ -116,7 +115,7 @@ void IO_task(void *arg)
 
       if (io_num == INT2_PIN) //read extension
       {
-        
+          //toggleChannel(vm208ex, vm208ex.getPressedButton());
       }
       else
       {
@@ -129,6 +128,14 @@ void IO_task(void *arg)
 }
 
 void toggleChannel(VM208 &ex, uint8_t channel)
+{
+  if (channel)
+  {
+    ex[channel - 1].toggle();
+  }
+}
+
+void toggleChannel(VM208EX &ex, uint8_t channel)
 {
   if (channel)
   {
