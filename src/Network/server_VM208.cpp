@@ -16,6 +16,8 @@
 #include "mail.hpp"
 #include "network_VM208.hpp"
 #include <DNSServer.h>
+#include "VM208TimerChannel.hpp"
+
 const char *TAG = "SERVER";
 
 // SKETCH BEGIN
@@ -25,18 +27,21 @@ void sendBoardInfo(AsyncWebServerRequest *request);
 void sendIOState(AsyncWebServerRequest *request);
 //String getMacAsString(uint8_t *mac);
 
-class CaptiveRequestHandler : public AsyncWebHandler {
+class CaptiveRequestHandler : public AsyncWebHandler
+{
 public:
   CaptiveRequestHandler() {}
   virtual ~CaptiveRequestHandler() {}
 
-  bool canHandle(AsyncWebServerRequest *request){
+  bool canHandle(AsyncWebServerRequest *request)
+  {
     //request->addInterestingHeader("ANY");
     return true;
   }
 
-  void handleRequest(AsyncWebServerRequest *request) {
-      AsyncResponseStream *response = request->beginResponseStream("text/html");
+  void handleRequest(AsyncWebServerRequest *request)
+  {
+    AsyncResponseStream *response = request->beginResponseStream("text/html");
     response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
     response->print("<p>This is out captive portal front page.</p>");
     response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
@@ -84,18 +89,8 @@ void startServer()
     p = request->getParam(1);
     state = p->value();
 
-    Channel *c = getChannelById(relay.toInt());
-
-    if (state == "0")
-    {
-      c->turnOff();
-    }
-    else
-    {
-      c->turnOn();
-    }
-    c->clearTimerAndPulse();
-
+    (*mm.getBaseModule())[relay.toInt()-1].toggle();
+    
     sendIOState(request);
   });
 
@@ -106,7 +101,7 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     state = p->value();
-    Mosfet *m = getMosfetById(relay.toInt());
+    /*Mosfet *m = getMosfetById(relay.toInt());
     if (state == "0")
     {
       m->turnOff();
@@ -114,7 +109,7 @@ void startServer()
     else
     {
       m->turnOn();
-    }
+    }*/
 
     sendIOState(request);
   });
@@ -126,7 +121,7 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     time = p->value();
-    Channel *c = getChannelById(relay.toInt());
+    VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
     c->activatePulse(time.toInt());
     sendIOState(request);
   });
@@ -138,7 +133,7 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     time = p->value();
-    Channel *c = getChannelById(relay.toInt());
+    VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
     c->activateTimer(time.toInt());
     sendIOState(request);
   });
@@ -176,8 +171,8 @@ void startServer()
       config.setUserPw(request->getParam(4)->value());
       config.setFirstTime(false);
       config.save();
-      Serial.printf("%s",config.getSSID());
-      Serial.printf("%s",config.getWifiPassword());
+      Serial.printf("%s", config.getSSID());
+      Serial.printf("%s", config.getWifiPassword());
       Serial.printf("Wifi Saved\n");
       ESP.restart();
     }
@@ -274,7 +269,7 @@ void startServer()
       uint8_t hour = request->getParam(3)->value().toInt();
       uint8_t minute = request->getParam(4)->value().toInt();
       bool enabled = request->getParam(2)->value().toInt();
-      Channel *c = getChannelById(relais);
+      VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relais);
 
       Alarm *a = c->getAlarm((day * 2) + state);
 
@@ -295,10 +290,10 @@ void startServer()
     if (request->params() == 16)
     {
       Serial.printf("names save\n");
-      Channel *c;
+      VM208TimeChannel *c;
       for (int i = 0; i < 12; i++)
       {
-        c = getChannelById(i + 1);
+        c = (VM208TimeChannel *)getRelayChannelById(i + 1);
         c->setName(request->getParam(i)->value());
       }
       config.setMosfet1Name(request->getParam(12)->value());
@@ -338,7 +333,7 @@ void startServer()
     if (request->params() == 29)
     {
       String relay = request->getParam(0)->value();
-      Channel *c = getChannelById(relay.toInt());
+      VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
       bool state = true;
       int param = 1;
       String time;
@@ -415,10 +410,11 @@ void startServer()
     }
   });
 
-  server.on("/doUpdate", HTTP_POST, [](AsyncWebServerRequest *request) {},
-            [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final) {
-              handleDoUpdate(request, filename, index, data, len, final);
-            });
+  server.on(
+      "/doUpdate", HTTP_POST, [](AsyncWebServerRequest *request) {},
+      [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final) {
+        handleDoUpdate(request, filename, index, data, len, final);
+      });
 
   char user[32];
   char userpw[32];
@@ -550,7 +546,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Please wait while the VM208 reboots");
     response->addHeader("Location", "/index.html");
     request->send(response);
-    
+
     if (!Update.end(true))
     {
       Update.printError(Serial);
@@ -608,13 +604,55 @@ void sendIOState(AsyncWebServerRequest *request)
   //const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
   DynamicJsonBuffer jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
-  Relay *relays = getRelays();
   //Input **inputs;
   //inputs = getCurrentInputs();
-  Mosfet *m1 = getMosfetById(1);
-  Mosfet *m2 = getMosfetById(2);
-  Channel *c = getChannelById(1);
-  root.set("relay1", relays[0].getState());
+  //Mosfet *m1 = getMosfetById(1);
+  //Mosfet *m2 = getMosfetById(2);
+  VM208 *module = mm.getBaseModule();
+
+  JsonObject &interface = root.createNestedObject("Interface 0");
+  JsonArray &channels = interface.createNestedArray("VM208");
+  for (int j = 0; j < 4; j++)
+  {
+    VM208Channel ch = (*module)[j];
+    JsonObject &channel = channels.createNestedObject();
+    channel.set("name", ch.getName());
+    channel.set("state", ch.isOn());
+  }
+  if (mm.getAmount() > 1)
+  {
+    if (mm.getModule(1)->hasSocket() == false) //native VM208EX
+    {
+      JsonArray &channels = interface.createNestedArray("VM208EX");
+      for (int j = 0; j < 8; j++)
+      {
+        VM208EXChannel ch = (*(VM208EX*)mm.getModule(1))[j];
+        JsonObject &channel = channels.createNestedObject();
+        channel.set("name", ch.getName());
+        channel.set("state", ch.isOn());
+      }
+    }
+    else
+    {
+      for (int i = 1; i < mm.getAmount(); i++)
+      {
+        String interface = String("Interface ");
+        interface += String(i);
+        JsonObject &inter = root.createNestedObject(interface);
+        JsonArray &a = inter.createNestedArray("VM208EX");
+        VM208EX *module = (VM208EX *)mm.getModule(0);
+        for (int j = 0; j < 8; j++)
+        {
+          VM208EXChannel ch = (*(VM208EX*)mm.getModule(i))[j];
+          JsonObject &channel = a.createNestedObject();
+          channel["name"] = ch.getName();
+          channel["state"] = ch.isOn();
+        }
+      }
+    }
+  }
+
+  /*root.set("relay1", relays[0].getState());
   root.set("relay2", relays[1].getState());
   root.set("relay3", relays[2].getState());
   root.set("relay4", relays[3].getState());
@@ -626,17 +664,11 @@ void sendIOState(AsyncWebServerRequest *request)
   root.set("relay10", relays[9].getState());
   root.set("relay11", relays[10].getState());
   root.set("relay12", relays[11].getState());
-  root.set("isExtConnected", IsExtensionConnected());
+  root.set("isExtConnected", IsExtensionConnected());*/
   root.set("input", false);
-  root.set("mosfet1", m1->getState());
-  root.set("mosfet2", m2->getState());
-  root.set("name1", c->getName());
-  JsonArray &names = root.createNestedArray("names");
-  for (int i = 0; i < 12; i++)
-  {
-    names.add((c + i)->getName());
-  }
-
+  //root.set("mosfet1", m1->getState());
+  //root.set("mosfet2", m2->getState());
+  //root.set("name1", c->getName());
 
   root.printTo(*response);
   request->send(response);
@@ -675,21 +707,20 @@ void sendSettings(AsyncWebServerRequest *request)
   root.set(config.NOTIF_EXT_CONNECT_KEY, config.getNotification_ext_connected());
   root.set(config.NOTIF_INPUT_CHANGE_KEY, config.getNotificationInputChange());
   root.set(config.NOTIF_MANUAL_INPUT_KEY, config.getNotification_manual_input());
-  root.set("smtpserver",config.getEmailServer());
-  root.set("smtpport",config.getEmailPort());
-  root.set("username",config.getEmailUser());
-  root.set("recipient",config.getEmailRecipient());
-  root.set("subject",config.getEmailSubject());
-  JsonArray &Channels = root.createNestedArray("Channels");
-  Channel *c;
+  root.set("smtpserver", config.getEmailServer());
+  root.set("smtpport", config.getEmailPort());
+  root.set("username", config.getEmailUser());
+  root.set("recipient", config.getEmailRecipient());
+  root.set("subject", config.getEmailSubject());
+  /*JsonArray &Channels = root.createNestedArray("Channels");
+  VM208TimeChannel *c;
   Alarm *a;
 
   for (int i = 0; i < 12; i++)
   {
-    c = getChannelById(i + 1);
+    c = (VM208TimeChannel *)getRelayChannelById(i + 1);
     JsonObject &Channel = Channels.createNestedObject();
     Channel[config.CHANNEL_NAME_KEY] = c->getName();
-    /* */
     JsonArray &Channels_alarms = Channel.createNestedArray("alarms");
     for (int j = 0; j < 14; j++)
     {
@@ -701,7 +732,7 @@ void sendSettings(AsyncWebServerRequest *request)
       Channels_alarms_settings[config.ALARM_STATE_KEY] = a->getState();
       Channels_alarms_settings[config.ALARM_ENABLED_KEY] = a->isEnabled();
     }
-  }
+  }*/
   response->setLength();
   request->send(response);
 }
@@ -729,14 +760,7 @@ bool ON_STA_VM208_FILTER(AsyncWebServerRequest *request)
   }
   else
   {
-    if (ETH.linkUp())
-    {
-      return true;
-    }
-    else
-    {
-      return true;
-    }
+    return true;
   }
 }
 //#endregion server

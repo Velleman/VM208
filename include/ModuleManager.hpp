@@ -8,8 +8,12 @@ class ModuleManager{
     public:
         ModuleManager();
         void DetectModules();
+    	VM208* getBaseModule();
+        RelayModule* getModule(int index);
+        uint8_t getAmount();
         ~ModuleManager();
     private:
-        vector<Module> _modules;
+        VM208* _baseModule;
+        vector<RelayModule *> _modules;
         VM208INT _interfaces[8];
 };

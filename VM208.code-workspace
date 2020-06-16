@@ -68,7 +68,8 @@
 			"iomanip": "cpp",
 			"cinttypes": "cpp",
 			"string": "cpp",
-			"regex": "cpp"
+			"regex": "cpp",
+			"bitset": "cpp"
 		},
 		"debug.openExplorerOnEnd": true,
 		"debug.toolBarLocation": "docked"

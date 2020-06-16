@@ -61,7 +61,7 @@ void applyWifiNetworkSettings()
 
 bool startEth()
 {
-  pinMode(GPIO_NUM_2, OUTPUT);
+  /*pinMode(GPIO_NUM_2, OUTPUT);
   digitalWrite(GPIO_NUM_2, HIGH);
   ETH.begin(0, PIN_PHY_POWER, 23, 18, ETH_PHY_LAN8720, ETH_CLOCK_GPIO0_IN);
   if (!config.getETH_DHCPEnable())
@@ -79,7 +79,8 @@ bool startEth()
     ETH.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS);
   }
 
-  return ETH.linkUp();
+  return ETH.linkUp();*/
+  return false;
 }
 
 void startWifi()
@@ -168,13 +169,13 @@ void WiFiEvent(WiFiEvent_t event)
   switch (event)
   {
   case SYSTEM_EVENT_ETH_CONNECTED:
-    WiFi.mode(WIFI_MODE_NULL);
+    //WiFi.mode(WIFI_MODE_NULL);
     ESP_LOGI(TAG, "Ethernet Link Up");
     break;
   case SYSTEM_EVENT_ETH_DISCONNECTED:
     gotETH_IP = false;
     ESP_LOGI(TAG, "Ethernet Link Down");
-    startWifi();
+    //startWifi();
     break;
   case SYSTEM_EVENT_ETH_START:
     ESP_LOGI(TAG, "Ethernet Started");

@@ -20,6 +20,7 @@
 #include "network_VM208.hpp"
 #include "time_VM208.hpp"
 #include <DNSServer.h>
+#include "VM208TimerChannel.hpp"
 //static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
@@ -38,14 +39,14 @@ bool wifiFirstConnected = false;
 Configuration config;
 bool gotETH_IP;
 bool gotSTA_IP;
-
+ModuleManager mm;
 String getMacAsString(uint8_t *mac);
 
 static void checkSheduler(void *pvParameter)
 {
   delay(500); // wait to load all channels
   //uint8_t *id = (uint8_t *)pvParameter;
-  Channel *c;
+  VM208TimeChannel *c;
   Alarm *alarmOn;
   Alarm *alarmOff;
   uint8_t day;
@@ -60,7 +61,7 @@ static void checkSheduler(void *pvParameter)
 
     for (int i = 0; i < 12; i++)
     {
-      c = getChannelById(i + 1);
+      c = (VM208TimeChannel*) getRelayChannelById(i + 1);
       if (c->isSheduleActive())
       {
         alarmOn = c->getAlarm(day * 2);
@@ -69,7 +70,7 @@ static void checkSheduler(void *pvParameter)
         {
           if (current_time->tm_hour == alarmOn->getHour() && current_time->tm_min == alarmOn->getMinute())
           {
-            if (c->getState() != alarmOn->getState())
+            if (c->isOn() != alarmOn->getState())
             {
               //ESP_LOGI(TAG, "Alarm triggered");
               alarmOn->getState() ? c->turnOn() : c->turnOff();
@@ -80,7 +81,7 @@ static void checkSheduler(void *pvParameter)
         {
           if (current_time->tm_hour == alarmOff->getHour() && current_time->tm_min == alarmOff->getMinute())
           {
-            if (c->getState() != alarmOff->getState())
+            if (c->isOn() != alarmOff->getState())
             {
               //ESP_LOGI(TAG, "Alarm triggered");
               alarmOff->getState() ? c->turnOn() : c->turnOff();
@@ -97,21 +98,21 @@ static void checkSheduler(void *pvParameter)
 static void shedulerStatus(void *pvParameter)
 {
   delay(500); // wait to load all channels
-  Channel *c;
+  VM208TimeChannel *c;
   while (true)
   {
     for (int i = 0; i < 12; i++)
     {
-      c = getChannelById(i + 1);
+      c = (VM208TimeChannel*) getRelayChannelById(i + 1);
       if (c->isSheduleActive())
       {
-        c->setLed(c->getState());
+        c->isOn() ? c->turnLedOn() : c->turnLedOff();
       }
     }
     delay(1800);
     for (int i = 0; i < 12; i++)
     {
-      c = getChannelById(i + 1);
+      c = (VM208TimeChannel*) getRelayChannelById(i + 1);
       if (c->isSheduleActive())
       {
         c->toggleLed();

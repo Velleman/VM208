@@ -286,11 +286,11 @@ void Configuration::writeAlarms()
     DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
     JsonArray &Channels = root.createNestedArray("Channels");
-    Channel *c;
+    VM208TimeChannel *c;
     Alarm *a;
     for (int i = 0; i < 12; i++)
     {
-        c = getChannelById(i + 1);
+        c = (VM208TimeChannel*) getRelayChannelById(i + 1);
         JsonObject &Channel = Channels.createNestedObject();
         Channel[CHANNEL_NAME_KEY] = c->getName();
 
@@ -312,7 +312,7 @@ void Configuration::writeAlarms()
     file.close();
 }
 
-Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
+/*Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
 {
     Channel c;
     if (SPIFFS.exists(alarmPath))
@@ -343,8 +343,9 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
     }
     return c;
     SPIFFS.end();
-}
+}*/
 
+/*
 Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
 {
 
@@ -374,8 +375,8 @@ Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
         jsonBuffer.clear();
         return c;
     }*/
-    return Channel("", nullptr, nullptr, 0);
-}
+    /*return Channel("", nullptr, nullptr, 0);
+}*/
 
 File Configuration::loadFile(const char *path)
 {
