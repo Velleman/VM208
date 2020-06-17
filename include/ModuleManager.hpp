@@ -12,8 +12,11 @@ class ModuleManager{
         RelayModule* getModule(int index);
         uint8_t getAmount();
         ~ModuleManager();
+        RelayModule* getModuleFromInterface(uint8_t interface,uint8_t module);
+        uint8_t getAmountOfModulesOnInterface(uint8_t interface);
     private:
         VM208* _baseModule;
         vector<RelayModule *> _modules;
+        vector<RelayModule *> _modulesOnInterface[8];
         VM208INT _interfaces[8];
 };

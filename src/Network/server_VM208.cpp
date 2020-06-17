@@ -89,8 +89,8 @@ void startServer()
     p = request->getParam(1);
     state = p->value();
 
-    (*mm.getBaseModule())[relay.toInt()-1].toggle();
-    
+    (*mm.getBaseModule())[relay.toInt() - 1].toggle();
+
     sendIOState(request);
   });
 
@@ -610,7 +610,7 @@ void sendIOState(AsyncWebServerRequest *request)
   //Mosfet *m2 = getMosfetById(2);
   VM208 *module = mm.getBaseModule();
 
-  JsonObject &interface = root.createNestedObject("Interface 0");
+  JsonObject &interface = root.createNestedObject("Interface0");
   JsonArray &channels = interface.createNestedArray("VM208");
   for (int j = 0; j < 4; j++)
   {
@@ -626,7 +626,7 @@ void sendIOState(AsyncWebServerRequest *request)
       JsonArray &channels = interface.createNestedArray("VM208EX");
       for (int j = 0; j < 8; j++)
       {
-        VM208EXChannel ch = (*(VM208EX*)mm.getModule(1))[j];
+        VM208EXChannel ch = (*(VM208EX *)mm.getModule(1))[j];
         JsonObject &channel = channels.createNestedObject();
         channel.set("name", ch.getName());
         channel.set("state", ch.isOn());
@@ -634,42 +634,31 @@ void sendIOState(AsyncWebServerRequest *request)
     }
     else
     {
-      for (int i = 1; i < mm.getAmount(); i++)
+      JsonArray& interfaces = root.createNestedArray("Interfaces");
+      for (int i = 0; i < 8; i++)//loop interfaces
       {
-        String interface = String("Interface ");
-        interface += String(i);
-        JsonObject &inter = root.createNestedObject(interface);
-        JsonArray &a = inter.createNestedArray("VM208EX");
-        VM208EX *module = (VM208EX *)mm.getModule(0);
-        for (int j = 0; j < 8; j++)
+        auto modules = mm.getAmountOfModulesOnInterface(i);
+        Serial.println(modules);
+        if (modules)//has interface a module?
         {
-          VM208EXChannel ch = (*(VM208EX*)mm.getModule(i))[j];
-          JsonObject &channel = a.createNestedObject();
-          channel["name"] = ch.getName();
-          channel["state"] = ch.isOn();
+          JsonArray& interface = interfaces.createNestedArray();
+          for (int x = 0; x < modules; x++)//loop over all modules
+          {
+            JsonArray& moduleObject = interface.createNestedArray();
+            VM208EX *module = (VM208EX *)mm.getModuleFromInterface(i,x);
+            for (int j = 0; j < 8; j++)//loop over all channels of a module
+            {
+              VM208EXChannel ch = (*module)[j];
+              JsonObject &channel = moduleObject.createNestedObject();
+              channel["name"] = ch.getName();
+              channel["state"] = ch.isOn();
+            }
+          }
         }
       }
     }
   }
-
-  /*root.set("relay1", relays[0].getState());
-  root.set("relay2", relays[1].getState());
-  root.set("relay3", relays[2].getState());
-  root.set("relay4", relays[3].getState());
-  root.set("relay5", relays[4].getState());
-  root.set("relay6", relays[5].getState());
-  root.set("relay7", relays[6].getState());
-  root.set("relay8", relays[7].getState());
-  root.set("relay9", relays[8].getState());
-  root.set("relay10", relays[9].getState());
-  root.set("relay11", relays[10].getState());
-  root.set("relay12", relays[11].getState());
-  root.set("isExtConnected", IsExtensionConnected());*/
   root.set("input", false);
-  //root.set("mosfet1", m1->getState());
-  //root.set("mosfet2", m2->getState());
-  //root.set("name1", c->getName());
-
   root.printTo(*response);
   request->send(response);
   jsonBuffer.clear();

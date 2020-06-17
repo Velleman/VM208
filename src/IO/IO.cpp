@@ -65,31 +65,30 @@ void Init_IO(bool setState)
 
   Serial.println("Found modules: ");
   Serial.println(mm.getAmount());
-  for(int i = 0;i<4;i++)
+  /*for(int i = 0;i<4;i++)
   {
     
   }
-  mm.getBaseModule()->getChannel(0)->toggle();
   delay(1000);
-  for (int i = 0; i < mm.getAmount(); i++)
+  for (int i = 0; i < mm.getAmountOfModulesOnInterface(0); i++)
   {
-    mm.getModule(i)->turnAllChannelsOn();
+      mm.getModuleFromInterface(0,i)->turnAllChannelsOn();
   }
   delay(1000);
-  for (int i = 0; i < mm.getAmount(); i++)
+  for (int i = 0; i < mm.getAmountOfModulesOnInterface(0); i++)
   {
-    mm.getModule(i)->turnAllChannelsOff();
+      mm.getModuleFromInterface(0,i)->turnAllChannelsOff();
   }
   delay(1000);
-  for (int i = 0; i < mm.getAmount(); i++)
+  for (int i = 0; i < mm.getAmountOfModulesOnInterface(0); i++)
   {
-    mm.getModule(i)->turnAllChannelsOn();
+      mm.getModuleFromInterface(0,i)->turnAllChannelsOn();
   }
   delay(1000);
-  for (int i = 0; i < mm.getAmount(); i++)
+  for (int i = 0; i < mm.getAmountOfModulesOnInterface(0); i++)
   {
-    mm.getModule(i)->turnAllChannelsOff();
-  }
+      mm.getModuleFromInterface(0,i)->turnAllChannelsOn();
+  }*/
 }
 
 Input **readInputs(Input **inputs)
@@ -128,20 +127,20 @@ void IO_task(void *arg)
 
 void toggleChannel(VM208 *ex, uint8_t channel)
 {
-  if (channel && channel < 5)
+  /*if (channel && channel < 5)
   {
     VM208 vm = *ex;
     vm[channel - 1].toggle();
-  }
+  }*/
 }
 
 void toggleChannel(VM208EX *ex, uint8_t channel)
 {
-  if (channel)
+  /*if (channel)
   {
     (*ex)[channel-1].toggle();
     //(*(ex))[channel - 1].toggle();
-  }
+  }*/
 }
 
 RelayChannel *getRelayChannelById(int id)
