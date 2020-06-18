@@ -16,6 +16,7 @@ class ModuleManager{
         uint8_t getAmountOfModulesOnInterface(uint8_t interface);
     private:
         VM208* _baseModule;
+        VM208EX* _extensionModule = nullptr;
         vector<RelayModule *> _modules;
         vector<RelayModule *> _modulesOnInterface[8];
         VM208INT _interfaces[8];

@@ -25,7 +25,8 @@ void ModuleManager::DetectModules()
     if (!error)
     {
         Serial.println("native VM208EX found");
-        _modules.push_back(new VM208EX());
+        _extensionModule = new VM208EX();
+        _modules.push_back(_extensionModule);
         _modules[_modules.size() - 1]->initialize();
     }
     for (byte address = 0x70; address < 0x78; ++address)
@@ -68,6 +69,10 @@ RelayModule* ModuleManager::getModule(int index)
     uint8_t checkedModules;
     uint8_t checkedInterfaces =0;
     uint8_t previousAmountChecked = 0;
+    if(index == 1 && _extensionModule != nullptr)
+    {
+        return _extensionModule;
+    }
     while(_modulesOnInterface[checkedInterfaces].size()+previousAmountChecked<index)
     {
         previousAmountChecked += _modulesOnInterface[checkedInterfaces].size();
@@ -84,6 +89,7 @@ ModuleManager::~ModuleManager()
 uint8_t ModuleManager::getAmount()
 {
     uint8_t amount=0;
+    amount += _modules.size();
     for(int i=0;i<8;i++)
     {
         amount +=_modulesOnInterface[i].size();

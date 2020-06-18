@@ -28,32 +28,34 @@ function update_content() {
 }
 
 function update_sheduler_state() {
-    for (var i = 0; i < 12; i++) {
+    /*for (var i = 0; i < 12; i++) {
         for (var j = 0; j < 14; j++) {
             if (json.Channels[i].alarms[j].enabled) {
                 $("#dot" + (i + 1)).css("background-color", "#3f9f31");
             }
         }
-    }
+    }*/
 }
 
 function update_names() {
     //var e = $("#name_card").val(json.BOARDNAME);
-    for (var i = 1; i <= 12; i++) {
+    /*for (var i = 1; i <= 12; i++) {
         $("#Name" + i).html(json.Channels[i - 1].name);
     }
     $("#i1Name").html(json.NAME_INPUT);
     $("#m1Name").html(json.NAME_MOSFET1);
-    $("#m2Name").html(json.NAME_MOSFET2);
+    $("#m2Name").html(json.NAME_MOSFET2);*/
 }
 
 
 
 
 function sendRelay(e, t) {
-    relaysettings = "TURN OFF" == $(t).html() ? "/" + e + "/off" : "/" + e + "/on";
+    var relayName = t.id;
+    relayName = relayName.replace('relay','');
+    relayName = relayName.replace('Status','');
     var payload = {
-        index: e,
+        index: parseInt(relayName),
         state: "TURN OFF" == $(t).html() ? "0" : "1"
     };
     $.ajax({
@@ -209,23 +211,15 @@ function updateIO(e) {
     var t = $.parseJSON(e);
     try {
         //var a;
-        //for (a = 1; 4 >= a; a++) $("#relay" + a + "Status").html(t.relays[a - 1] ? "ON" : "OFF");
-        $("#relay1Status").html(t.Interface0.VM208[0].state ? "TURN OFF" : "TURN ON");
-        $("#relay2Status").html(t.Interface0.VM208[1].state ? "TURN OFF" : "TURN ON");
-        $("#relay3Status").html(t.Interface0.VM208[2].state ? "TURN OFF" : "TURN ON");
-        $("#relay4Status").html(t.Interface0.VM208[3].state ? "TURN OFF" : "TURN ON");
-        /*$("#relay5Status").html(t.relay5 ? "TURN OFF" : "TURN ON");
-        $("#relay6Status").html(t.relay6 ? "TURN OFF" : "TURN ON");
-        $("#relay7Status").html(t.relay7 ? "TURN OFF" : "TURN ON");
-        $("#relay8Status").html(t.relay8 ? "TURN OFF" : "TURN ON");
-        $("#relay9Status").html(t.relay9 ? "TURN OFF" : "TURN ON");
-        $("#relay10Status").html(t.relay10 ? "TURN OFF" : "TURN ON");
-        $("#relay11Status").html(t.relay11 ? "TURN OFF" : "TURN ON");
-        $("#relay12Status").html(t.relay12 ? "TURN OFF" : "TURN ON");
-        t.isExtConnected ?  $("#extRelay").show():$("#extRelay").hide();
-        $("#mosfet1Status").html(t.mosfet1 ? "TURN OFF" : "TURN ON");
-        $("#mosfet2Status").html(t.mosfet2 ? "TURN OFF" : "TURN ON");
-        $("#inputStatus").html(t.input ? "CLOSED" : "OPEN");*/
+        for (a = 1; a <= 4; a++) $("#relay" + a + "Status").html(t.Interface0.VM208[a - 1].state ? "TURN OFF" : "TURN ON");
+        if (t.Interface0.VM208EX) {
+            for (a = 5; a <= 12; a++) $("#relay" + a + "Status").html(t.Interface0.VM208EX[a - 1].state ? "TURN OFF" : "TURN ON");
+        } else {
+            for (a = 5; a <= totalChannels; a++) {
+                var index = a - 5;
+                $("#relay" + a + "Status").html(t.Interfaces[0][Math.floor(index / 8)][index % 8].state ? "TURN OFF" : "TURN ON");
+            }
+        }
     } catch (s) {
         console.log(s)
     }
@@ -270,14 +264,22 @@ function updateBoardInfo(e) {
 
 function enableButtons() {
     var e;
-    for (e = 1; 12 >= e; e++) $("#relay" + e + "Status").removeClass("pure-button-disabled"), $("#mosfet" + e + "Status").removeClass("pure-button-disabled"), $("#pulse" + e + "Start").removeClass("pure-button-disabled"), $("#timer" + e + "Start").removeClass("pure-button-disabled")
+    for (e = 1; e <= totalChannels; e++) {
+        $("#relay" + e + "Status").removeClass("pure-button-disabled");
+        $("#relay" + e + "Status").click(function(){
+            sendRelay(e,this);
+        });
+        //$("#mosfet" + e + "Status").removeClass("pure-button-disabled");
+        //$("#pulse" + e + "Start").removeClass("pure-button-disabled");
+        //$("#timer" + e + "Start").removeClass("pure-button-disabled");
+    }
 }
 var json, notif_select = new Object;
 $(document).ready(function () {
-    requestBoardInfo(), requestSettings(), $("#splashscreen").delay(750).fadeOut(500), getStatusForTable(), enableButtons()
+    requestBoardInfo(), requestSettings(), getStatusForTable(), $("#splashscreen").delay(750).fadeOut(500)
 });
 var current_slide = 0;
-
+var totalChannels;
 function getStatusForTable() {
 
     $.ajax({
@@ -286,7 +288,8 @@ function getStatusForTable() {
         dataType: "text",
         success: function (e) {
             try {
-                generateTable(e)
+                generateTable(e);
+                enableButtons();
             } catch (t) {
                 console.log(t)
             }
@@ -296,36 +299,56 @@ function getStatusForTable() {
 }
 
 function generateTable(e) {
+    var channelId = 1;
     var ioData = $.parseJSON(e);
     var table = $('#VM208TableBody');
     for (i = 1; i < 5; i++) {
         table.append('<tr> \
-        <td id="Name"'+ 'i' + '> RELAY' + i + ' </td> \
-        <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ i + 'Status>OFF</button> </td> \
-        <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ i + '" id="value_pulse' + i + '" value="100" min="1" max="60000"><label for="value_pulse' + i + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + i + 'Start>START</button></form> </td> \
-        <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ i + '" id="value_timer' + i + '" value="1" min="1" max="60000"><label for="value_timer' + i + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + i + 'Start>START</button> </value> </td> \
-        <td  class="col5" > <button class="pure-button" id="shedule'+ i + 'Start">EDIT</button> <span class="dot" id="dot' + i + '"></span> </td> \
+        <td id="Name"'+ channelId + '> RELAY' + i + ' </td> \
+        <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
+        <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
+        <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
+        <td  class="col5" > <button class="pure-button" id="shedule'+ channelId + 'Start">EDIT</button> <span class="dot" id="dot' + channelId + '"></span> </td> \
      </tr>');
+        channelId++;
     }
 
 
     if (ioData.Interface0.VM208EX) {
+        var html = '<table id="VM208EX" class="pure-table status-table">\
+        <thead>\
+           <tr>\
+              <th class="col1">Relays</th>\
+              <th class="col2">Toggle</th>\
+              <th class="col3">Pulse</th>\
+              <th class="col4">Timer</th>\
+              <th class="col5">Sheduler</th>\
+           </tr>\
+        <tbody>';
 
-        var table = $('#VM208EXTableBody');
+
         for (i = 1; i < 9; i++) {
-            table.append('<tr> \
-        <td id="Name"'+ 'i' + '> RELAY' + i + ' </td> \
-        <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ i + 'Status>OFF</button> </td> \
-        <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ i + '" id="value_pulse' + i + '" value="100" min="1" max="60000"><label for="value_pulse' + i + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + i + 'Start>START</button></form> </td> \
-        <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ i + '" id="value_timer' + i + '" value="1" min="1" max="60000"><label for="value_timer' + i + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + i + 'Start>START</button> </value> </td> \
-        <td  class="col5" > <button class="pure-button" id="shedule'+ i + 'Start">EDIT</button> <span class="dot" id="dot' + i + '"></span> </td> \
-        </tr>');
+            html += '<tr> \
+        <td id="Name"'+ channelId + '> RELAY' + i + ' </td> \
+        <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
+        <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
+        <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
+        <td  class="col5" > <button class="pure-button" id="shedule'+ channelId + 'Start">EDIT</button> <span class="dot" id="dot' + channelId + '"></span> </td> \
+        </tr>';
+            channelId++;
         }
+        html += '</tbody></table>';
+        var table = $('#VM208EX');
+        table.append(html);
     }
+    var table = $('#modules');
     for (i = 0; i < ioData.Interfaces.length; i++) {
+        InterfaceNr = i + 1;
+        table.append('<h2>Interface' + InterfaceNr + '</h2>');
         for (j = 0; j < ioData.Interfaces[i].length; j++) {
-            var table = $('#modules');
-            table.append('<table id="VM208EXTable" class="pure-table status-table">\
+
+            var ModuleNr = j + 1
+            var html = '<h3>Module ' + ModuleNr + '</h3><table id="Module' + j + '" class="pure-table status-table">\
             <thead>\
                <tr>\
                   <th class="col1">Relays</th>\
@@ -334,25 +357,28 @@ function generateTable(e) {
                   <th class="col4">Timer</th>\
                   <th class="col5">Sheduler</th>\
                </tr>\
-            <tbody>');
+            <tbody>';
             for (k = 1; k < 9; k++) {
-                table.append('<tr> \
+                html += '<tr> \
                 <td id="Name"'+ 'i' + '> RELAY' + k + ' </td> \
-                <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ k + 'Status>OFF</button> </td> \
-                <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ k + '" id="value_pulse' + k + '" value="100" min="1" max="60000"><label for="value_pulse' + k + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + k + 'Start>START</button></form> </td> \
-                <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ k + '" id="value_timer' + k + '" value="1" min="1" max="60000"><label for="value_timer' + k + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + k + 'Start>START</button> </value> </td> \
-                <td  class="col5" > <button class="pure-button" id="shedule'+ k + 'Start">EDIT</button> <span class="dot" id="dot' + k + '"></span> </td> \
-                </tr>');
+                <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
+                <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
+                <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
+                <td  class="col5" > <button class="pure-button" id="shedule'+ channelId + 'Start">EDIT</button> <span class="dot" id="dot' + channelId + '"></span> </td> \
+                </tr>';
+                channelId++;
             }
-            table.append('</tbody></table>')
+            html += '</tbody></table>';
+            table.append(html);
         }
     }
+    totalChannels = channelId - 1;
 }
 
 
 $(function () {
-    timerRelayEvent(),
-        $("#relay1Status").click(function () {
+    timerRelayEvent();
+        /*$("#relay1Status").click(function () {
             sendRelay(1, this)
         }), $("#relay2Status").click(function () {
             sendRelay(2, this)
@@ -376,7 +402,9 @@ $(function () {
             sendRelay(11, this)
         }), $("#relay12Status").click(function () {
             sendRelay(12, this)
-        }), $("#mosfet1Status").click(function () {
+        })*/
+        
+        /*, $("#mosfet1Status").click(function () {
             sendMosfet(1, this)
         }), $("#mosfet2Status").click(function () {
             sendMosfet(2, this)
@@ -440,10 +468,10 @@ $(function () {
         }),
         $("#shedule4Start").click(function () {
             location.href = "shedule.html?relay=4";
-        })
-    $("#shedule5Start").click(function () {
-        location.href = "shedule.html?relay=5";
-    }),
+        }),
+        $("#shedule5Start").click(function () {
+            location.href = "shedule.html?relay=5";
+        }),
         $("#shedule6Start").click(function () {
             location.href = "shedule.html?relay=6";
         }),
@@ -464,5 +492,5 @@ $(function () {
         }),
         $("#shedule12Start").click(function () {
             location.href = "shedule.html?relay=12";
-        })
+        })*/
 });
