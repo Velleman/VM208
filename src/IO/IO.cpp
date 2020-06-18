@@ -26,7 +26,7 @@ static void gpio_isr_handler(void *arg)
 void Init_IO(bool setState)
 {
 
-  Wire.begin(33, 32, 100000);
+  Wire.begin(33, 32, 25000);
   mm.DetectModules();
   //vm208.initialize();
   //vm208ex.initialize();
@@ -113,7 +113,7 @@ void IO_task(void *arg)
       Serial.println("Handle Interrupt");
       if (io_num == INT2_PIN) //read extension
       {
-        toggleChannel((VM208EX *)mm.getModule(0), mm.getModule(0)->getPressedButton());
+        //toggleChannel((VM208EX *)mm.getModule(0), mm.getModule(0)->getPressedButton());
       }
       else
       {
@@ -127,11 +127,11 @@ void IO_task(void *arg)
 
 void toggleChannel(VM208 *ex, uint8_t channel)
 {
-  /*if (channel && channel < 5)
+  if (channel && channel < 5)
   {
     VM208 vm = *ex;
     vm[channel - 1].toggle();
-  }*/
+  }
 }
 
 void toggleChannel(VM208EX *ex, uint8_t channel)

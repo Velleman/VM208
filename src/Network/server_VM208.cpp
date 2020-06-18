@@ -88,8 +88,9 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     state = p->value();
-
-    (*mm.getBaseModule())[relay.toInt() - 1].toggle();
+    
+    RelayChannel* channel = mm.getChannel(relay.toInt());
+    state.toInt() ? channel->turnOn() : channel->turnOff();
 
     sendIOState(request);
   });
@@ -638,7 +639,6 @@ void sendIOState(AsyncWebServerRequest *request)
       for (int i = 0; i < 8; i++)//loop interfaces
       {
         auto modules = mm.getAmountOfModulesOnInterface(i);
-        Serial.println(modules);
         if (modules)//has interface a module?
         {
           JsonArray& interface = interfaces.createNestedArray();
@@ -648,10 +648,10 @@ void sendIOState(AsyncWebServerRequest *request)
             VM208EX *module = (VM208EX *)mm.getModuleFromInterface(i,x);
             for (int j = 0; j < 8; j++)//loop over all channels of a module
             {
-              VM208EXChannel ch = (*module)[j];
+              VM208EXChannel* ch = module->getChannel(j);
               JsonObject &channel = moduleObject.createNestedObject();
-              channel["name"] = ch.getName();
-              channel["state"] = ch.isOn();
+              channel["name"] = ch->getName();
+              channel["state"] = ch->isOn();
             }
           }
         }

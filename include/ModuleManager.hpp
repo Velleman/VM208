@@ -10,6 +10,7 @@ class ModuleManager{
         void DetectModules();
     	VM208* getBaseModule();
         RelayModule* getModule(int index);
+        RelayChannel* getChannel(int index);
         uint8_t getAmount();
         ~ModuleManager();
         RelayModule* getModuleFromInterface(uint8_t interface,uint8_t module);
