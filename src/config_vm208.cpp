@@ -170,6 +170,40 @@ void Configuration::load()
     {
         ESP_LOGI(TAG, "file doesnt exist");
     }
+    if (SPIFFS.exists(namesPath))
+    {
+        ESP_LOGI(TAG, "file exist");
+        File file = loadFile(namesPath);
+        /* while (file.available())
+        {
+            Serial.write(file.read());
+        }*/
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject &root = jsonBuffer.parseObject(file);
+        JsonArray& names = root["names"];
+        if (root.containsKey("names"))
+        {
+            for(int i =0;i<259;i++)
+            {
+                _names[i] = names[i].as<String>();
+            }
+        }
+        else
+        {
+            Serial.println("LOAD NAME CONFIG: FILE IS INVALID");
+        }
+        file.close();
+        jsonBuffer.clear();
+    }
+    else
+    {
+        ESP_LOGI(TAG, "file doesnt exist");
+    }
+}
+
+String& Configuration::getNameFromChannel(uint16_t index)
+{
+    return _names[index];
 }
 
 void Configuration::save()
