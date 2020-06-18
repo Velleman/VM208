@@ -1,17 +1,12 @@
-#include "channel.hpp"
+#include "VM208TimerChannel.hpp"
 #include "IO.hpp"
-#include "esp_err.h"
-#include "esp_timer.h"
-#include "global.hpp"
-#include "config_vm208.hpp"
-#include <list>
 extern "C"
 {
 
     static void timerTask(void *arg)
     {
         uint32_t id = (uint32_t)arg;
-        Channel *c = getChannelById(id);
+        VM208TimeChannel *c = (VM208TimeChannel*) getRelayChannelById(id);
         unsigned long startTime = millis();
         if (c != nullptr)
         {
@@ -32,7 +27,7 @@ extern "C"
     static void pulseTask(void *arg)
     {
         uint32_t id = (uint32_t)arg;
-        Channel *c = getChannelById(id);
+        VM208TimeChannel *c = (VM208TimeChannel*) getRelayChannelById(id);
         unsigned long startTime = millis();
         if (c != nullptr)
         {
@@ -51,64 +46,19 @@ extern "C"
     }
 }
 
-Channel::Channel(String name, Relay *relay, Led *led, uint8_t id) : m_name(name), m_relay(relay), m_led(led), m_id(id), m_isTimerActive(false), m_isPulseActive(false)
-{ 
-}
-
-void Channel::loadShedule()
-{
-}
-
-void Channel::startSheduler()
-{
-}
-
-void Channel::turnOn()
-{
-    m_relay->turnOn();
-    if (m_led != nullptr)
-        m_led->turnOn();
-}
-
-void Channel::turnOff()
-{
-    m_relay->turnOff();
-    if (m_led != nullptr)
-        m_led->turnOff();
-}
-
-void Channel::toggle()
-{
-    m_relay->toggle();
-    if (m_led != nullptr)
-        m_relay->getState() ? m_led->turnOn() : m_led->turnOff();
-}
-
-void Channel::setName(String name)
-{
-    m_name = name;
-}
-
-String Channel::getName()
-{
-    return m_name;
-}
-/**
- * returns the time in microseconds
- */
-uint64_t Channel::getPulseTime()
+uint64_t VM208TimeChannel::getPulseTime()
 {
     return m_pulseTime;
 }
 /**
  * returns the time in microseconds
  */
-uint64_t Channel::getTimerTime()
+uint64_t VM208TimeChannel::getTimerTime()
 {
     return m_timerTime;
 }
 
-void Channel::activateTimer(uint16_t timertime)
+void VM208TimeChannel::activateTimer(uint16_t timertime)
 {
     unsigned long time_us = timertime * 60000000UL; //1 = 1min => 60000ms;
     //Serial.print("Pulse Time:");
@@ -116,12 +66,12 @@ void Channel::activateTimer(uint16_t timertime)
     m_timerTime = time_us;
     if (!m_isTimerActive)
     {
-        xTaskCreate(timerTask, "timer", 4092, (void *)m_id, (tskIDLE_PRIORITY + 2), &timerTaskHandle);
+        xTaskCreate(timerTask, "timer", 4092, (void *)_id, (tskIDLE_PRIORITY + 2), &timerTaskHandle);
         m_isTimerActive = true;
     }
 }
 
-void Channel::activatePulse(uint64_t pulsetime)
+void VM208TimeChannel::activatePulse(uint64_t pulsetime)
 {
 
     uint32_t t = ((uint32_t)pulsetime) * ((uint32_t)1000);
@@ -129,12 +79,12 @@ void Channel::activatePulse(uint64_t pulsetime)
     m_pulseTime = pulseTime;
     if (!m_isPulseActive)
     {
-        xTaskCreate(pulseTask, "pulse", 4092, (void *)m_id, (tskIDLE_PRIORITY + 2), &pulseTaskHandle);
+        xTaskCreate(pulseTask, "pulse", 4092, (void *)_id, (tskIDLE_PRIORITY + 2), &pulseTaskHandle);
         m_isPulseActive = true;
     }
 }
 
-void Channel::setAlarm(Alarm a, uint8_t index)
+void VM208TimeChannel::setAlarm(Alarm a, uint8_t index)
 {
     if (index < 14)
     {
@@ -146,49 +96,18 @@ void Channel::setAlarm(Alarm a, uint8_t index)
     }
 }
 
-Alarm *Channel::getAlarm(uint8_t index)
+Alarm *VM208TimeChannel::getAlarm(uint8_t index)
 {
     return alarms + index;
 }
 
-bool Channel::getState()
-{
-    return m_relay->getState();
-}
-
-bool Channel::isTimerActive()
-{
-    return m_isTimerActive;
-}
-
-bool Channel::isPulseActive()
-{
-    return m_isPulseActive;
-}
-
-void Channel::updateLed()
-{
-    m_relay->getState() ? m_led->turnOn() : m_led->turnOff();
-}
-
-void Channel::toggleLed()
-{
-    if (m_led != nullptr)
-        m_led->toggle();
-}
-
-void Channel::setLed(bool state)
-{
-    state ? m_led->turnOn() : m_led->turnOff();
-}
-
-void Channel::clearTimerAndPulse()
+void VM208TimeChannel::clearTimerAndPulse()
 {
     clearPulse();
     clearTimer();
 }
 
-void Channel::clearPulse()
+void VM208TimeChannel::clearPulse()
 {
     if (m_isPulseActive)
     {
@@ -197,7 +116,7 @@ void Channel::clearPulse()
     }
 }
 
-void Channel::clearTimer()
+void VM208TimeChannel::clearTimer()
 {
     if (m_isTimerActive)
     {
@@ -206,7 +125,7 @@ void Channel::clearTimer()
     }
 }
 
-void Channel::disableSheduler()
+void VM208TimeChannel::disableSheduler()
 {
     for (int i = 0; i < 14; i++)
     {
@@ -214,7 +133,7 @@ void Channel::disableSheduler()
     }
 }
 
-bool Channel::isSheduleActive()
+bool VM208TimeChannel::isSheduleActive()
 {
     for (int i = 0; i < 14; i++)
     {
@@ -222,4 +141,14 @@ bool Channel::isSheduleActive()
             return true;
     }
     return false;
+}
+
+bool VM208TimeChannel::isTimerActive()
+{
+    return m_isTimerActive;
+}
+
+bool VM208TimeChannel::isPulseActive()
+{
+    return m_isPulseActive;
 }

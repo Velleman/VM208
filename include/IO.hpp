@@ -12,8 +12,9 @@
 #include "input.hpp"
 #include "mosfet.hpp"
 #include "led.hpp"
-#include "channel.hpp"
 #include "VM208.h"
+#include "VM208EX.h"
+#include "global.hpp"
 #define INT_PIN   GPIO_NUM_4
 #define INT2_PIN  GPIO_NUM_35
 
@@ -29,7 +30,6 @@ void setMOSFET(Mosfet* mosfet);
 void readButton();
 Input** readInputs(Input** inputs);
 void IO_task(void* arg);
-bool IsExtensionConnected();
 //Relay* getRelayFromRelayKey(const char* key);
 //void setRelay(uint8_t index,relay_state_t state);
 void setLed(Led* led);
@@ -39,16 +39,15 @@ Mosfet* getMosfet(uint8_t index);
 void getMosfets(Mosfet* m);
 bool isUserInputChanged();
 Input** getCurrentInputs();
-void initExtPinDirections();
 void copyStateRelaysToLeds();
 Mosfet* getMosfetById(int id);
-Relay* getRelayById(int id);
+//Relay* getRelayById(int id);
 Led* getLedById(int id);
-Relay* getRelays();
+//Relay* getRelays();
 void getLeds(Led* leds);
-Channel* getChannelById(int id);
-void updateIO(void* params);
+//Channel* getChannelById(int id);
+RelayChannel* getRelayChannelById(int id);
 void disableIOacitivty();
-void toggleChannel(VM208 &ex, uint8_t channel);
-VM208* getVM208();
+void toggleChannel(VM208* ex, uint8_t channel);
+void toggleChannel(VM208EX* ex, uint8_t channel);
 #endif
