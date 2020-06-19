@@ -17,6 +17,7 @@ void ModuleManager::DetectModules()
     for (int i = 0; i < 4; i++)
     {
         _baseModule->getChannel(i)->setName(config.getNameFromChannel(_channelIndex));
+        Serial.println(config.getNameFromChannel(_channelIndex));
         _channelIndex++;
     }
     for (byte i = 0x70; i < 0x78; i++)
@@ -34,7 +35,7 @@ void ModuleManager::DetectModules()
         Serial.println("native VM208EX found");
         _extensionModule = new VM208EX();
         _modules.push_back(_extensionModule);
-        _modules[_modules.size() - 1]->initialize();
+        _extensionModule->initialize();
         _extensionModule->turnAllChannelsOff();
         for (int i = 0; i < 8; i++)
         {

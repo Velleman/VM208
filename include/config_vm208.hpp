@@ -237,7 +237,7 @@ public:
   void save();
   void saveAlarms();
   void saveEmailSettings();
-  String& getNameFromChannel(uint16_t index);
+  String getNameFromChannel(uint16_t index);
 
   ~Configuration();
 };

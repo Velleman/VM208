@@ -211,13 +211,20 @@ function updateIO(e) {
     var t = $.parseJSON(e);
     try {
         //var a;
-        for (a = 1; a <= 4; a++) $("#relay" + a + "Status").html(t.Interface0.VM208[a - 1].state ? "TURN OFF" : "TURN ON");
+        for (a = 1; a <= 4; a++) {
+            $("#relay" + a + "Status").html(t.Interface0.VM208[a - 1].state ? "TURN OFF" : "TURN ON");
+            $("#Name" + a).html(t.Interface0.VM208[a - 1].name);
+        }
         if (t.Interface0.VM208EX) {
-            for (a = 5; a <= 12; a++) $("#relay" + a + "Status").html(t.Interface0.VM208EX[a - 1].state ? "TURN OFF" : "TURN ON");
+            for (a = 5; a <= 12; a++) {
+                ("#relay" + a + "Status").html(t.Interface0.VM208EX[a - 1].state ? "TURN OFF" : "TURN ON");
+                $("#Name" + a).html(t.Interface0.VM208EX[a - 1].name);
+            }
         } else {
             for (a = 5; a <= totalChannels; a++) {
                 var index = a - 5;
                 $("#relay" + a + "Status").html(t.Interfaces[0][Math.floor(index / 8)][index % 8].state ? "TURN OFF" : "TURN ON");
+                $("#Name" + a).html(t.Interfaces[0][Math.floor(index / 8)][index % 8].name);
             }
         }
     } catch (s) {
@@ -304,7 +311,7 @@ function generateTable(e) {
     var table = $('#VM208TableBody');
     for (i = 1; i < 5; i++) {
         table.append('<tr> \
-        <td id="Name"'+ channelId + '> RELAY' + i + ' </td> \
+        <td id="Name'+ channelId + '"> RELAY' + i + ' </td> \
         <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
         <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
         <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
@@ -329,7 +336,7 @@ function generateTable(e) {
 
         for (i = 1; i < 9; i++) {
             html += '<tr> \
-        <td id="Name"'+ channelId + '> RELAY' + i + ' </td> \
+        <td id="Name'+ channelId + '"> RELAY' + i + ' </td> \
         <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
         <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
         <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
@@ -361,7 +368,7 @@ function generateTable(e) {
             <tbody>';
                 for (k = 1; k < 9; k++) {
                     html += '<tr> \
-                <td id="Name"'+ 'i' + '> RELAY' + k + ' </td> \
+                <td id="Name'+ channelId + '"> RELAY' + k + ' </td> \
                 <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
                 <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
                 <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \

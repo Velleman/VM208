@@ -5,7 +5,7 @@ function requestSettings() {
         url: "/settings",
         dataType: "text",
         data: $(this).serialize(),
-        success: function(e) {
+        success: function (e) {
             try {
                 json = $.parseJSON(e), update_content()
             } catch (t) {
@@ -32,16 +32,16 @@ function update_auth_settings() {
     e.val(json.USERNAME);
 }
 
-function update_wlan_creds_settings(){
-	$("#ssid_field").val(json.SSID);
+function update_wlan_creds_settings() {
+    $("#ssid_field").val(json.SSID);
 }
 
 function update_email_settings() {
-        $("#smtp_server").val(json.smtpserver);
-        $("#smtp_port").val(json.smtpport);
-        $("#smtp_user").val(json.username);
-        $("#smtp_recipient").val(json.recipient);
-        $("#smtp_title").val(json.subject);
+    $("#smtp_server").val(json.smtpserver);
+    $("#smtp_port").val(json.smtpport);
+    $("#smtp_user").val(json.username);
+    $("#smtp_recipient").val(json.recipient);
+    $("#smtp_title").val(json.subject);
 }
 
 function update_network_settings() {
@@ -97,7 +97,7 @@ function sendEmailSettings() {
         url: "/email_settings",
         dataType: "text",
         data: e,
-        success: function(e) {
+        success: function (e) {
             "OK" == e ? ($("#sendMailSettingsButton").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE EMAILSETTINGS")
         }
     })
@@ -108,7 +108,7 @@ function sendRegenerateAPIKey() {
         type: "GET",
         url: "/regenerate_api",
         dataType: "text",
-        success: function(e) {
+        success: function (e) {
             var t = $.parseJSON(e);
             $("#api_key").val(t.ApiKey)
         }
@@ -120,7 +120,7 @@ function sendRequestBootloader() {
         type: "GET",
         url: "/bootloader",
         dataType: "text",
-        success: function() {}
+        success: function () { }
     })
 }
 
@@ -137,7 +137,7 @@ function sendAlarm() {
         url: "/notif_setting",
         dataType: "text",
         data: e,
-        success: function(e) {
+        success: function (e) {
             try {
                 "OK" == e ? ($("#sendAlarmButton").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE EMAILSETTINGS")
             } catch (t) {
@@ -174,7 +174,7 @@ function sendAuthSettings() {
         url: "/auth_settings",
         dataType: "text",
         data: e,
-        success: function(e) {
+        success: function (e) {
             try {
                 "OK" == e ? ($("#sendAuthSettingsButton").html("SAVED"), requestSettings()) : ($("#sendAuthSettingsButton").html("FAILED SAVING"), console.log("FAILED TO SAVE EMAILSETTINGS"))
             } catch (t) {
@@ -205,7 +205,7 @@ function sendEthNetworkSettings() {
                 url: "/eth_ip_save",
                 dataType: "text",
                 data: e,
-                success: function(e) {
+                success: function (e) {
                     try {
                         $("#sendNetworkSettingsButton").html("SAVED");
                         requestSettings();
@@ -213,7 +213,7 @@ function sendEthNetworkSettings() {
                         console.log(t)
                     }
                 }
-            }).fail(function(data) {
+            }).fail(function (data) {
                 console.log("FAILED TO SAVE NETWORKSETTINGS");
             })
         }
@@ -238,7 +238,7 @@ function sendWifiNetworkSettings() {
                 url: "/wifi_ip_save",
                 dataType: "text",
                 data: e,
-                success: function(e) {
+                success: function (e) {
                     try {
                         "OK" == e ? ($("#sendNetworkSettingsButton").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE NETWORKSETTINGS")
                     } catch (t) {
@@ -250,20 +250,19 @@ function sendWifiNetworkSettings() {
     } else $("#sendNetworkSettingsButton").html("INVALID IP ADDRESSES")
 }
 
-function sendWifiCredentials(){
-	$("#sendWlanCredsButton").html("SAVING..."); {
-		if($("#password_wifi_field").val() != "" && $("#ssid_field").val() != "")
-		{
-			var e = {
-				ssid: $("#ssid_field").val(),
-				pw: $("#password_wifi_field").val(),
-			};
+function sendWifiCredentials() {
+    $("#sendWlanCredsButton").html("SAVING..."); {
+        if ($("#password_wifi_field").val() != "" && $("#ssid_field").val() != "") {
+            var e = {
+                ssid: $("#ssid_field").val(),
+                pw: $("#password_wifi_field").val(),
+            };
             $.ajax({
                 type: "POST",
                 url: "/wifi_creds_save",
                 dataType: "text",
                 data: e,
-                success: function(e) {
+                success: function (e) {
                     try {
                         "OK" == e ? ($("#sendWlanCredsButton").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE NETWORKSETTINGS")
                     } catch (t) {
@@ -271,12 +270,12 @@ function sendWifiCredentials(){
                     }
                 }
             });
-		}
-		else{
-			alert("Please fill in all the field");
-			$("#sendWlanCredsButton").html("Save and reboot")
-		}
-	}	
+        }
+        else {
+            alert("Please fill in all the field");
+            $("#sendWlanCredsButton").html("Save and reboot")
+        }
+    }
 }
 
 function sendNames() {
@@ -305,7 +304,7 @@ function sendNames() {
         url: "/names",
         dataType: "text",
         data: e,
-        success: function(e) {
+        success: function (e) {
             try {
                 "OK" == e ? ($("#sendNameSettingsButton").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE EMAILSETTINGS")
             } catch (t) {
@@ -320,6 +319,21 @@ function sliderOnInitialized() {
     $("body").css("display", "block")
 }
 
+function requestNames() {
+    $.ajax({
+        type: "GET",
+        url: "/status",
+        dataType: "text",
+        success: function (e) {
+            try {
+                generateNameOptions(e);
+            } catch (t) {
+                console.log(t)
+            }
+        }
+    })
+}
+
 function timerRelayEvent() {
 
     if (location.pathname == "/index.html" || location.pathname == "/") {
@@ -327,9 +341,9 @@ function timerRelayEvent() {
             type: "GET",
             url: "/status",
             dataType: "text",
-            success: function(e) {
+            success: function (e) {
                 try {
-                    updateIO(e), setTimeout(function() {
+                    updateIO(e), setTimeout(function () {
                         timerRelayEvent()
                     }, 500)
                 } catch (t) {
@@ -375,7 +389,7 @@ function testEmailSettings() {
         type: "POST",
         url: "/testmail",
         dataType: "text",
-        success: function(e) {
+        success: function (e) {
             try {
                 var jsonMail = $.parseJSON(e);
                 $("#testMailSettingsButton").html(jsonMail.status);
@@ -391,7 +405,7 @@ function requestBoardInfo() {
         type: "GET",
         url: "/boardinfo",
         dataType: "text",
-        success: function(e) {
+        success: function (e) {
             try {
                 updateBoardInfo(e)
             } catch (t) {
@@ -428,42 +442,91 @@ function enableButtons() {
     for (e = 1; 12 >= e; e++) $("#relay" + e + "Status").removeClass("pure-button-disabled"), $("#mosfet" + e + "Status").removeClass("pure-button-disabled"), $("#pulse" + e + "Start").removeClass("pure-button-disabled"), $("#timer" + e + "Start").removeClass("pure-button-disabled")
 }
 var json, notif_select = new Object;
-$(document).ready(function() {
+$(document).ready(function () {
     requestBoardInfo(), requestSettings(), $("#splashscreen").delay(750).fadeOut(500), enableButtons(), updateEthNetworkFieldsState(), updateWifiNetworkFieldState()
 });
 var current_slide = 0;
-$(function() {
+var json;
+function generateNameOptions(e) {
+    json = JSON.parseJSON(e);
+    var dropdown = $("#interface_dropdown_div");
+    dropdown.empty();
+    var html = '<label for="interface_dropdown">Interface:</label> \
+    <select id="interface_dropdown"><option id="Interface0">Interface 0</option>';
+    for (i = 0; i < json.interfaces.length; i++) {
+        html += '<option id="Interface' + i + 1 + '">Interface ' + i + 1 + ' </option>';
+    }
+    dropdown.append(html);
+    loadModule("Interface 0");
+}
+
+loadModule(value)
+{
+    var interface = parseInt(value.replace("Interface ", ""));
+    if (interface) { //if it isn't interface 0
+        var dropdown = $("#module_dropdown_div");
+        dropdown.empty(); //clear previous data
+        var html = '<label for="module_dropdown">Module:</label> \
+        <select id="module_dropdown"></select>';
+        for (i = 0; i < json.interfaces[interface].length; i++) {
+            html += '<option id="Module' + 1 + i + '">Module ' + 1 + i + '</option>';
+        }
+
+        dropdown.append(html);
+    }
+    else {
+        var dropdown = $("#module_dropdown_div");
+        dropdown.empty(); //clear previous data
+        var html = '<label for="module_dropdown">Module:</label> \
+        <select id="module_dropdown"></select>';
+
+        html += '<option id="VM2080">VM208</option>';
+        if(json.Interface0.length == 2)
+        {
+            html += '<option id="VM208EX">VM208EX</option>';
+        }
+
+        dropdown.append(html);
+    }
+}
+$(function () {
+    $('#interface_dropdown').on('change', function () {
+        loadModule(this.value);
+    });
+    $('#module_dropdown').on('change', function () {
+        loadChannel(this.value);
+    });
     $("#sendMailButton").removeAttr("disabled"),
-        $("#sendAuthSettingsButton").click(function() {
+        $("#sendAuthSettingsButton").click(function () {
             return sendAuthSettings(), !1
-        }), $("#sendWlanCredsButton").click(function() {
+        }), $("#sendWlanCredsButton").click(function () {
             return sendWifiCredentials(), !1
-        }),$("#sendWifiNetworkSettingsButton").click(function() {
+        }), $("#sendWifiNetworkSettingsButton").click(function () {
             return sendWifiNetworkSettings(), !1
-        }), $("#sendEthNetworkSettingsButton").click(function() {
+        }), $("#sendEthNetworkSettingsButton").click(function () {
             return sendEthNetworkSettings(), !1
-        }), $("#sendMailSettingsButton").click(function() {
+        }), $("#sendMailSettingsButton").click(function () {
             return sendEmailSettings(), !1
-        }), $("#sendNameSettingsButton").click(function() {
+        }), $("#sendNameSettingsButton").click(function () {
             return sendNames(), !1
-        }), $("#sendAlarmButton").click(function() {
+        }), $("#sendAlarmButton").click(function () {
             return sendAlarm(), !1
-        }), $("#regeneratekeyButton").click(function() {
+        }), $("#regeneratekeyButton").click(function () {
             return sendRegenerateAPIKey(), !1
-        }), $("#requestBootloader").click(function() {
+        }), $("#requestBootloader").click(function () {
             return sendRequestBootloader(), !1
-        }), $("#testMailSettingsButton").click(function() {
+        }), $("#testMailSettingsButton").click(function () {
             $("#testMailSettingsButton").html("Sending...")
             $.ajax({
                 type: "POST",
                 url: "/testmail",
                 dataType: "text",
-                success: function(e) {
+                success: function (e) {
                     try {
                         var jsonMail = $.parseJSON(e);
                         var jsonMail = $.parseJSON(e);
                         $("#testMailSettingsButton").html(jsonMail.status)
-                        setTimeout(function() {
+                        setTimeout(function () {
                             $("#testMailSettingsButton").html("Test Mail Settings");
                         }, 5000);
                     } catch (t) {
@@ -472,16 +535,16 @@ $(function() {
                 }
             })
         }),
-        $("#dhcp_enabled_wifi_checkbox").change(function() {
+        $("#dhcp_enabled_wifi_checkbox").change(function () {
             updateWifiNetworkFieldState();
         }),
-        $("#dhcp_enabled_eth_checkbox").change(function() {
+        $("#dhcp_enabled_eth_checkbox").change(function () {
             updateEthNetworkFieldsState();
         }),
-        $("#sendTimeSettings").click(function() {
+        $("#sendTimeSettings").click(function () {
             sendTimeSettings();
         }),
-        $("#Update").submit(function(evt) {
+        $("#Update").submit(function (evt) {
             evt.preventDefault();
             if (confirm("This will turn off all the relays\r\nDo you want to proceed?")) {
                 $("#update_submit").html("UPDATING...");
@@ -495,14 +558,13 @@ $(function() {
                     contentType: false,
                     enctype: 'multipart/form-data',
                     processData: false,
-                    success: function(response) {
+                    success: function (response) {
                         alert("UPLOAD COMPLETE\nThe site will try to reconnect in 10 seconds");
                         setTimeout(
-                            function() 
-                            {
+                            function () {
                                 location.href = "/index.html";
                             }, 10000);
-                        
+
                     }
                 });
             }
@@ -522,7 +584,7 @@ function sendTimeSettings() {
         url: "/time_settings",
         dataType: "text",
         data: e,
-        success: function(e) {
+        success: function (e) {
             try {
                 "OK" == e ? ($("#sendTimeSettings").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE EMAILSETTINGS")
             } catch (t) {
@@ -578,10 +640,10 @@ function confirmUpdate() {
         //method="POST" action='/doUpdate'
         var formData = new FormData($(this)[0]);
         $.ajax({
-            xhr: function() {
+            xhr: function () {
                 var xhr = new window.XMLHttpRequest();
                 //Upload progress
-                xhr.upload.addEventListener("progress", function(evt) {
+                xhr.upload.addEventListener("progress", function (evt) {
                     if (evt.lengthComputable) {
                         var percentComplete = evt.loaded / evt.total;
                         //Do something with upload progress
@@ -595,7 +657,7 @@ function confirmUpdate() {
             contentType: "multipart/form-data:",
             dataType: "text",
             data: e,
-            success: function(e) {
+            success: function (e) {
                 try {
                     "OK" == e ? ($("#sendTimeSettings").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE EMAILSETTINGS")
                 } catch (t) {

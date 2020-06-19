@@ -201,7 +201,7 @@ void Configuration::load()
     }
 }
 
-String& Configuration::getNameFromChannel(uint16_t index)
+String Configuration::getNameFromChannel(uint16_t index)
 {
     return _names[index];
 }
