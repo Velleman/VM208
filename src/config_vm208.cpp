@@ -206,6 +206,30 @@ String Configuration::getNameFromChannel(uint16_t index)
     return _names[index];
 }
 
+void Configuration::saveNames()
+{
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject &root = jsonBuffer.createObject();
+    JsonArray& names = root.createNestedArray("names");
+    
+    uint16_t channelId=0;
+    for(int i = 0;i<260;i++)
+    {
+        names.add(_names[i]);
+    }
+    File file = SPIFFS.open(namesPath, FILE_WRITE);
+    if (root.printTo(file) == 0)
+    {
+        Serial.println("Error writing to file");
+    }
+    file.close();    
+}
+
+void Configuration::setName(uint16_t channelId,String name)
+{
+    _names[channelId-1] = name;
+}
+
 void Configuration::save()
 {
     writeConfig();

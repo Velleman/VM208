@@ -238,6 +238,8 @@ public:
   void saveAlarms();
   void saveEmailSettings();
   String getNameFromChannel(uint16_t index);
+  void saveNames();
+  void setName(uint16_t channelID,String name);
 
   ~Configuration();
 };

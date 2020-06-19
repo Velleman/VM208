@@ -15,6 +15,7 @@ class ModuleManager{
         ~ModuleManager();
         RelayModule* getModuleFromInterface(uint8_t interface,uint8_t module);
         uint8_t getAmountOfModulesOnInterface(uint8_t interface);
+        uint16_t getChannelId(uint8_t interface,uint8_t module,uint8_t channel);
     private:
         VM208* _baseModule;
         VM208EX* _extensionModule = nullptr;

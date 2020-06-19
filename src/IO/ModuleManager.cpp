@@ -42,7 +42,9 @@ void ModuleManager::DetectModules()
             _extensionModule->getChannel(i)->setName(config.getNameFromChannel(_channelIndex));
             _channelIndex++;
         }
-    }else{
+    }
+    else
+    {
         _channelIndex += 8;
     }
     for (byte address = 0x70; address < 0x78; ++address)
@@ -71,21 +73,25 @@ void ModuleManager::DetectModules()
                     Serial.println(address, HEX);
                     Serial.print("socket: ");
                     Serial.println(socket - 3);
-                    VM208EX* module = new VM208EX(_interfaces[address - 0x70].getSocket(socket - 3));
+                    VM208EX *module = new VM208EX(_interfaces[address - 0x70].getSocket(socket - 3));
                     _modulesOnInterface[address - 0x70].push_back(module);
                     auto interface = _modulesOnInterface[address - 0x70];
                     interface[interface.size() - 1]->initialize();
-                    for(int i=0;i<8;i++)
+                    for (int i = 0; i < 8; i++)
                     {
                         module->getChannel(i)->setName(config.getNameFromChannel(_channelIndex));
                         _channelIndex++;
                     }
-                }else{
+                }
+                else
+                {
                     _channelIndex += 8; //we skipped a module
                 }
             }
-        }else{
-            _channelIndex +=32; //we skipped 32 relays (4 modules with 8 channels)
+        }
+        else
+        {
+            _channelIndex += 32; //we skipped 32 relays (4 modules with 8 channels)
         }
     }
 }
@@ -95,16 +101,21 @@ RelayModule *ModuleManager::getModule(int index)
     uint8_t checkedModules;
     uint8_t checkedInterfaces = 0;
     uint8_t previousAmountChecked = 0;
-    if (index == 1 && _extensionModule != nullptr)
+    if (index != 0)
     {
-        return _extensionModule;
+        if (index == 1 && _extensionModule != nullptr)
+        {
+            return _extensionModule;
+        }
+        while (_modulesOnInterface[checkedInterfaces].size() + previousAmountChecked < index)
+        {
+            previousAmountChecked += _modulesOnInterface[checkedInterfaces].size();
+            checkedInterfaces++;
+        }
+        return _modulesOnInterface[checkedInterfaces][index - previousAmountChecked];
+    }else{
+        return _baseModule;
     }
-    while (_modulesOnInterface[checkedInterfaces].size() + previousAmountChecked < index)
-    {
-        previousAmountChecked += _modulesOnInterface[checkedInterfaces].size();
-        checkedInterfaces++;
-    }
-    return _modulesOnInterface[checkedInterfaces][index - previousAmountChecked];
 }
 
 ModuleManager::~ModuleManager()
@@ -161,4 +172,30 @@ RelayChannel *ModuleManager::getChannel(int channelId)
             return module->getChannel(index % 8);
         }
     }
+}
+
+uint16_t ModuleManager::getChannelId(uint8_t interface, uint8_t module, uint8_t channel)
+{
+    uint16_t channelId = 1;
+    if (interface == 0)
+    {
+        if (module == 1)
+        {
+            channelId = channel + 4;
+        }
+        else
+        {
+            channelId += channel;
+        }
+    }
+    else
+    {
+        uint16_t channels = (interface - 1) * 32;
+        channels += module * 8;
+        channels += channel;
+        channels += 13;
+        channelId = channels;
+    }
+    Serial.printf("Channel ID is %d", channelId);
+    return channelId;
 }
