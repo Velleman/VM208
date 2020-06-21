@@ -40,6 +40,7 @@ private:
   const char *configPath = "/config.json";
   const char *alarmPath = "/alarms.json";
   const char *emailPath = "/email.json";
+  const char *namesPath = "/names.json";
   void writeConfig();
   void writeAlarms();
   void writeEmailSettings();
@@ -63,7 +64,7 @@ private:
   bool _notif_input_change;
   bool _notif_ext_connected;
   bool _notif_manual_input;
-
+  String _names[259];
 public:
   Configuration();
   static const char *SSID_KEY;
@@ -236,6 +237,9 @@ public:
   void save();
   void saveAlarms();
   void saveEmailSettings();
+  String getNameFromChannel(uint16_t index);
+  void saveNames();
+  void setName(uint16_t channelID,String name);
 
   ~Configuration();
 };

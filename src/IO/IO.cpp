@@ -108,12 +108,12 @@ void IO_task(void *arg)
   while (1)
   {
 
-    if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY) || digitalRead(INT_PIN) == LOW)
+    if (xQueueReceive(int_evt_queue, &io_num, 0) || digitalRead(INT_PIN) == LOW)
     {
       Serial.println("Handle Interrupt");
       if (io_num == INT2_PIN) //read extension
       {
-        //toggleChannel((VM208EX *)mm.getModule(0), mm.getModule(0)->getPressedButton());
+        toggleChannel((VM208EX *)mm.getModule(1), mm.getModule(1)->getPressedButton());
       }
       else
       {
@@ -122,7 +122,7 @@ void IO_task(void *arg)
     }
     io_num = 0;
   }
-  delay(100);
+  delay(200);
 }
 
 void toggleChannel(VM208 *ex, uint8_t channel)
@@ -136,11 +136,11 @@ void toggleChannel(VM208 *ex, uint8_t channel)
 
 void toggleChannel(VM208EX *ex, uint8_t channel)
 {
-  /*if (channel)
+  if (channel)
   {
     (*ex)[channel-1].toggle();
     //(*(ex))[channel - 1].toggle();
-  }*/
+  }
 }
 
 RelayChannel *getRelayChannelById(int id)

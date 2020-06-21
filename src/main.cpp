@@ -143,12 +143,13 @@ void setup()
 
   ESP_LOGI(TAG, "APP MAIN ENTRY");
   SPIFFS.begin();
+  config.load();
   Init_IO(setState);
 
   s_wifi_event_group = xEventGroupCreate();
 
   //ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
-  config.load();
+  
 
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
