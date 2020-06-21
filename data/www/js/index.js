@@ -208,8 +208,9 @@ function timerRelayEvent() {
 
 
 function updateIO(e) {
-    var t = $.parseJSON(e);
+
     try {
+        var t = $.parseJSON(e);
         //var a;
         for (a = 1; a <= 4; a++) {
             $("#relay" + a + "Status").html(t.Interface0.VM208[a - 1].state ? "TURN OFF" : "TURN ON");
@@ -221,10 +222,13 @@ function updateIO(e) {
                 $("#Name" + a).html(t.Interface0.VM208EX[a - 1].name);
             }
         } else {
-            for (a = 5; a <= totalChannels; a++) {
-                var index = a - 5;
-                $("#relay" + a + "Status").html(t.Interfaces[0][Math.floor(index / 8)][index % 8].state ? "TURN OFF" : "TURN ON");
-                $("#Name" + a).html(t.Interfaces[0][Math.floor(index / 8)][index % 8].name);
+            for (a = 13; a <= totalChannels; a++) {
+                var index = a - 13;
+                var interface = Math.floor(index / 32);
+                var module = Math.floor((index - (interface * 32)) / 8);
+                var channel = index % 8;
+                $("#relay" + a + "Status").html(t.Interfaces[interface][module][channel].state ? "TURN OFF" : "TURN ON");
+                $("#Name" + a).html(t.Interfaces[interface][module][channel].name);
             }
         }
     } catch (s) {
@@ -347,37 +351,39 @@ function generateTable(e) {
         html += '</tbody></table>';
         var table = $('#VM208EX');
         table.append(html);
-    }
-    var table = $('#modules');
-    if (ioData.Interfaces) {
-        for (i = 0; i < ioData.Interfaces.length; i++) {
-            InterfaceNr = i + 1;
-            table.append('<h2>Interface' + InterfaceNr + '</h2>');
-            for (j = 0; j < ioData.Interfaces[i].length; j++) {
+    } else {
+        channelId += 8;
+        var table = $('#modules');
+        if (ioData.Interfaces) {
+            for (i = 0; i < ioData.Interfaces.length; i++) {
+                InterfaceNr = i + 1;
+                table.append('<h2>Interface' + InterfaceNr + '</h2>');
+                for (j = 0; j < ioData.Interfaces[i].length; j++) {
 
-                var ModuleNr = j + 1
-                var html = '<h3>Module ' + ModuleNr + '</h3><table id="Module' + j + '" class="pure-table status-table">\
-            <thead>\
-               <tr>\
-                  <th class="col1">Relays</th>\
-                  <th class="col2">Toggle</th>\
-                  <th class="col3">Pulse</th>\
-                  <th class="col4">Timer</th>\
-                  <th class="col5">Sheduler</th>\
-               </tr>\
-            <tbody>';
-                for (k = 1; k < 9; k++) {
-                    html += '<tr> \
+                    var ModuleNr = j + 1
+                    var html = '<h3>Module ' + ModuleNr + '</h3><table id="Module' + j + '" class="pure-table status-table">\
+                                <thead>\
+                                    <tr>\
+                                        <th class="col1">Relays</th>\
+                                        <th class="col2">Toggle</th>\
+                                        <th class="col3">Pulse</th>\
+                                        <th class="col4">Timer</th>\
+                                        <th class="col5">Sheduler</th>\
+                                   </tr>\
+                                <tbody>';
+                    for (k = 1; k < 9; k++) {
+                        html += '<tr> \
                 <td id="Name'+ channelId + '"> RELAY' + k + ' </td> \
                 <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
                 <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
                 <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
                 <td  class="col5" > <button class="pure-button" id="shedule'+ channelId + 'Start">EDIT</button> <span class="dot" id="dot' + channelId + '"></span> </td> \
                 </tr>';
-                    channelId++;
+                        channelId++;
+                    }
+                    html += '</tbody></table>';
+                    table.append(html);
                 }
-                html += '</tbody></table>';
-                table.append(html);
             }
         }
     }

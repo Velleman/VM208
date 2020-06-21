@@ -58,10 +58,10 @@ void Init_IO(bool setState)
   int_evt_queue = xQueueCreate(2, sizeof(uint32_t));
   //install gpio isr service
   gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
-  gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
+  //gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
 
   if (mm.getAmount()) //if a module is detected the second interrupt pin is used.
-    gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
+    //gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
 
   Serial.println("Found modules: ");
   Serial.println(mm.getAmount());
@@ -108,7 +108,7 @@ void IO_task(void *arg)
   while (1)
   {
 
-    if (xQueueReceive(int_evt_queue, &io_num, 0) || digitalRead(INT_PIN) == LOW)
+    if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY) )//|| digitalRead(INT_PIN) == LOW)
     {
       Serial.println("Handle Interrupt");
       if (io_num == INT2_PIN) //read extension

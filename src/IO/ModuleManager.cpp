@@ -13,6 +13,7 @@ void ModuleManager::DetectModules()
     {
         uint _channelIndex = 0;
         _baseModule = new VM208();
+        _baseModule->initialize();
         _modules.push_back(_baseModule);
         for (int i = 0; i < 4; i++)
         {
@@ -20,6 +21,7 @@ void ModuleManager::DetectModules()
             Serial.println(config.getNameFromChannel(_channelIndex));
             _channelIndex++;
         }
+        _channelIndex +=8; //skip VM208EX
         for (byte address = 0x70; address < 0x78; ++address)
         {
 
@@ -200,10 +202,12 @@ RelayChannel *ModuleManager::getChannel(int channelId)
         }
         else
         {
-            int index = channelId - 5;
-            Serial.printf("Channel ID %d is interface %d Module %d Channel %d\r\n", channelId, 0, (int)(index / 8), (int)(index % 8));
-            VM208EX *module = (VM208EX *)_modulesOnInterface[0][index / 8];
-            return module->getChannel(index % 8);
+            int index = channelId - 13;
+            uint interface = floor(index / 32);
+            uint module = floor((index - (interface * 32)) / 8);
+            uint channel = index % 8;
+            Serial.printf("Channel ID %d is interface %d Module %d Channel %d\r\n", channelId, interface, module, channel);
+            return ((VM208EX *)_modulesOnInterface[interface][module])->getChannel(channel);
         }
     }
 }

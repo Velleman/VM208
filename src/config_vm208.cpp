@@ -183,7 +183,7 @@ void Configuration::load()
         JsonArray& names = root["names"];
         if (root.containsKey("names"))
         {
-            for(int i =0;i<259;i++)
+            for(int i =0;i<268;i++)
             {
                 _names[i] = names[i].as<String>();
             }
@@ -212,8 +212,7 @@ void Configuration::saveNames()
     JsonObject &root = jsonBuffer.createObject();
     JsonArray& names = root.createNestedArray("names");
     
-    uint16_t channelId=0;
-    for(int i = 0;i<260;i++)
+    for(int i = 0;i<268;i++)
     {
         names.add(_names[i]);
     }
@@ -223,6 +222,7 @@ void Configuration::saveNames()
         Serial.println("Error writing to file");
     }
     file.close();    
+    jsonBuffer.clear();
 }
 
 void Configuration::setName(uint16_t channelId,String name)

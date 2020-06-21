@@ -64,7 +64,7 @@ private:
   bool _notif_input_change;
   bool _notif_ext_connected;
   bool _notif_manual_input;
-  String _names[259];
+  String _names[268];
 public:
   Configuration();
   static const char *SSID_KEY;
