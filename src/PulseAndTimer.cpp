@@ -1,58 +1,60 @@
-#include "VM208TimerChannel.hpp"
+#include "PulseAndTimer.hpp"
+#include "Arduino.h"
+//#include "global.hpp"
+#include "VM208INT.h"
 #include "IO.hpp"
+#include "RelayChannel.h"
 extern "C"
 {
 
     static void timerTask(void *arg)
     {
-        uint32_t id = (uint32_t)arg;
-        VM208TimeChannel *c = (VM208TimeChannel*) getRelayChannelById(id);
+        TimeParameters_t* params = (TimeParameters_t*)arg;
+        auto channelId = params->id;
+        auto time = params->time;
         unsigned long startTime = millis();
-        if (c != nullptr)
+        RelayChannel* channel = mm.getChannel(channelId);
+        if (channel != nullptr)
         {
-            c->toggle();
-            uint64_t timerTime = c->getTimerTime();
-            timerTime /= 1000; // go to miliseconds;
-            while ((millis() - startTime) < timerTime)
+            channel->toggle();
+            while ((millis() - startTime) < time)
             {
-                c->toggleLed();
+                channel->toggleLed();
                 delay(1000);
             }
-            c->toggle();
+            channel->toggle();
         }
-        c->clearTimer();
         vTaskDelete( NULL );
     }
 
     static void pulseTask(void *arg)
     {
-        uint32_t id = (uint32_t)arg;
-        VM208TimeChannel *c = (VM208TimeChannel*) getRelayChannelById(id);
+        TimeParameters_t* params = (TimeParameters_t*)arg;
+        auto channelId = params->id;
+        auto time = params->time;
         unsigned long startTime = millis();
-        if (c != nullptr)
+        RelayChannel* channel = mm.getChannel(channelId);
+        if (channel != nullptr)
         {
-            c->toggle();
-            uint64_t pulseTime = c->getPulseTime();
-            pulseTime /= 1000; // go to miliseconds;
-            while ((millis() - startTime) < pulseTime)
+            channel->toggle();
+            
+            //time /= 1000; // go to miliseconds;
+            while ((millis() - startTime) < time)
             {
-                c->toggleLed();
+                channel->toggleLed();
                 delay(50);
             }
-            c->toggle();
+            channel->toggle();
         }
-        c->clearPulse();
         vTaskDelete( NULL );
     }
 }
-
+/*
 uint64_t VM208TimeChannel::getPulseTime()
 {
     return m_pulseTime;
 }
-/**
- * returns the time in microseconds
- */
+
 uint64_t VM208TimeChannel::getTimerTime()
 {
     return m_timerTime;
@@ -151,4 +153,4 @@ bool VM208TimeChannel::isTimerActive()
 bool VM208TimeChannel::isPulseActive()
 {
     return m_isPulseActive;
-}
+}*/

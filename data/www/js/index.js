@@ -95,12 +95,18 @@ function sendMosfet(e, t) {
 }
 
 function sendPulse(i, t) {
-
+    var relayName = t.id;
+    relayName = relayName.replace('pulse', '');
+    relayName = relayName.replace('Start', '');
+    var payload = {
+        index: parseInt(relayName),
+        value: $("#value_pulse"+relayName).val()
+    };
     $.ajax({
         type: "POST",
         url: "pulse",
         dataType: "text",
-        data: { index: i, time: t },
+        data: payload,
         success: function (e) {
             try {
                 updateIO(e)
@@ -280,9 +286,14 @@ function enableButtons() {
         $("#relay" + e + "Status").click(function () {
             sendRelay(e, this);
         });
-        //$("#mosfet" + e + "Status").removeClass("pure-button-disabled");
-        //$("#pulse" + e + "Start").removeClass("pure-button-disabled");
-        //$("#timer" + e + "Start").removeClass("pure-button-disabled");
+        $("#pulse" + e + "Start").removeClass("pure-button-disabled");
+        $("#pulse" + e + "Start").click(function () {
+            sendPulse(e, this);
+        });
+        $("#timer" + e + "Start").removeClass("pure-button-disabled");
+        $("#timer" + e + "Start").click(function () {
+            sendTimer(e, this);
+        });
     }
 }
 var json, notif_select = new Object;

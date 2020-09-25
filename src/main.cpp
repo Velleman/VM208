@@ -20,7 +20,6 @@
 #include "network_VM208.hpp"
 #include "time_VM208.hpp"
 #include <DNSServer.h>
-#include "VM208TimerChannel.hpp"
 //static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
@@ -154,7 +153,7 @@ void setup()
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
   ESP_LOGI(TAG, "Check Buttons");
-  /*if (((inputs[0]->read() == false) && (inputs[3]->read() == false)) || config.getFirstTime())
+  if (((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
   {
     startEth();
     ESP_LOGI(TAG, "Start AP");
@@ -167,17 +166,18 @@ void setup()
     dnsServer.start(53, "*", WiFi.softAPIP());
   }
   else
-  {*/
+  {
   Serial.printf("%s", config.getSSID());
   Serial.printf("%s", config.getWifiPassword());
   xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
   WiFi.onEvent(WiFiEvent);
+  }
   if (!startEth()) //No cable inserted
   {
     startWifi();
   }
 
-  //xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
   //xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
   //#region hide

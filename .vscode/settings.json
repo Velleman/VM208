@@ -5,6 +5,9 @@
     },
     "files.associations": {
         "list": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "functional": "cpp",
+        "random": "cpp",
+        "vector": "cpp"
     }
 }

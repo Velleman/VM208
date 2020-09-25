@@ -16,7 +16,6 @@
 #include "mail.hpp"
 #include "network_VM208.hpp"
 #include <DNSServer.h>
-#include "VM208TimerChannel.hpp"
 
 const char *TAG = "SERVER";
 
@@ -122,8 +121,10 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     time = p->value();
-    VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
+    //create struct and pass it to a Task as parameter
+    /*VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
     c->activatePulse(time.toInt());
+    xTaskCreate(pulseTask, "pulse", 4092, (void *)relay, (tskIDLE_PRIORITY + 2), &pulseTaskHandle);*/
     sendIOState(request);
   });
 
@@ -134,8 +135,8 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     time = p->value();
-    VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
-    c->activateTimer(time.toInt());
+    /*VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
+    c->activateTimer(time.toInt());*/
     sendIOState(request);
   });
 
@@ -270,7 +271,11 @@ void startServer()
       uint8_t hour = request->getParam(3)->value().toInt();
       uint8_t minute = request->getParam(4)->value().toInt();
       bool enabled = request->getParam(2)->value().toInt();
-      VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relais);
+      tm dateTime;
+      dateTime.tm_wday = day;
+      dateTime.tm_hour = hour;
+      dateTime.tm_min = minute;
+      /*VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relais);
 
       Alarm *a = c->getAlarm((day * 2) + state);
 
@@ -278,7 +283,7 @@ void startServer()
       a->setHour(hour);
       a->setMinute(minute);
       a->setEnabled(enabled);
-      config.save();
+      config.save();*/
       request->send(200);
     }
     else
@@ -357,7 +362,7 @@ void startServer()
     if (request->params() == 29)
     {
       String relay = request->getParam(0)->value();
-      VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
+      //VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
       bool state = true;
       int param = 1;
       String time;
@@ -365,7 +370,7 @@ void startServer()
       String minute;
       bool enabled;
       uint8_t alarm = 0;
-      Alarm *a;
+      //Alarm *a;
       for (int i = 1; i < 7; i++)
       { //do monday to saturday 1-6 Sunday is 0 handle out of loop
         //Turn On Alarm

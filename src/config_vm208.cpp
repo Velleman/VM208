@@ -344,7 +344,7 @@ void Configuration::writeAlarms()
     DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
     JsonArray &Channels = root.createNestedArray("Channels");
-    VM208TimeChannel *c;
+    //VM208TimeChannel *c;
     Alarm *a;
     for (int i = 0; i < 12; i++)
     {

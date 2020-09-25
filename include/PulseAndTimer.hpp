@@ -1,5 +1,6 @@
 #pragma once
-#include "VM208.h"
+#include "stdint.h"
+/*#include "VM208.h"
 #include "alarm.hpp"
 class VM208TimeChannel : public VM208Channel
 {
@@ -29,4 +30,8 @@ private:
     uint64_t m_timerTime;
     TaskHandle_t pulseTaskHandle;
     TaskHandle_t timerTaskHandle;
+};*/
+struct TimeParameters_t{
+    uint16_t id;
+    uint16_t time;
 };

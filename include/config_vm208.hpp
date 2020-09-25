@@ -8,7 +8,7 @@
 #include "ArduinoJson.h"
 #include "relay.hpp"
 #include "mosfet.hpp"
-#include "VM208TimerChannel.hpp"
+//#include "VM208TimerChannel.hpp"
 class Configuration
 {
 private:

@@ -86,7 +86,7 @@ bool startEth()
 void startWifi()
 {
 
-  if (config.getSSID().equals("") || config.getWifiPassword().equals(""))
+  if (config.getSSID().equals("") && config.getWifiPassword().equals(""))
   {
     ESP_LOGI(TAG, "INVALID WIFI CREDENTIALS");
   }
@@ -118,7 +118,13 @@ void startWifi()
     Serial.println("Connecting to:");
     Serial.println(config.getSSID());
     Serial.println(config.getWifiPassword());
-    WiFi.begin(ssid, pw);
+    if (config.getWifiPassword() != "")
+        WiFi.begin(ssid, pw);
+    else
+    {
+      WiFi.begin(ssid);
+    }
+    
     WiFi.setSleep(false);
   }
 }
@@ -220,10 +226,10 @@ void WiFiEvent(WiFiEvent_t event)
   case SYSTEM_EVENT_STA_DISCONNECTED:
     xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT | GOTIP_BIT);
     gotSTA_IP = false;
-    if(gotETH_IP == false)
+    if (gotETH_IP == false)
     {
-     Serial.println("ETH GOT IP");
-     WiFi.reconnect();
+      Serial.println("ETH GOT IP");
+      WiFi.reconnect();
     }
     break;
   default:
