@@ -31,7 +31,20 @@ private:
     TaskHandle_t pulseTaskHandle;
     TaskHandle_t timerTaskHandle;
 };*/
+
+
+void timerTask(void *arg);
+void pulseTask(void *arg);
+
 struct TimeParameters_t{
     uint16_t id;
     uint16_t time;
+};
+
+struct timerStatus_t{
+    bool status[268];
+};
+
+struct pulseStatus_t{
+    bool status[268];
 };

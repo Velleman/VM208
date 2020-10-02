@@ -95,43 +95,98 @@ function sendMosfet(e, t) {
 }
 
 function sendPulse(i, t) {
-    var relayName = t.id;
-    relayName = relayName.replace('pulse', '');
-    relayName = relayName.replace('Start', '');
-    var payload = {
-        index: parseInt(relayName),
-        value: $("#value_pulse"+relayName).val()
-    };
-    $.ajax({
-        type: "POST",
-        url: "pulse",
-        dataType: "text",
-        data: payload,
-        success: function (e) {
-            try {
-                updateIO(e)
-            } catch (t) {
-                console.log(t)
+    if (t.innerHTML == "START") {
+        var relayName = t.id;
+        relayName = relayName.replace('pulse', '');
+        relayName = relayName.replace('Start', '');
+        var payload = {
+            index: parseInt(relayName),
+            value: $("#value_pulse" + relayName).val()
+        };
+        t.innerHTML = "STOP";
+        $.ajax({
+            type: "POST",
+            url: "pulse",
+            dataType: "text",
+            data: payload,
+            success: function (e) {
+                try {
+                    //updateIO(e)
+                } catch (t) {
+                    console.log(t)
+                }
             }
-        }
-    })
+        })
+    } else {
+        var relayName = t.id;
+        relayName = relayName.replace('pulse', '');
+        relayName = relayName.replace('Start', '');
+        var payload = {
+            index: parseInt(relayName),
+        };
+        t.innerHTML = "START";
+        $.ajax({
+            type: "POST",
+            url: "stoppulse",
+            dataType: "text",
+            data: payload,
+            success: function (e) {
+                try {
+                    //updateIO(e)
+                } catch (t) {
+                    console.log(t)
+                }
+            }
+        })
+    }
 }
 
 function sendTimer(i, t) {
-
-    $.ajax({
-        type: "POST",
-        url: "timer",
-        dataType: "text",
-        data: { index: i, time: t },
-        success: function (e) {
-            try {
-                updateIO(e)
-            } catch (t) {
-                console.log(t)
+    if (t.innerHTML == "START") {
+        var relayName = t.id;
+        relayName = relayName.replace('timer', '');
+        relayName = relayName.replace('Start', '');
+        var payload = {
+            index: parseInt(relayName),
+            value: $("#value_timer" + relayName).val()
+        };
+        t.innerHTML = "STOP";
+        $.ajax({
+            type: "POST",
+            url: "timer",
+            dataType: "text",
+            data: payload,
+            success: function (e) {
+                try {
+                    updateIO(e)
+                } catch (t) {
+                    console.log(t)
+                }
             }
-        }
-    })
+        })
+    }
+    else {
+        var relayName = t.id;
+        relayName = relayName.replace('timer', '');
+        relayName = relayName.replace('Start', '');
+        var payload = {
+            index: parseInt(relayName),
+        };
+        t.innerHTML = "START";
+        $.ajax({
+            type: "POST",
+            url: "stoptimer",
+            dataType: "text",
+            data: payload,
+            success: function (e) {
+                try {
+                    updateIO(e)
+                } catch (t) {
+                    console.log(t)
+                }
+            }
+        })
+    }
 }
 
 function timerClearEvent() {
@@ -220,11 +275,15 @@ function updateIO(e) {
         //var a;
         for (a = 1; a <= 4; a++) {
             $("#relay" + a + "Status").html(t.Interface0.VM208[a - 1].state ? "TURN OFF" : "TURN ON");
+            $("#pulse" + a + "Start").html(t.Interface0.VM208[a - 1].pulseActive ? "STOP" : "START");
+            $("#timer" + a + "Start").html(t.Interface0.VM208[a - 1].timerActive ? "STOP" : "START");
             $("#Name" + a).html(t.Interface0.VM208[a - 1].name);
         }
         if (t.Interface0.VM208EX) {
             for (a = 5; a <= 12; a++) {
                 ("#relay" + a + "Status").html(t.Interface0.VM208EX[a - 1].state ? "TURN OFF" : "TURN ON");
+                $("#pulse" + a + "Start").html(t.Interface0.VM208EX[a - 1].pulseActive ? "STOP" : "START");
+                $("#timer" + a + "Start").html(t.Interface0.VM208EX[a - 1].timerActive ? "STOP" : "START");
                 $("#Name" + a).html(t.Interface0.VM208EX[a - 1].name);
             }
         } else {
@@ -234,6 +293,8 @@ function updateIO(e) {
                 var module = Math.floor((index - (interface * 32)) / 8);
                 var channel = index % 8;
                 $("#relay" + a + "Status").html(t.Interfaces[interface][module][channel].state ? "TURN OFF" : "TURN ON");
+                $("#pulse" + a + "Start").html(t.Interfaces[interface][module][channel].pulseActive ? "STOP" : "START");
+                $("#timer" + a + "Start").html(t.Interfaces[interface][module][channel].timerActive ? "STOP" : "START");
                 $("#Name" + a).html(t.Interfaces[interface][module][channel].name);
             }
         }
@@ -279,6 +340,13 @@ function updateBoardInfo(e) {
     $("#localtime").text(boardInfo.LOCAL_TIME);
 }
 
+function openSheduler(e, f) {
+    id = f.id;
+    id = id.replace('shedule', '');
+    id = id.replace('Start', '');
+    location.href = "shedule.html?relay=" + id;
+}
+
 function enableButtons() {
     var e;
     for (e = 1; e <= totalChannels; e++) {
@@ -294,6 +362,10 @@ function enableButtons() {
         $("#timer" + e + "Start").click(function () {
             sendTimer(e, this);
         });
+        $("#shedule" + e + "Start").click(function () {
+            openSheduler(e, this);
+        });
+
     }
 }
 var json, notif_select = new Object;

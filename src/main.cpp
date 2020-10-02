@@ -26,8 +26,8 @@ AsyncUDP udp;
 // Define NTP Client to get time
 WiFiUDP ntpUDP;
 
-SemaphoreHandle_t g_Mutex;
-SemaphoreHandle_t g_MutexChannel;
+SemaphoreHandle_t g_Mutex = NULL;
+SemaphoreHandle_t g_MutexChannel = NULL;
 SemaphoreHandle_t g_MutexMail;
 DNSServer dnsServer;
 int8_t timeZone = 1;
@@ -45,9 +45,6 @@ static void checkSheduler(void *pvParameter)
 {
   delay(500); // wait to load all channels
   //uint8_t *id = (uint8_t *)pvParameter;
-  VM208TimeChannel *c;
-  Alarm *alarmOn;
-  Alarm *alarmOff;
   uint8_t day;
   time_t t;
   struct tm *current_time;
@@ -58,37 +55,13 @@ static void checkSheduler(void *pvParameter)
     day = current_time->tm_wday;
     day = day == 0 ? 6 : (day - 1);
 
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 268; i++)
     {
-      c = (VM208TimeChannel*) getRelayChannelById(i + 1);
-      if (c->isSheduleActive())
-      {
-        alarmOn = c->getAlarm(day * 2);
-        alarmOff = c->getAlarm((day * 2) + 1);
-        if (alarmOn->isEnabled())
-        {
-          if (current_time->tm_hour == alarmOn->getHour() && current_time->tm_min == alarmOn->getMinute())
-          {
-            if (c->isOn() != alarmOn->getState())
-            {
-              //ESP_LOGI(TAG, "Alarm triggered");
-              alarmOn->getState() ? c->turnOn() : c->turnOff();
-            }
-          }
-        }
-        if (alarmOff->isEnabled())
-        {
-          if (current_time->tm_hour == alarmOff->getHour() && current_time->tm_min == alarmOff->getMinute())
-          {
-            if (c->isOn() != alarmOff->getState())
-            {
-              //ESP_LOGI(TAG, "Alarm triggered");
-              alarmOff->getState() ? c->turnOn() : c->turnOff();
-            }
-          }
-        }
-      }
+      ChannelShedule *cs = config.getShedule(i);
+      if (cs != nullptr)
+        cs->Update(current_time);
     }
+
     delay(500);
   }
   vTaskDelete(NULL);
@@ -97,12 +70,12 @@ static void checkSheduler(void *pvParameter)
 static void shedulerStatus(void *pvParameter)
 {
   delay(500); // wait to load all channels
-  VM208TimeChannel *c;
+  /*VM208TimeChannel *c;
   while (true)
   {
     for (int i = 0; i < 12; i++)
     {
-      c = (VM208TimeChannel*) getRelayChannelById(i + 1);
+      c = (VM208TimeChannel *)getRelayChannelById(i + 1);
       if (c->isSheduleActive())
       {
         c->isOn() ? c->turnLedOn() : c->turnLedOff();
@@ -111,14 +84,14 @@ static void shedulerStatus(void *pvParameter)
     delay(1800);
     for (int i = 0; i < 12; i++)
     {
-      c = (VM208TimeChannel*) getRelayChannelById(i + 1);
+      c = (VM208TimeChannel *)getRelayChannelById(i + 1);
       if (c->isSheduleActive())
       {
         c->toggleLed();
       }
     }
     delay(200);
-  }
+  }*/
   vTaskDelete(NULL);
 }
 
@@ -148,7 +121,6 @@ void setup()
   s_wifi_event_group = xEventGroupCreate();
 
   //ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
-  
 
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
@@ -167,10 +139,10 @@ void setup()
   }
   else
   {
-  Serial.printf("%s", config.getSSID());
-  Serial.printf("%s", config.getWifiPassword());
-  xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
-  WiFi.onEvent(WiFiEvent);
+    Serial.printf("%s", config.getSSID());
+    Serial.printf("%s", config.getWifiPassword());
+    xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    WiFi.onEvent(WiFiEvent);
   }
   if (!startEth()) //No cable inserted
   {

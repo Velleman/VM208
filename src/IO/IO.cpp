@@ -9,9 +9,17 @@ Copyright 2019 Velleman nv
 #include "esp_log.h"
 #include "mail.hpp"
 #include "ETH.h"
+#include "PulseAndTimer.hpp"
+#include "global.hpp"
 
 xQueueHandle int_evt_queue = NULL;
 unsigned long previousTime = 0;
+QueueHandle_t timerQueue;
+QueueHandle_t timerStopQueue;
+QueueHandle_t timerStatusQueue;
+QueueHandle_t pulseQueue;
+QueueHandle_t pulseStopQueue;
+QueueHandle_t pulseStatusQueue;
 
 static void gpio_isr_handler(void *arg)
 {
@@ -26,7 +34,8 @@ static void gpio_isr_handler(void *arg)
 void Init_IO(bool setState)
 {
 
-  Wire.begin(33, 32, 25000);
+  Wire.begin(33, 32,10000);
+  Wire.setTimeOut(1000);
   mm.DetectModules();
   //vm208.initialize();
   //vm208ex.initialize();
@@ -55,13 +64,13 @@ void Init_IO(bool setState)
   gpio_set_intr_type(GPIO_NUM_35, GPIO_INTR_NEGEDGE);
 
   //create a queue to handle gpio event from isr
-  int_evt_queue = xQueueCreate(2, sizeof(uint32_t));
+  int_evt_queue = xQueueCreate(10, sizeof(uint32_t));
   //install gpio isr service
   gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
-  //gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
+  gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
 
-  if (mm.getAmount()) //if a module is detected the second interrupt pin is used.
-    //gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
+  if (mm.getAmount() > 4) //if a module is detected the second interrupt pin is used.
+    gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
 
   Serial.println("Found modules: ");
   Serial.println(mm.getAmount());
@@ -89,6 +98,14 @@ void Init_IO(bool setState)
   {
       mm.getModuleFromInterface(0,i)->turnAllChannelsOn();
   }*/
+  timerQueue = xQueueCreate(10, sizeof(TimeParameters_t));
+  timerStopQueue = xQueueCreate(10, sizeof(long));
+  pulseStopQueue = xQueueCreate(10, sizeof(long));
+  pulseQueue = xQueueCreate(10, sizeof(TimeParameters_t));
+  xTaskCreate(timerTask, "timer", 4096, NULL, (tskIDLE_PRIORITY + 3), NULL);
+  xTaskCreate(pulseTask, "pulse", 4096, NULL, (tskIDLE_PRIORITY + 5), NULL);
+  pulseStatusQueue = xQueueCreate(1,sizeof(pulseStatus_t));
+  timerStatusQueue = xQueueCreate(1,sizeof(timerStatus_t));
 }
 
 Input **readInputs(Input **inputs)

@@ -16,7 +16,7 @@
 #include "mail.hpp"
 #include "network_VM208.hpp"
 #include <DNSServer.h>
-
+#include "PulseAndTimer.hpp"
 const char *TAG = "SERVER";
 
 // SKETCH BEGIN
@@ -89,7 +89,11 @@ void startServer()
     state = p->value();
 
     RelayChannel *channel = mm.getChannel(relay.toInt());
-    state.toInt() ? channel->turnOn() : channel->turnOff();
+    if (xSemaphoreTake(g_Mutex, 100 / portTICK_PERIOD_MS))
+    {
+      state.toInt() ? channel->turnOn() : channel->turnOff();
+      xSemaphoreGive(g_Mutex);
+    }
 
     sendIOState(request);
   });
@@ -121,11 +125,34 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     time = p->value();
-    //create struct and pass it to a Task as parameter
-    /*VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
-    c->activatePulse(time.toInt());
-    xTaskCreate(pulseTask, "pulse", 4092, (void *)relay, (tskIDLE_PRIORITY + 2), &pulseTaskHandle);*/
-    sendIOState(request);
+
+    TimeParameters_t params;
+    params.id = relay.toInt();
+    params.time = time.toInt();
+    //send params to pulse queue
+    xQueueSend(pulseQueue, &params, 0);
+    request->send(200);
+  });
+
+  server.on("/stoppulse", HTTP_POST, [](AsyncWebServerRequest *request) {
+    long relay;
+    AsyncWebParameter *p = request->getParam(0);
+    relay = p->value().toInt();
+    //send params to pulse queue
+
+    xQueueSend(pulseStopQueue, &relay, 0);
+    request->send(200);
+  });
+
+  server.on("/stoptimer", HTTP_POST, [](AsyncWebServerRequest *request) {
+    long relay;
+    AsyncWebParameter *p = request->getParam(0);
+    relay = p->value().toInt();
+
+    //send params to pulse queue
+    xQueueSend(timerStopQueue, &relay, 0);
+
+    request->send(200);
   });
 
   server.on("/timer", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -135,9 +162,64 @@ void startServer()
     relay = p->value();
     p = request->getParam(1);
     time = p->value();
-    /*VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
-    c->activateTimer(time.toInt());*/
-    sendIOState(request);
+    TimeParameters_t params;
+    params.id = relay.toInt();
+    params.time = time.toInt();
+    // send params to timer queue
+    xQueueSend(timerQueue, &params, 0);
+
+    request->send(200);
+  });
+
+  server.on("/timer", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String relay;
+    String time;
+    AsyncWebParameter *p = request->getParam(0);
+    relay = p->value();
+    p = request->getParam(1);
+    time = p->value();
+    TimeParameters_t params;
+    params.id = relay.toInt();
+    params.time = time.toInt();
+    // send params to timer queue
+    xQueueSend(timerQueue, &params, 0);
+
+    request->send(200);
+  });
+  server.on("/getalarms", HTTP_POST, [](AsyncWebServerRequest *request) {
+    //Send the alarms
+    request->send(200);
+  });
+
+  server.on("/setalarm", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->params() == 6)
+    {
+      Serial.printf("alarm save\n");
+      uint8_t state = request->getParam(0)->value().toInt();
+      uint8_t relais = request->getParam(1)->value().toInt();
+      uint8_t day = request->getParam(2)->value().toInt();
+      uint8_t hour = request->getParam(3)->value().toInt();
+      uint8_t minute = request->getParam(4)->value().toInt();
+      bool enabled = request->getParam(2)->value().toInt();
+      tm dateTime;
+      dateTime.tm_wday = day;
+      dateTime.tm_hour = hour;
+      dateTime.tm_min = minute;
+      /*VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relais);
+
+      Alarm *a = c->getAlarm((day * 2) + state);
+
+      a->setWeekday(day); //change to stupid english week system
+      a->setHour(hour);
+      a->setMinute(minute);
+      a->setEnabled(enabled);
+      config.save();*/
+      request->send(200);
+    }
+    else
+    {
+      request->send(400);
+    }
   });
 
   server.on("/email_settings", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -261,37 +343,6 @@ void startServer()
     }
   });
 
-  server.on("/alarm", HTTP_POST, [](AsyncWebServerRequest *request) {
-    if (request->params() == 6)
-    {
-      Serial.printf("alarm save\n");
-      uint8_t state = request->getParam(0)->value().toInt();
-      uint8_t relais = request->getParam(1)->value().toInt();
-      uint8_t day = request->getParam(2)->value().toInt();
-      uint8_t hour = request->getParam(3)->value().toInt();
-      uint8_t minute = request->getParam(4)->value().toInt();
-      bool enabled = request->getParam(2)->value().toInt();
-      tm dateTime;
-      dateTime.tm_wday = day;
-      dateTime.tm_hour = hour;
-      dateTime.tm_min = minute;
-      /*VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relais);
-
-      Alarm *a = c->getAlarm((day * 2) + state);
-
-      a->setWeekday(day); //change to stupid english week system
-      a->setHour(hour);
-      a->setMinute(minute);
-      a->setEnabled(enabled);
-      config.save();*/
-      request->send(200);
-    }
-    else
-    {
-      request->send(400);
-    }
-  });
-
   server.on("/names", HTTP_POST, [](AsyncWebServerRequest *request) {
     if (request->params() == 8)
     {
@@ -300,13 +351,13 @@ void startServer()
       auto module = request->getParam(1)->value().toInt();
       auto channel = request->getParam(2)->value().toInt();
       auto name = request->getParam(3)->value();
-      Serial.printf("Interface is %d\r\n",interface);
-      Serial.printf("module is %d\r\n",module);
-      Serial.printf("Channel is %d\r\n",channel);
-      Serial.printf("Name is %s\r\n",name);
+      Serial.printf("Interface is %d\r\n", interface);
+      Serial.printf("module is %d\r\n", module);
+      Serial.printf("Channel is %d\r\n", channel);
+      Serial.printf("Name is %s\r\n", name);
       if (interface)
       {
-        auto m = (VM208EX *)mm.getModuleFromInterface(interface-1, module);
+        auto m = (VM208EX *)mm.getModuleFromInterface(interface - 1, module);
         m->getChannel(channel)->setName(name);
         Serial.println(m->getChannel(channel)->getName());
       }
@@ -329,7 +380,7 @@ void startServer()
       config.setMosfet2Name(request->getParam(5)->value());
       config.setInputName(request->getParam(6)->value());
       config.setBoardName(request->getParam(7)->value());
-      config.setName(mm.getChannelId(interface,module,channel),name);
+      config.setName(mm.getChannelId(interface, module, channel), name);
       config.saveNames();
       request->send(200, "text/plain", "OK");
     }
@@ -379,11 +430,7 @@ void startServer()
         minute = time.substring(3, 5);                                          // split minute
         param++;                                                                //increase param;
         enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-
-        a = c->getAlarm(alarm);
-        a->setHour(hour.toInt());
-        a->setMinute(minute.toInt());
-        a->setEnabled(enabled);
+        config.setShedule(relay.toInt(), alarm, hour.toInt(), minute.toInt(), state, enabled);
         state = !state;
         alarm++;
         //Turn Off Alarm
@@ -393,42 +440,11 @@ void startServer()
         minute = time.substring(3, 5);
         param++;
         enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-
-        a = c->getAlarm(alarm);
-        a->setHour(hour.toInt());
-        a->setMinute(minute.toInt());
-        a->setEnabled(enabled);
+        config.setShedule(relay.toInt(), alarm, hour.toInt(), minute.toInt(), state, enabled);
         state = !state;
         alarm++;
         param++;
       }
-      //Ugly ass bitch code....
-      //Turn On Alarm
-      time = request->getParam(param)->value();                               //get time
-      hour = time.substring(0, 2);                                            //split hour
-      minute = time.substring(3, 5);                                          // split minute
-      param++;                                                                //increase param;
-      enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-
-      a = c->getAlarm(alarm);
-      a->setHour(hour.toInt());
-      a->setMinute(minute.toInt());
-      a->setEnabled(enabled);
-      state = !state;
-      alarm++;
-      //Turn Off Alarm
-      param++;
-      time = request->getParam(param)->value();
-      hour = time.substring(0, 2);
-      minute = time.substring(3, 5);
-      param++;
-      enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-
-      a = c->getAlarm(alarm);
-      a->setHour(hour.toInt());
-      a->setMinute(minute.toInt());
-      a->setEnabled(enabled);
-      state = !state;
 
       config.saveAlarms();
       sendSettings(request);
@@ -628,7 +644,10 @@ void sendBoardInfo(AsyncWebServerRequest *request)
 
 void sendIOState(AsyncWebServerRequest *request)
 {
-
+  static pulseStatus_t pulseStatus;
+  static pulseStatus_t timerStatus;
+  xQueueReceive(pulseStatusQueue, &pulseStatus, 10 / portTICK_PERIOD_MS);
+  xQueueReceive(timerStatusQueue, &timerStatus, 10 / portTICK_PERIOD_MS);
   AsyncResponseStream *response = request->beginResponseStream("application/json");
   //const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
   DynamicJsonBuffer jsonBuffer;
@@ -643,10 +662,12 @@ void sendIOState(AsyncWebServerRequest *request)
   JsonArray &channels = interface.createNestedArray("VM208");
   for (int j = 0; j < 4; j++)
   {
-    VM208Channel* ch = module->getChannel(j);
+    VM208Channel *ch = module->getChannel(j);
     JsonObject &channel = channels.createNestedObject();
     channel.set("name", ch->getName());
     channel.set("state", ch->isOn());
+    channel.set("pulseActive", pulseStatus.status[j]);
+    channel.set("timerActive", timerStatus.status[j]);
   }
   if (mm.getAmount() > 1)
   {
@@ -659,6 +680,8 @@ void sendIOState(AsyncWebServerRequest *request)
         JsonObject &channel = channels.createNestedObject();
         channel.set("name", ch.getName());
         channel.set("state", ch.isOn());
+        channel.set("pulseActive", pulseStatus.status[4 + j]);
+        channel.set("timerActive", timerStatus.status[4 + j]);
       }
     }
     else
@@ -676,10 +699,12 @@ void sendIOState(AsyncWebServerRequest *request)
             VM208EX *module = (VM208EX *)mm.getModuleFromInterface(i, x);
             for (int j = 0; j < 8; j++) //loop over all channels of a module
             {
-              VM208EXChannel *ch = module->getChannel(j);
+              VM208EXChannel *ch = module->getChannel(j, false);
               JsonObject &channel = moduleObject.createNestedObject();
               channel["name"] = ch->getName();
               channel["state"] = ch->isOn();
+              channel.set("pulseActive", pulseStatus.status[12 + (i * 32) + (x * 8) + j]);
+              channel.set("timerActive", timerStatus.status[12 + (i * 32) + (x * 8) + j]);
             }
           }
         }

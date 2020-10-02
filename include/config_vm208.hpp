@@ -9,6 +9,7 @@
 #include "relay.hpp"
 #include "mosfet.hpp"
 //#include "VM208TimerChannel.hpp"
+#include "ChannelShedule.hpp"
 class Configuration
 {
 private:
@@ -65,6 +66,7 @@ private:
   bool _notif_ext_connected;
   bool _notif_manual_input;
   String _names[268];
+  ChannelShedule* _cs[268];
 public:
   Configuration();
   static const char *SSID_KEY;
@@ -241,6 +243,8 @@ public:
   void saveNames();
   void setName(uint16_t channelID,String name);
 
+  void setShedule(uint16_t channel,uint8_t dayOfWeek,uint8_t hour,uint8_t min,bool onOff,bool enbale);
+  ChannelShedule* getShedule(uint16_t index);
   ~Configuration();
 };
 

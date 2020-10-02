@@ -30,12 +30,14 @@ TCA6424A_TS::TCA6424A_TS(uint8_t address) : TCA6424A(address)
 bool TCA6424A_TS::ts_testConnection()
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    vTaskSuspendAll();
     bool isConnected = false;
     if(!_isUpdating)
     {
     int8_t result = I2Cdev::readBytes(devAddr, TCA6424A_RA_INPUT0, 3, buffer);
     isConnected = (bool)(result == 3);
     }
+    xTaskResumeAll();
     xSemaphoreGive(g_Mutex);
     return isConnected;
 }
@@ -43,12 +45,21 @@ bool TCA6424A_TS::ts_testConnection()
 bool TCA6424A_TS::ts_readPin(uint16_t pin)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    vTaskSuspendAll();
     bool result = false;
     if(!_isUpdating)
     {
-        I2Cdev::readBit(devAddr, TCA6424A_RA_INPUT0 + (pin / 8), pin % 8, buffer);
-        result = buffer[0];
+        Wire.beginTransmission(devAddr);
+        Wire.write(TCA6424A_RA_INPUT0 + (pin / 8));
+        Wire.endTransmission();
+        Wire.requestFrom(devAddr,1);
+        buffer[0] = 0;
+        buffer[0] = Wire.read();
+        buffer[0] = buffer[0] & (1 << pin%8);
+        //I2Cdev::readBit(devAddr, TCA6424A_RA_INPUT0 + (pin / 8), pin % 8, buffer);
+        result = (bool)buffer[0];
     }
+    xTaskResumeAll();
     xSemaphoreGive(g_Mutex);
     return result;
 }
@@ -56,6 +67,7 @@ bool TCA6424A_TS::ts_readPin(uint16_t pin)
 void TCA6424A_TS::ts_setPinDirection(uint16_t pin, bool direction)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    vTaskSuspendAll();
     uint8_t pinNumber = pin%8;
     uint8_t reg = TCA6424A_RA_CONFIG0 + (pin / 8);
     if(direction)
@@ -66,14 +78,20 @@ void TCA6424A_TS::ts_setPinDirection(uint16_t pin, bool direction)
     }
     if(!_isUpdating)
     {
-        I2Cdev::writeByte(devAddr, reg, registers[reg]);
+        //I2Cdev::writeByte(devAddr, reg, registers[reg]);
+        Wire.beginTransmission(devAddr);
+        Wire.write(reg);
+        Wire.write(registers[reg]);
+        Wire.endTransmission();
     }
+    xTaskResumeAll();
     xSemaphoreGive(g_Mutex);
 }
 
 void TCA6424A_TS::ts_writePin(uint16_t pin, bool polarity)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    vTaskSuspendAll();
     uint8_t pinNumber = pin%8;
     uint8_t reg = TCA6424A_RA_OUTPUT0 + (pin / 8);
     if(polarity)
@@ -84,18 +102,29 @@ void TCA6424A_TS::ts_writePin(uint16_t pin, bool polarity)
     }
     if(!_isUpdating)
     {
-        I2Cdev::writeByte(devAddr, TCA6424A_RA_OUTPUT0 + (pin / 8), registers[reg]);
+        //I2Cdev::writeByte(devAddr, TCA6424A_RA_OUTPUT0 + (pin / 8), registers[reg]);
+        Wire.beginTransmission(devAddr);
+        Wire.write(TCA6424A_RA_OUTPUT0 + (pin / 8));
+        Wire.write(registers[reg]);
+        Wire.endTransmission();
     }    
+    xTaskResumeAll();
     xSemaphoreGive(g_Mutex);
 }
 
 void TCA6424A_TS::ts_writeByte(uint8_t reg, uint8_t data)
 {
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    vTaskSuspendAll();
     if(!_isUpdating)
     {
-        I2Cdev::writeByte(devAddr, reg, data);
+        //I2Cdev::writeByte(devAddr, reg, data);
+        Wire.beginTransmission(devAddr);
+        Wire.write(reg);
+        Wire.write(data);
+        Wire.endTransmission();
     }
+    xTaskResumeAll();
     xSemaphoreGive(g_Mutex);
 }
 
@@ -103,10 +132,17 @@ uint8_t TCA6424A_TS::ts_readBank(uint8_t reg)
 {
     
     xSemaphoreTake(g_Mutex, portMAX_DELAY);
+    vTaskSuspendAll();
     if(!_isUpdating)
     {
-        I2Cdev::readByte(devAddr,reg, buffer);
+        //I2Cdev::readByte(devAddr,reg, buffer);
+        Wire.beginTransmission(devAddr);
+        Wire.write(reg);
+        Wire.endTransmission();
+        Wire.requestFrom(devAddr,1);
+        buffer[0] = Wire.read();
     }
+    xTaskResumeAll();
     xSemaphoreGive(g_Mutex);
     return buffer[0];
     

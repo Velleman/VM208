@@ -153,7 +153,7 @@ void Configuration::load()
             _email_user = root[EMAIL_USER_KEY].as<String>();
             _email_pw = root[EMAIL_PW_KEY].as<String>();
             _email_recipient = root[EMAIL_RECEIVER_KEY].as<String>();
-         _email_subject = root[EMAIL_TITLE_KEY].as<String>();
+            _email_subject = root[EMAIL_TITLE_KEY].as<String>();
             _notif_boot = root[NOTIF_BOOT_KEY].as<bool>();
             _notif_ext_connected = root[NOTIF_EXT_CONNECT_KEY].as<bool>();
             _notif_input_change = root[NOTIF_INPUT_CHANGE_KEY].as<bool>();
@@ -180,10 +180,10 @@ void Configuration::load()
         }*/
         DynamicJsonBuffer jsonBuffer;
         JsonObject &root = jsonBuffer.parseObject(file);
-        JsonArray& names = root["names"];
+        JsonArray &names = root["names"];
         if (root.containsKey("names"))
         {
-            for(int i =0;i<268;i++)
+            for (int i = 0; i < 268; i++)
             {
                 _names[i] = names[i].as<String>();
             }
@@ -199,6 +199,44 @@ void Configuration::load()
     {
         ESP_LOGI(TAG, "file doesnt exist");
     }
+    /*if (SPIFFS.exists(alarmPath))
+    {
+
+        ESP_LOGI(TAG, "file exist");
+        File file = loadFile(alarmPath);
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject &root = jsonBuffer.parseObject(file);
+        JsonArray &channels = root["Channels"];
+        for (uint16_t i=0; i < 268; i++)
+        {
+            _cs[i] = new ChannelShedule(mm.getChannel(i));
+            JsonArray &Channels_i_alarms = channels[i]["alarms"];
+            for (uint8_t j; j < 14; j++)
+            {
+                JsonObject &Channels_0_alarms_i = Channels_i_alarms[i];
+                uint dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY];
+                uint hour = Channels_0_alarms_i[ALARM_HOUR_KEY];
+                uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
+                bool state = Channels_0_alarms_i[ALARM_STATE_KEY];
+                bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY];
+                _cs[i]->setShedule(dow,hour,minute,state,enabled);
+            }
+        }
+        file.close();
+        jsonBuffer.clear();
+    }*/
+    //SPIFFS.end();
+}
+
+ChannelShedule* Configuration::getShedule(uint16_t index)
+{
+    if(index<268)
+        return _cs[index];
+    else
+    {
+        return nullptr;
+    }
+    
 }
 
 String Configuration::getNameFromChannel(uint16_t index)
@@ -210,9 +248,9 @@ void Configuration::saveNames()
 {
     DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
-    JsonArray& names = root.createNestedArray("names");
-    
-    for(int i = 0;i<268;i++)
+    JsonArray &names = root.createNestedArray("names");
+
+    for (int i = 0; i < 268; i++)
     {
         names.add(_names[i]);
     }
@@ -221,13 +259,13 @@ void Configuration::saveNames()
     {
         Serial.println("Error writing to file");
     }
-    file.close();    
+    file.close();
     jsonBuffer.clear();
 }
 
-void Configuration::setName(uint16_t channelId,String name)
+void Configuration::setName(uint16_t channelId, String name)
 {
-    _names[channelId-1] = name;
+    _names[channelId - 1] = name;
 }
 
 void Configuration::save()
@@ -348,7 +386,7 @@ void Configuration::writeAlarms()
     Alarm *a;
     for (int i = 0; i < 12; i++)
     {
-        c = (VM208TimeChannel*) getRelayChannelById(i + 1);
+        /*c = (VM208TimeChannel *)getRelayChannelById(i + 1);
         JsonObject &Channel = Channels.createNestedObject();
         Channel[CHANNEL_NAME_KEY] = c->getName();
 
@@ -362,7 +400,7 @@ void Configuration::writeAlarms()
             Channels_alarms_settings[ALARM_MINUTE_KEY] = a->getMinute();
             Channels_alarms_settings[ALARM_STATE_KEY] = a->getState();
             Channels_alarms_settings[ALARM_ENABLED_KEY] = a->isEnabled();
-        }
+        }*/
     }
     //Write json file
     File file = SPIFFS.open(alarmPath, "w");
@@ -433,7 +471,7 @@ Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
         jsonBuffer.clear();
         return c;
     }*/
-    /*return Channel("", nullptr, nullptr, 0);
+/*return Channel("", nullptr, nullptr, 0);
 }*/
 
 File Configuration::loadFile(const char *path)
@@ -651,7 +689,7 @@ String Configuration::getEmailSubject()
 }
 void Configuration::setEmailSubject(String title)
 {
- _email_subject = title;
+    _email_subject = title;
 }
 
 void Configuration::setMosfet1Name(String name)
@@ -722,6 +760,11 @@ void Configuration::setNotification_manual_input(bool enable)
 bool Configuration::getNotification_manual_input()
 {
     return _notif_manual_input;
+}
+
+void Configuration::setShedule(uint16_t channel, uint8_t dayOfWeek, uint8_t hour, uint8_t min, bool onOff, bool enable)
+{
+    _cs[channel]->setShedule(dayOfWeek,hour,min,onOff,enable);
 }
 
 const char *Configuration::SSID_KEY = "SSID";

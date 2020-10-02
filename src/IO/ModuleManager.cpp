@@ -17,7 +17,8 @@ void ModuleManager::DetectModules()
         _modules.push_back(_baseModule);
         for (int i = 0; i < 4; i++)
         {
-            _baseModule->getChannel(i)->setName(config.getNameFromChannel(_channelIndex));
+            auto name = config.getNameFromChannel(_channelIndex);
+            _baseModule->getChannel(i)->setName(name);
             Serial.println(config.getNameFromChannel(_channelIndex));
             _channelIndex++;
         }
@@ -34,7 +35,8 @@ void ModuleManager::DetectModules()
                 interface[interface.size() - 1]->initialize();
                 for (int i = 0; i < 8; i++)
                 {
-                    module->getChannel(i)->setName(config.getNameFromChannel(_channelIndex));
+                    auto name = config.getNameFromChannel(_channelIndex);
+                    module->getChannel(i)->setName(name);
                     _channelIndex++;
                 }
             }
@@ -49,7 +51,8 @@ void ModuleManager::DetectModules()
         uint _channelIndex = 0;
         for (int i = 0; i < 4; i++)
         {
-            _baseModule->getChannel(i)->setName(config.getNameFromChannel(_channelIndex));
+            auto name = config.getNameFromChannel(_channelIndex);
+            _baseModule->getChannel(i)->setName(name);
             Serial.println(config.getNameFromChannel(_channelIndex));
             _channelIndex++;
         }
@@ -72,7 +75,8 @@ void ModuleManager::DetectModules()
             _extensionModule->turnAllChannelsOff();
             for (int i = 0; i < 8; i++)
             {
-                _extensionModule->getChannel(i)->setName(config.getNameFromChannel(_channelIndex));
+                auto name = config.getNameFromChannel(_channelIndex);
+                _extensionModule->getChannel(i)->setName(name);
                 _channelIndex++;
             }
         }
@@ -112,7 +116,8 @@ void ModuleManager::DetectModules()
                         interface[interface.size() - 1]->initialize();
                         for (int i = 0; i < 8; i++)
                         {
-                            module->getChannel(i)->setName(config.getNameFromChannel(_channelIndex));
+                            auto name =config.getNameFromChannel(_channelIndex);
+                            module->getChannel(i)->setName(name);
                             _channelIndex++;
                         }
                     }
@@ -191,7 +196,7 @@ RelayChannel *ModuleManager::getChannel(int channelId)
 
     if (channelId >= 1 && channelId <= 4)
     {
-        Serial.printf("Channel ID %d is interface %d Module %d Channel %d\r\n", channelId, 0, 0, channelId);
+        Serial.printf("Channel ID %d is baseModule Channel %d\r\n", channelId, channelId);
         return _baseModule->getChannel(channelId - 1);
     }
     else
