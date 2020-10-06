@@ -12,7 +12,24 @@ function requestSettings() {
                 console.log(t)
             }
         }
-    })
+    });
+
+    e = $.ajax({
+        type: "GET",
+        url: "/getalarms",
+        dataType: "text",
+        data: {
+            channel:1
+        },
+        success: function(e) {
+            try {
+                json = $.parseJSON(e);
+                console.log(json);
+            } catch (t) {
+                console.log(t)
+            }
+        }
+    });
 }
 
 function update_content() {

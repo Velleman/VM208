@@ -45,7 +45,7 @@ void timerTask(void *arg)
         }
         if (xQueueReceive(timerStopQueue, &relay, 0))
         {
-            timers[relay].enabled = false;
+            timers[relay -1].enabled = false;
             for (int i = 0; i < 268; i++)
             {
                 status.status[i] = timers[i].enabled;
@@ -59,7 +59,7 @@ void timerTask(void *arg)
                 if (timers[i].enabled && timers[i].endTime < millis())
                 {
                     xSemaphoreTake(g_Mutex, portMAX_DELAY);
-                    mm.getChannel(i+1)->toggle();
+                    mm.getChannel(i + 1)->toggle();
                     xSemaphoreGive(g_Mutex);
                     timers[i].enabled = false;
                     for (int i = 0; i < 268; i++)
@@ -129,7 +129,7 @@ void pulseTask(void *arg)
                 if (timers[i].enabled && timers[i].endTime < millis())
                 {
                     xSemaphoreTake(g_Mutex, portMAX_DELAY);
-                    mm.getChannel(i+1)->toggle();
+                    mm.getChannel(i + 1)->toggle();
                     xSemaphoreGive(g_Mutex);
                     timers[i].enabled = false;
                     for (int i = 0; i < 268; i++)

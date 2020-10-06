@@ -90,6 +90,58 @@ String Configuration::getUserPw() const
     return _userPW;
 }
 
+void Configuration::loadAlarms()
+{
+    if (true)
+    {
+
+        ESP_LOGI(TAG, "file exist");
+
+        //StaticJsonBuffer<300000> jsonBuffer;
+
+        for (uint16_t i = 0; i < 268; i++)
+        {
+            String path = alarmPath;
+            path += i;
+            path += ".json";
+            File file = loadFile(path.c_str());
+            DynamicJsonBuffer jsonBuffer;
+            JsonObject &root = jsonBuffer.parseObject(file);
+            JsonArray &alarms = root["alarms"];
+
+            auto channel = mm.getChannel(i + 1);
+            if (channel != nullptr)
+            {
+                Serial.print("Channels Size: ");
+                Serial.println(alarms.size());
+                _cs[i] = new ChannelShedule(channel);
+                for (uint8_t j = 0; j < 14; j++)
+                {
+                    JsonObject &Channels_0_alarms_i = alarms[j];
+                    Serial.print("Alarm object size is: ");
+                    Serial.println(Channels_0_alarms_i.size());
+                    uint dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY];
+                    uint hour = Channels_0_alarms_i[ALARM_HOUR_KEY];
+                    uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
+                    bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY];
+                    Serial.print("DOW IS: ");
+                    Serial.println(dow);
+                    Serial.print("HOUR IS: ");
+                    Serial.println(hour);
+                    Serial.print("MIN IS: ");
+                    Serial.println(minute);
+                    Serial.print("ONOFF IS: ");
+                    Serial.println(j < 7);
+                    bool onOff = (j < 7);
+                    _cs[i]->setShedule(dow, hour, minute, onOff, enabled);
+                }
+            }
+            file.close();
+            jsonBuffer.clear();
+        }
+    }
+}
+
 void Configuration::load()
 {
     if (SPIFFS.exists(configPath))
@@ -199,44 +251,18 @@ void Configuration::load()
     {
         ESP_LOGI(TAG, "file doesnt exist");
     }
-    /*if (SPIFFS.exists(alarmPath))
-    {
 
-        ESP_LOGI(TAG, "file exist");
-        File file = loadFile(alarmPath);
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject &root = jsonBuffer.parseObject(file);
-        JsonArray &channels = root["Channels"];
-        for (uint16_t i=0; i < 268; i++)
-        {
-            _cs[i] = new ChannelShedule(mm.getChannel(i));
-            JsonArray &Channels_i_alarms = channels[i]["alarms"];
-            for (uint8_t j; j < 14; j++)
-            {
-                JsonObject &Channels_0_alarms_i = Channels_i_alarms[i];
-                uint dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY];
-                uint hour = Channels_0_alarms_i[ALARM_HOUR_KEY];
-                uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
-                bool state = Channels_0_alarms_i[ALARM_STATE_KEY];
-                bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY];
-                _cs[i]->setShedule(dow,hour,minute,state,enabled);
-            }
-        }
-        file.close();
-        jsonBuffer.clear();
-    }*/
     //SPIFFS.end();
 }
 
-ChannelShedule* Configuration::getShedule(uint16_t index)
+ChannelShedule *Configuration::getShedule(uint16_t index)
 {
-    if(index<268)
+    if (index < 268)
         return _cs[index];
     else
     {
         return nullptr;
     }
-    
 }
 
 String Configuration::getNameFromChannel(uint16_t index)
@@ -764,7 +790,7 @@ bool Configuration::getNotification_manual_input()
 
 void Configuration::setShedule(uint16_t channel, uint8_t dayOfWeek, uint8_t hour, uint8_t min, bool onOff, bool enable)
 {
-    _cs[channel]->setShedule(dayOfWeek,hour,min,onOff,enable);
+    _cs[channel]->setShedule(dayOfWeek, hour, min, onOff, enable);
 }
 
 const char *Configuration::SSID_KEY = "SSID";

@@ -192,8 +192,8 @@ void setup()
     MDNS.addService("http", "tcp", 80);
   }
   //}
-  //xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
-  //xTaskCreate(shedulerStatus, "ShedulerStatus", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  
   startServer();
   if (WiFi.getMode() != WIFI_MODE_AP)
     sendBootMail();

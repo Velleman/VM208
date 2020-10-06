@@ -39,7 +39,7 @@ private:
   long _timezoneSeconds;
   int _DSTseconds;
   const char *configPath = "/config.json";
-  const char *alarmPath = "/alarms.json";
+  const char *alarmPath = "/alarms/";
   const char *emailPath = "/email.json";
   const char *namesPath = "/names.json";
   void writeConfig();
@@ -236,6 +236,7 @@ public:
   void setDST(int seconds);
   int getDST();
   void load();
+  void loadAlarms();
   void save();
   void saveAlarms();
   void saveEmailSettings();

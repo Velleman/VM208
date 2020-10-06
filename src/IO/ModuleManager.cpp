@@ -207,12 +207,22 @@ RelayChannel *ModuleManager::getChannel(int channelId)
         }
         else
         {
+            if(channelId < 13)
+                return nullptr;
             int index = channelId - 13;
             uint interface = floor(index / 32);
             uint module = floor((index - (interface * 32)) / 8);
             uint channel = index % 8;
-            Serial.printf("Channel ID %d is interface %d Module %d Channel %d\r\n", channelId, interface, module, channel);
-            return ((VM208EX *)_modulesOnInterface[interface][module])->getChannel(channel);
+            //Serial.printf("Channel ID %d is interface %d Module %d Channel %d\r\n", channelId, interface, module, channel);
+            if(interface < _modulesOnInterface->size())
+            {
+                if(module < _modulesOnInterface[interface].size())
+                {
+                    return ((VM208EX *)_modulesOnInterface[interface][module])->getChannel(channel);
+                }
+                
+            }
+            return nullptr;
         }
     }
 }

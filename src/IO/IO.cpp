@@ -23,7 +23,7 @@ QueueHandle_t pulseStatusQueue;
 
 static void gpio_isr_handler(void *arg)
 {
-  if ((millis() - previousTime) >  200)
+  if ((millis() - previousTime) > 200)
   {
     previousTime = millis();
     uint32_t gpio_num = (uint32_t)arg;
@@ -34,12 +34,10 @@ static void gpio_isr_handler(void *arg)
 void Init_IO(bool setState)
 {
 
-  Wire.begin(33, 32,10000);
+  Wire.begin(33, 32, 10000);
   Wire.setTimeOut(1000);
   mm.DetectModules();
-  //vm208.initialize();
-  //vm208ex.initialize();
-
+  config.loadAlarms();
   /*gpio_pullup_en(GPIO_NUM_33);
   gpio_pullup_en(GPIO_NUM_32);
   gpio_pulldown_dis(GPIO_NUM_33);
@@ -74,38 +72,14 @@ void Init_IO(bool setState)
 
   Serial.println("Found modules: ");
   Serial.println(mm.getAmount());
-  /*for(int i = 0;i<4;i++)
-  {
-    
-  }
-  delay(1000);
-  for (int i = 0; i < mm.getAmountOfModulesOnInterface(0); i++)
-  {
-      mm.getModuleFromInterface(0,i)->turnAllChannelsOn();
-  }
-  delay(1000);
-  for (int i = 0; i < mm.getAmountOfModulesOnInterface(0); i++)
-  {
-      mm.getModuleFromInterface(0,i)->turnAllChannelsOff();
-  }
-  delay(1000);
-  for (int i = 0; i < mm.getAmountOfModulesOnInterface(0); i++)
-  {
-      mm.getModuleFromInterface(0,i)->turnAllChannelsOn();
-  }
-  delay(1000);
-  for (int i = 0; i < mm.getAmountOfModulesOnInterface(0); i++)
-  {
-      mm.getModuleFromInterface(0,i)->turnAllChannelsOn();
-  }*/
   timerQueue = xQueueCreate(10, sizeof(TimeParameters_t));
   timerStopQueue = xQueueCreate(10, sizeof(long));
   pulseStopQueue = xQueueCreate(10, sizeof(long));
   pulseQueue = xQueueCreate(10, sizeof(TimeParameters_t));
-  xTaskCreate(timerTask, "timer", 4096, NULL, (tskIDLE_PRIORITY + 3), NULL);
-  xTaskCreate(pulseTask, "pulse", 4096, NULL, (tskIDLE_PRIORITY + 5), NULL);
-  pulseStatusQueue = xQueueCreate(1,sizeof(pulseStatus_t));
-  timerStatusQueue = xQueueCreate(1,sizeof(timerStatus_t));
+  pulseStatusQueue = xQueueCreate(1, sizeof(pulseStatus_t));
+  timerStatusQueue = xQueueCreate(1, sizeof(timerStatus_t));
+  xTaskCreate(timerTask, "timer", 6144, NULL, (tskIDLE_PRIORITY + 3), NULL);
+  xTaskCreate(pulseTask, "pulse", 6144, NULL, (tskIDLE_PRIORITY + 5), NULL);
 }
 
 Input **readInputs(Input **inputs)
@@ -125,7 +99,7 @@ void IO_task(void *arg)
   while (1)
   {
 
-    if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY) )//|| digitalRead(INT_PIN) == LOW)
+    if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY)) //|| digitalRead(INT_PIN) == LOW)
     {
       Serial.println("Handle Interrupt");
       if (io_num == INT2_PIN) //read extension
@@ -155,7 +129,7 @@ void toggleChannel(VM208EX *ex, uint8_t channel)
 {
   if (channel)
   {
-    (*ex)[channel-1].toggle();
+    (*ex)[channel - 1].toggle();
     //(*(ex))[channel - 1].toggle();
   }
 }
