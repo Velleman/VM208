@@ -110,11 +110,11 @@ void startWifi()
         Serial.println("STA Failed to configure");
       }
     }
-    char ssid[15];
-    char pw[15];
+    char ssid[100];
+    char pw[100];
     WiFi.onEvent(WiFiGotIP, WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
-    config.getSSID().toCharArray(ssid, 15);
-    config.getWifiPassword().toCharArray(pw, 15);
+    config.getSSID().toCharArray(ssid, 100);
+    config.getWifiPassword().toCharArray(pw, 100);
     Serial.println("Connecting to:");
     Serial.println(config.getSSID());
     Serial.println(config.getWifiPassword());
