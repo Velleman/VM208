@@ -23,7 +23,7 @@ void ModuleManager::DetectModules()
             _channelIndex++;
         }
         _channelIndex +=8; //skip VM208EX
-        for (byte address = 0x70; address < 0x78; ++address)
+        for (byte address = 0x70; address < 0x72; ++address)
         {
 
             _interfaces[address - 0x70].setAddress(address);

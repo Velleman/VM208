@@ -44,6 +44,7 @@ private:
   const char *namesPath = "/names.json";
   void writeConfig();
   void writeAlarms();
+  
   void writeEmailSettings();
   File loadFile(const char *path);
   //DynamicJsonBuffer jsonBuffer;
@@ -109,6 +110,8 @@ public:
   static const char *NOTIF_INPUT_CHANGE_KEY;
   static const char *NOTIF_EXT_CONNECT_KEY;
   static const char *NOTIF_MANUAL_INPUT_KEY;
+
+  void writeAlarm(uint16_t id);
 
   //getter setter SSID
   String getVersion() const;

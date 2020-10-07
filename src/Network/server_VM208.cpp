@@ -207,20 +207,20 @@ void startServer()
     JsonObject &root = jsonBuffer.createObject();
     JsonObject &Channel = root.createNestedObject("Channel");
     JsonArray &channel_alarms = Channel.createNestedArray("alarms");
-    ChannelShedule *shedule = config.getShedule(id);
+    ChannelShedule *shedule = config.getShedule(id-1);
     for (int j = 0; j < 14; j++)
     {
       JsonObject &Channels_alarms_settings = channel_alarms.createNestedObject();
       auto dow = j >6 ? j-7 : j;
-      bool onOff = (j>6);
+      bool onOff = (j<7);
       Serial.print("Day of week is: ");
       Serial.println(dow);
       Serial.print("onOff is ");
       Serial.println(onOff);
-      Channels_alarms_settings["dow"] = shedule->getShedule(dow,onOff)->dateTime.tm_wday;
+      Channels_alarms_settings["dow"] = dow;//shedule->getShedule(dow,onOff)->dateTime.tm_wday;
       Channels_alarms_settings["hour"] = shedule->getShedule(dow,onOff)->dateTime.tm_hour;
       Channels_alarms_settings["minute"] = shedule->getShedule(dow,onOff)->dateTime.tm_min;
-      Channels_alarms_settings["onoff"] = shedule->getShedule(dow,onOff)->onOff;
+      Channels_alarms_settings["onoff"] = onOff;
       Channels_alarms_settings["enabled"] = shedule->getShedule(dow,onOff)->enable;
     }
     root.printTo(*response);
@@ -442,41 +442,44 @@ server.on("/shedule_set", HTTP_POST, [](AsyncWebServerRequest *request) {
   Serial.printf("shedule_set\n");
   if (request->params() == 29)
   {
-    String relay = request->getParam(0)->value();
+    uint16_t relay = request->getParam(0)->value().toInt() - 1;
     //VM208TimeChannel *c = (VM208TimeChannel *)getRelayChannelById(relay.toInt());
     bool state = true;
-    int param = 1;
     String time;
-    String hour;
-    String minute;
+    uint8_t hour;
+    uint8_t minute;
     bool enabled;
-    uint8_t alarm = 0;
+    uint8_t dow;
     //Alarm *a;
-    for (int i = 1; i < 7; i++)
-    { //do monday to saturday 1-6 Sunday is 0 handle out of loop
+    for (int i = 1; i < 29; i++)
+    { 
       //Turn On Alarm
-      time = request->getParam(param)->value();                               //get time
-      hour = time.substring(0, 2);                                            //split hour
-      minute = time.substring(3, 5);                                          // split minute
-      param++;                                                                //increase param;
-      enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-      config.setShedule(relay.toInt(), alarm, hour.toInt(), minute.toInt(), state, enabled);
+      time = request->getParam(i)->value();                               //get time
+      hour = time.substring(0, 2).toInt();                                            //split hour
+      minute = time.substring(3, 5).toInt();                                          // split minute
+      
+      i++;
+      enabled = (request->getParam(i)->value() == "true") ? true : false; //get alarm enabled
+      state = i < 15;
+      if(i > 14)
+      {
+        dow = (i/2)-7;
+      }else{
+        dow = i/2;
+      }
+      dow = dow == 7? 0:dow;
+      /*Serial.println("SHEDULE: ");
+      Serial.printf("Relay is: %d ",relay);
+      Serial.printf("DOW is: %d ",dow);
+      Serial.printf("HOUR is: %d ",hour);
+      Serial.printf("Minute is: %d ",minute);
+      Serial.printf("State is: %d ",state);
+      Serial.printf("Enabled is %d ",enabled);*/
+      config.setShedule(relay, dow, hour, minute, state, enabled);
       state = !state;
-      alarm++;
-      //Turn Off Alarm
-      param++;
-      time = request->getParam(param)->value();
-      hour = time.substring(0, 2);
-      minute = time.substring(3, 5);
-      param++;
-      enabled = (request->getParam(param)->value() == "true") ? true : false; //get alarm enabled
-      config.setShedule(relay.toInt(), alarm, hour.toInt(), minute.toInt(), state, enabled);
-      state = !state;
-      alarm++;
-      param++;
     }
 
-    config.saveAlarms();
+    config.writeAlarm(relay+1);
     sendSettings(request);
   }
   else

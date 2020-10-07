@@ -7,7 +7,10 @@ ChannelShedule::ChannelShedule(RelayChannel *channel)
 
 void ChannelShedule::setShedule(uint8_t dayOfWeek, uint8_t hour, uint8_t minute, bool onOff, bool enable)
 {
-    uint8_t index = dayOfWeek + (onOff ? 0 : 7); //first 7 are start times last 7 stop times
+    uint8_t index = dayOfWeek; //+ (onOff ? 0 : 7); //first 7 are start times last 7 stop times
+    uint8_t offset = onOff ? 0 : 7;
+    index += offset;
+    Serial.printf("Offset is: %d\r\n",index);
     _shedules[index].dateTime.tm_wday = dayOfWeek;
     _shedules[index].dateTime.tm_hour = hour;
     _shedules[index].dateTime.tm_min = minute;
@@ -22,28 +25,29 @@ void ChannelShedule::Update(tm *time)
     Shedule *stop = _shedules + index + 7;
     if (start->dateTime.tm_hour == time->tm_hour && start->dateTime.tm_min == time->tm_min && start->enable)
     {
-        if (!_isTriggered)
+        if (!_isStartTriggered)
         {
-            _isTriggered = true;
+            _isStartTriggered = true;
             _channel->turnOn();
         }
     }
     else if (stop->dateTime.tm_hour == time->tm_hour && stop->dateTime.tm_min == time->tm_min && stop->enable)
     {
-        if (!_isTriggered)
+        if (!_isStopTriggered)
         {
-            _isTriggered = true;
+            _isStopTriggered = true;
             _channel->turnOff();
         }
     }
     else
     {
-        _isTriggered = false;
+        _isStartTriggered = false;
+        _isStopTriggered = false;
     }
 }
 
 Shedule* ChannelShedule::getShedule(uint8_t dow,uint8_t onOff)
 {
-    uint8_t index = dow + onOff ? 0 : 7;
+    uint8_t index = dow + (onOff ? 0 : 7); //Correct
     return &_shedules[index];
 }

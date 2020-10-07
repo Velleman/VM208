@@ -125,8 +125,12 @@ void setup()
   //check if button 1 and 4 is pressed
   //start AP for WiFi Config
   ESP_LOGI(TAG, "Check Buttons");
-  if (((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
+  if (false)//((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
   {
+    Serial.print("It's the first time :");
+    Serial.println(config.getFirstTime());
+    Serial.println(mm.getBaseModule()->getChannel(0)->isButtonPressed());
+    Serial.println(mm.getBaseModule()->getChannel(3)->isButtonPressed());
     startEth();
     ESP_LOGI(TAG, "Start AP");
     WiFi.softAP("VM208_AP", "VellemanForMakers");
@@ -143,10 +147,10 @@ void setup()
     Serial.printf("%s", config.getWifiPassword());
     xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
     WiFi.onEvent(WiFiEvent);
-  }
-  if (!startEth()) //No cable inserted
-  {
-    startWifi();
+    if (!startEth()) //No cable inserted
+    {
+      startWifi();
+    }
   }
 
   xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
@@ -193,7 +197,7 @@ void setup()
   }
   //}
   xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
-  
+
   startServer();
   if (WiFi.getMode() != WIFI_MODE_AP)
     sendBootMail();

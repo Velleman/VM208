@@ -112,26 +112,15 @@ void Configuration::loadAlarms()
             auto channel = mm.getChannel(i + 1);
             if (channel != nullptr)
             {
-                Serial.print("Channels Size: ");
-                Serial.println(alarms.size());
                 _cs[i] = new ChannelShedule(channel);
                 for (uint8_t j = 0; j < 14; j++)
                 {
                     JsonObject &Channels_0_alarms_i = alarms[j];
-                    Serial.print("Alarm object size is: ");
                     Serial.println(Channels_0_alarms_i.size());
                     uint dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY];
                     uint hour = Channels_0_alarms_i[ALARM_HOUR_KEY];
                     uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
                     bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY];
-                    Serial.print("DOW IS: ");
-                    Serial.println(dow);
-                    Serial.print("HOUR IS: ");
-                    Serial.println(hour);
-                    Serial.print("MIN IS: ");
-                    Serial.println(minute);
-                    Serial.print("ONOFF IS: ");
-                    Serial.println(j < 7);
                     bool onOff = (j < 7);
                     _cs[i]->setShedule(dow, hour, minute, onOff, enabled);
                 }
@@ -432,6 +421,45 @@ void Configuration::writeAlarms()
     File file = SPIFFS.open(alarmPath, "w");
     root.printTo(file);
     file.close();
+}
+
+void Configuration::writeAlarm(uint16_t id)
+{
+    String path = alarmPath;
+    path += id - 1;
+    path += ".json";
+
+    if (SPIFFS.exists(path))
+    {
+        ESP_LOGI(TAG, "remove file");
+        SPIFFS.remove(path);
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject &root = jsonBuffer.createObject();
+        JsonArray &alarms = root.createNestedArray("alarms");
+
+        for (uint8_t j = 0; j < 14; j++)
+        {
+            uint8_t dow = j > 6 ? j - 7 : j;
+            uint8_t onOff = j < 7;
+            Shedule *shedule = _cs[id - 1]->getShedule(dow, onOff);
+            JsonObject &alarm = alarms.createNestedObject();
+            Serial.println("WRITING SHEDULE: ");
+            Serial.printf("Relay is: %d ", id-1);
+            Serial.printf("DOW is: %d ", dow);
+            Serial.printf("HOUR is: %d ", shedule->dateTime.tm_hour);
+            Serial.printf("Minute is: %d ", shedule->dateTime.tm_min);
+            Serial.printf("State is: %d ", onOff);
+            Serial.printf("Enabled is %d \r\n", shedule->enable);
+            alarm["dow"] = shedule->dateTime.tm_wday;
+            alarm["hour"] = shedule->dateTime.tm_hour;
+            alarm["minute"] = shedule->dateTime.tm_min;
+            alarm["enabled"] = shedule->enable;
+        }
+        File file = SPIFFS.open(path, "w");
+        root.printTo(file);
+        file.close();
+        jsonBuffer.clear();
+    }
 }
 
 /*Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)

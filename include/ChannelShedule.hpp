@@ -17,5 +17,6 @@ private:
     Shedule _shedules[14];
     RelayChannel* _channel;
     tm* _timeAndDate;
-    bool _isTriggered;
+    bool _isStartTriggered;
+    bool _isStopTriggered;
 };
