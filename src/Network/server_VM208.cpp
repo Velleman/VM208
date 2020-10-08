@@ -683,7 +683,8 @@ void sendIOState(AsyncWebServerRequest *request)
   xQueueReceive(timerStatusQueue, &timerStatus, 10 / portTICK_PERIOD_MS);
   AsyncResponseStream *response = request->beginResponseStream("application/json");
   //const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
-  DynamicJsonBuffer jsonBuffer;
+  //DynamicJsonBuffer jsonBuffer;
+  StaticJsonBuffer<20000> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
   //Input **inputs;
   //inputs = getCurrentInputs();

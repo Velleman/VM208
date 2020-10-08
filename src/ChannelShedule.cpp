@@ -10,7 +10,6 @@ void ChannelShedule::setShedule(uint8_t dayOfWeek, uint8_t hour, uint8_t minute,
     uint8_t index = dayOfWeek; //+ (onOff ? 0 : 7); //first 7 are start times last 7 stop times
     uint8_t offset = onOff ? 0 : 7;
     index += offset;
-    Serial.printf("Offset is: %d\r\n",index);
     _shedules[index].dateTime.tm_wday = dayOfWeek;
     _shedules[index].dateTime.tm_hour = hour;
     _shedules[index].dateTime.tm_min = minute;

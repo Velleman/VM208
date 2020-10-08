@@ -116,7 +116,6 @@ void Configuration::loadAlarms()
                 for (uint8_t j = 0; j < 14; j++)
                 {
                     JsonObject &Channels_0_alarms_i = alarms[j];
-                    Serial.println(Channels_0_alarms_i.size());
                     uint dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY];
                     uint hour = Channels_0_alarms_i[ALARM_HOUR_KEY];
                     uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
@@ -443,13 +442,6 @@ void Configuration::writeAlarm(uint16_t id)
             uint8_t onOff = j < 7;
             Shedule *shedule = _cs[id - 1]->getShedule(dow, onOff);
             JsonObject &alarm = alarms.createNestedObject();
-            Serial.println("WRITING SHEDULE: ");
-            Serial.printf("Relay is: %d ", id-1);
-            Serial.printf("DOW is: %d ", dow);
-            Serial.printf("HOUR is: %d ", shedule->dateTime.tm_hour);
-            Serial.printf("Minute is: %d ", shedule->dateTime.tm_min);
-            Serial.printf("State is: %d ", onOff);
-            Serial.printf("Enabled is %d \r\n", shedule->enable);
             alarm["dow"] = shedule->dateTime.tm_wday;
             alarm["hour"] = shedule->dateTime.tm_hour;
             alarm["minute"] = shedule->dateTime.tm_min;

@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang=en>
-   <head>
-      <title>VM208 Control Page</title>
-   <body>
-      <div id=splashscreen><img class=splashimage id=splashimage src=vm208.png></div>
-      <meta charset=ISO-8859-1>
-      <meta content="width=device-width,initial-scale=1" name=viewport>
-      <meta content="The VM208 main page" name=description>
-	  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-      <link href=css/pure-min.css rel=stylesheet>
-      <link href=css/layouts/side-menu.css rel=stylesheet>
-      <link href=css/grids.css rel=stylesheet>
-      <link href=css/vm208.css rel=stylesheet>
-      <div id=layout>
-      <a class=menu-link href=#menu id=menuLink><span></span></a> 
+
+<head>
+   <title>VM208 Control Page</title>
+
+<body>
+   <div id=splashscreen><img class=splashimage id=splashimage src=vm208.png></div>
+   <meta charset=ISO-8859-1>
+   <meta content="width=device-width,initial-scale=1" name=viewport>
+   <meta content="The VM208 main page" name=description>
+   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+   <link href=css/pure-min.css rel=stylesheet>
+   <link href=css/layouts/side-menu.css rel=stylesheet>
+   <link href=css/grids.css rel=stylesheet>
+   <link href=css/vm208.css rel=stylesheet>
+   <div id=layout>
+      <a class=menu-link href=#menu id=menuLink><span></span></a>
       <div id=menu>
          <div class="pure-menu pure-menu-open">
             <ul class=pure-menu-list>
@@ -28,6 +30,32 @@
             <h2>View the status of your IO's</h2>
          </div>
          <div class=content>
+            <div class="pure-g" >
+               <div class="pure-u-lg-1-2" style="text-align: right">
+                  <p>
+                     <label for="Interface">Interface</label>
+                     <select id="Interface">
+                        <option value="base">Base</option>
+                        <option value="extention">Extention</option>
+                     </select>
+                  </p>
+               </div>
+               <div class="pure-u-lg-1-2" style="text-align: left"> 
+                  <p>
+                     <label for="Socket">Socket</label>
+                     <select id="Socket">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                     </select>
+                  </p>
+               </div>
+            </div>
             <div class=pure-g id=realTimeIo>
                <div class="pure-u-1-1">
                   <table id="VM208Table" class="pure-table status-table">
@@ -39,8 +67,8 @@
                            <th class="col4">Timer</th>
                            <th class="col5">Sheduler</th>
                         </tr>
-                     <tbody id="VM208TableBody"> 
-                        
+                     <tbody id="VM208TableBody">
+
                      </tbody>
                   </table>
                </div>
@@ -51,8 +79,8 @@
                         <col width=60%>
                      <thead>
                         <tr>
-                           <th>Inputs 
-                           <th>Status 
+                           <th>Inputs
+                           <th>Status
                      <tbody>
                         <tr>
                            <td>
@@ -68,20 +96,22 @@
                         <col width=60%>
                      <thead>
                         <tr>
-                           <th>Mosfets 
-                           <th>Status 
+                           <th>Mosfets
+                           <th>Status
                      <tbody>
                         <tr>
                            <td>
                               <div id=m1Name style=word-wrap:break-word>MOSFET1</div>
                            </td>
-                           <td> <button class="pure-button relayButton pure-button-disabled" id=mosfet1Status>OFF</button> </td>
+                           <td> <button class="pure-button relayButton pure-button-disabled"
+                                 id=mosfet1Status>OFF</button> </td>
                         </tr>
                         <tr>
                            <td>
                               <div id=m2Name style=word-wrap:break-word>MOSFET2</div>
                            </td>
-                           <td> <button class="pure-button relayButton pure-button-disabled" id=mosfet2Status>OFF</button> </td>
+                           <td> <button class="pure-button relayButton pure-button-disabled"
+                                 id=mosfet2Status>OFF</button> </td>
                         </tr>
                      </tbody>
                   </table>
@@ -90,8 +120,8 @@
 
                </div>
                <div class="pure-u-1-1" id="modules">
-                  
-               </div>               
+
+               </div>
             </div>
          </div>
          <div class=header id=about>
@@ -124,8 +154,10 @@
                <dd>
                   <div id="version">version</div>
                </dd>
-               
+
             </dl>
          </div>
       </div>
-      <script src=js/jquery.min.js></script> <script src=js/ui.js></script> <script src=js/index.js></script>
+      <script src=js/jquery.min.js></script>
+      <script src=js/ui.js></script>
+      <script src=js/index.js></script>
