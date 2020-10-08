@@ -67,34 +67,6 @@ static void checkSheduler(void *pvParameter)
   vTaskDelete(NULL);
 }
 
-static void shedulerStatus(void *pvParameter)
-{
-  delay(500); // wait to load all channels
-  /*VM208TimeChannel *c;
-  while (true)
-  {
-    for (int i = 0; i < 12; i++)
-    {
-      c = (VM208TimeChannel *)getRelayChannelById(i + 1);
-      if (c->isSheduleActive())
-      {
-        c->isOn() ? c->turnLedOn() : c->turnLedOff();
-      }
-    }
-    delay(1800);
-    for (int i = 0; i < 12; i++)
-    {
-      c = (VM208TimeChannel *)getRelayChannelById(i + 1);
-      if (c->isSheduleActive())
-      {
-        c->toggleLed();
-      }
-    }
-    delay(200);
-  }*/
-  vTaskDelete(NULL);
-}
-
 void setup()
 {
   g_Mutex = xSemaphoreCreateMutex();

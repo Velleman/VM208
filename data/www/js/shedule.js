@@ -13,24 +13,70 @@ function requestSettings() {
             }
         }
     });
-
+    var relay = GetURLParameter('relay');
+    
     e = $.ajax({
         type: "GET",
         url: "/getalarms",
         dataType: "text",
         data: {
-            channel: 1
+            channel: relay
         },
         success: function (e) {
             try {
                 json = $.parseJSON(e);
                 console.log(json);
                 applyShedule(json);
+                
             } catch (t) {
                 console.log(t)
             }
         }
     });
+
+    e = $.ajax({
+        type: "GET",
+        url: "/status",
+        dataType: "text",
+        success: function (e) {
+            try {
+                json = $.parseJSON(e);
+                console.log(json);
+                populateDropDown(json);
+                $("#Relay").val(relay); //Set relay as selected option
+            } catch (t) {
+                console.log(t)
+            }
+        }
+    });
+}
+
+function populateDropDown(json) {
+    var dropdown = $("#Relay");
+    var index = 1;
+    for (var i = 0; i < 4; i++) {
+        console.log(json.Interface0.VM208[i].name);
+        dropdown[0].innerHTML += "<option value="+index+">"+json.Interface0.VM208[i].name +"</option>";
+        index++;
+    }
+    try {
+        console.log(json.Interface1.VM208EX[0].name);
+        dropdown[0].innerHTML += "<option value="+index+">"+json.Interfaces[i][j][k].name +"</option>";
+    }
+    catch {
+        index+=8;
+        for (var i = 0; i < json.Interfaces.length; i++)//Interfaces
+        {
+            for (var j = 0; j < json.Interfaces[i].length; j++)//Modules
+            {
+                for (var k = 0; k < json.Interfaces[i][j].length; k++)//Channels
+                {
+                    dropdown[0].innerHTML += "<option value="+index+">"+json.Interfaces[i][j][k].name +"</option>";
+                    index++;
+                }
+            }
+        }
+    }
 }
 
 function applyShedule(json) {
@@ -47,10 +93,10 @@ function applyShedule(json) {
         if (i == 0) {
             $("#alarm_7").val(hour + ":" + minute);
             $("#alam_enabeled_7").prop("checked", enabled)
-        } else if(i==7){
+        } else if (i == 7) {
             $("#alarm_14").val(hour + ":" + minute);
             $("#alam_enabeled_14").prop("checked", enabled)
-        }else{
+        } else {
             $("#alarm_" + (i)).val(hour + ":" + minute);
             $("#alam_enabeled_" + (i)).prop("checked", enabled)
         }
@@ -60,8 +106,23 @@ function applyShedule(json) {
 
 function update_content() {
     var relay = GetURLParameter('relay');
-    $("#Relay").val(relay);
-    UpdateSheduleFields(relay);
+    e = $.ajax({
+        type: "GET",
+        url: "/getalarms",
+        dataType: "text",
+        data: {
+            channel: relay
+        },
+        success: function (e) {
+            try {
+                json = $.parseJSON(e);
+                console.log(json);
+                applyShedule(json);
+            } catch (t) {
+                console.log(t)
+            }
+        }
+    });
 }
 
 $(document).ready(function () {
@@ -69,7 +130,22 @@ $(document).ready(function () {
     requestSettings();
     $("#Relay").change(function () {
         var relay = $("#Relay").val();
-        UpdateSheduleFields(relay);
+        e = $.ajax({
+            type: "GET",
+            url: "/getalarms",
+            dataType: "text",
+            data: {
+                channel: relay
+            },
+            success: function (e) {
+                try {
+                    json = $.parseJSON(e);
+                    applyShedule(json);
+                } catch (t) {
+                    console.log(t)
+                }
+            }
+        });
     });
 });
 
@@ -84,25 +160,6 @@ function ValidateShedule() {
     return true;
 }
 
-function UpdateSheduleFields(relay) {
-
-
-    relay -= 1;//zero-based
-    for (var i = 0; i < 14; i++) {
-        var hour = json.Channels[relay].alarms[i].hour;
-        var minute = json.Channels[relay].alarms[i].minute;
-        var enabled = json.Channels[relay].alarms[i].enabled;
-        if (hour < 10) {
-            hour = zeroPad(hour);
-        }
-        if (minute < 10) {
-            minute = zeroPad(minute);
-        }
-        $("#alarm_" + (i + 1)).val(hour + ":" + minute);
-        $("#alam_enabeled_" + (i + 1)).prop("checked", enabled)
-    }
-    //$("#shedule_enable").val(enabled?"1":"0");    
-}
 
 
 function zeroPad(numberStr) {
@@ -171,7 +228,7 @@ function updateShedule() {
             alarm_enable_14: $("#alam_enabeled_14").is(":checked"),
 
         };
-        $("#sendAuthSettingsButton").html("SAVING...");
+        $("#sendAuthSettingsButton").innerHTML = "SAVING...";
         $.ajax({
             type: "POST",
             url: "/shedule_set",
@@ -179,9 +236,10 @@ function updateShedule() {
             data: e,
             success: function (e) {
                 try {
-                    json = $.parseJSON(e);
+                    $("#sendAuthSettingsButton").innerHTML = "Save"
+                    /*json = $.parseJSON(e);
                     var relay = $("#Relay").val();
-                    UpdateSheduleFields(relay);
+                    applyShedule(json);*/
                 } catch (t) {
                     console.log(t)
                 }
