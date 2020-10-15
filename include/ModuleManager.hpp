@@ -24,4 +24,5 @@ class ModuleManager{
         vector<RelayModule *> _modulesOnInterface[8];
         VM208INT _interfaces[8];
         const bool _demo = true;
+        uint8_t _interfaceDetected = 0;
 };
