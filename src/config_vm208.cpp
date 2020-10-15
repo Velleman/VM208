@@ -112,7 +112,7 @@ void Configuration::loadAlarms()
             auto channel = mm.getChannel(i + 1);
             if (channel != nullptr)
             {
-                _cs[i] = new ChannelShedule(channel);
+                _cs[i].setChannel(channel);
                 for (uint8_t j = 0; j < 14; j++)
                 {
                     JsonObject &Channels_0_alarms_i = alarms[j];
@@ -121,7 +121,7 @@ void Configuration::loadAlarms()
                     uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
                     bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY];
                     bool onOff = (j < 7);
-                    _cs[i]->setShedule(dow, hour, minute, onOff, enabled);
+                    _cs[i].setShedule(dow, hour, minute, onOff, enabled);
                 }
             }
             file.close();
@@ -246,7 +246,7 @@ void Configuration::load()
 ChannelShedule *Configuration::getShedule(uint16_t index)
 {
     if (index < 268)
-        return _cs[index];
+        return &_cs[index];
     else
     {
         return nullptr;
@@ -440,11 +440,14 @@ void Configuration::writeAlarm(uint16_t id)
         {
             uint8_t dow = j > 6 ? j - 7 : j;
             uint8_t onOff = j < 7;
-            Shedule *shedule = _cs[id - 1]->getShedule(dow, onOff);
+            Shedule *shedule = _cs[id - 1].getShedule(dow, onOff);
             JsonObject &alarm = alarms.createNestedObject();
-            alarm["dow"] = shedule->dateTime.tm_wday;
+            /*alarm["dow"] = shedule->dateTime.tm_wday;
             alarm["hour"] = shedule->dateTime.tm_hour;
-            alarm["minute"] = shedule->dateTime.tm_min;
+            alarm["minute"] = shedule->dateTime.tm_min;*/
+            alarm["dow"] = shedule->dow;
+            alarm["hour"] = shedule->hour;
+            alarm["minute"] = shedule->minute;
             alarm["enabled"] = shedule->enable;
         }
         File file = SPIFFS.open(path, "w");
@@ -810,7 +813,7 @@ bool Configuration::getNotification_manual_input()
 
 void Configuration::setShedule(uint16_t channel, uint8_t dayOfWeek, uint8_t hour, uint8_t min, bool onOff, bool enable)
 {
-    _cs[channel]->setShedule(dayOfWeek, hour, min, onOff, enable);
+    _cs[channel].setShedule(dayOfWeek, hour, min, onOff, enable);
 }
 
 const char *Configuration::SSID_KEY = "SSID";

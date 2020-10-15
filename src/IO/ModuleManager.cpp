@@ -23,7 +23,7 @@ void ModuleManager::DetectModules()
             _channelIndex++;
         }
         _channelIndex +=8; //skip VM208EX
-        for (byte address = 0x70; address < 0x73; ++address)
+        for (byte address = 0x70; address < 0x78; ++address)
         {
             _interfaces[address - 0x70].setAddress(address);
             for (byte socket = 4; socket < 8; socket++)
@@ -83,7 +83,7 @@ void ModuleManager::DetectModules()
         {
             _channelIndex += 8;
         }
-        for (byte address = 0x70; address < 0x78; ++address)
+        for (byte address = 0x70; address < 0x72; ++address)
         {
             Wire.beginTransmission(address);
             error = Wire.endTransmission();
@@ -139,7 +139,7 @@ RelayModule *ModuleManager::getModule(int index)
     uint8_t checkedModules;
     uint8_t checkedInterfaces = 0;
     uint8_t previousAmountChecked = 0;
-    if (index != 0)
+    /*if (index != 0)
     {
         if (index == 1 && _extensionModule != nullptr)
         {
@@ -155,6 +155,18 @@ RelayModule *ModuleManager::getModule(int index)
     else
     {
         return _baseModule;
+    }*/
+    if(index == 0)
+    {
+        return _baseModule;
+    }else if(index == 1)
+    {
+        return _extensionModule;
+    }else{
+        index -=2;
+        auto interface = index/4;
+        auto socket = index - (interface*4);
+        return _modulesOnInterface[interface][socket];
     }
 }
 
@@ -181,12 +193,21 @@ VM208 *ModuleManager::getBaseModule()
 
 RelayModule *ModuleManager::getModuleFromInterface(uint8_t interface, uint8_t module)
 {
+    /*if(8 > interface)
+    {
+        if(_modulesOnInterface[interface].size() > module)
+        {
+            return _modulesOnInterface[interface][module];
+        }
+    }
+    return nullptr;  */
     return _modulesOnInterface[interface][module];
 }
 
 uint8_t ModuleManager::getAmountOfModulesOnInterface(uint8_t interface)
 {
     auto size = _modulesOnInterface[interface].size();
+    Serial.println(size);
     return size;
 }
 
@@ -212,14 +233,18 @@ RelayChannel *ModuleManager::getChannel(int channelId)
             uint interface = floor(index / 32);
             uint module = floor((index - (interface * 32)) / 8);
             uint channel = index % 8;
-            //Serial.printf("Channel ID %d is interface %d Module %d Channel %d\r\n", channelId, interface, module, channel);
+            Serial.printf("Channel ID %d is interface %d Module %d Channel %d\r\n", channelId, interface, module, channel);
             if(interface < _modulesOnInterface->size())
             {
                 if(module < _modulesOnInterface[interface].size())
                 {
                     return ((VM208EX *)_modulesOnInterface[interface][module])->getChannel(channel);
+                }else{
+                    Serial.println("module size is to large");
                 }
                 
+            }else{
+                Serial.println("interface size is to large");
             }
             return nullptr;
         }
@@ -250,4 +275,9 @@ uint16_t ModuleManager::getChannelId(uint8_t interface, uint8_t module, uint8_t 
     }
     Serial.printf("Channel ID is %d", channelId);
     return channelId;
+} 
+
+bool ModuleManager::isExtensionConnected()
+{
+    return _extensionModule != nullptr;
 }

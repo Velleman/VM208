@@ -9,9 +9,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "driver/gpio.h"
-#include "input.hpp"
-#include "mosfet.hpp"
-#include "led.hpp"
+//#include "input.hpp"
+//#include "mosfet.hpp"
+//#include "led.hpp"
 #include "VM208.h"
 #include "VM208EX.h"
 #include "global.hpp"
@@ -25,26 +25,26 @@
 
 //void IRAM_ATTR gpio_isr_handler(void* arg);
 void Init_IO(bool setState);
-void setMOSFET(Mosfet* mosfet);
+//void setMOSFET(Mosfet* mosfet);
 //void setLeds(led_t* leds);
 void readButton();
-Input** readInputs(Input** inputs);
+//Input** readInputs(Input** inputs);
 void IO_task(void* arg);
 //Relay* getRelayFromRelayKey(const char* key);
 //void setRelay(uint8_t index,relay_state_t state);
-void setLed(Led* led);
+//void setLed(Led* led);
 bool inputChanged();
 void clearInputChanged();
-Mosfet* getMosfet(uint8_t index);
-void getMosfets(Mosfet* m);
+//Mosfet* getMosfet(uint8_t index);
+//void getMosfets(Mosfet* m);
 bool isUserInputChanged();
-Input** getCurrentInputs();
+//Input** getCurrentInputs(); 
 void copyStateRelaysToLeds();
-Mosfet* getMosfetById(int id);
+//Mosfet* getMosfetById(int id);
 //Relay* getRelayById(int id);
-Led* getLedById(int id);
+//Led* getLedById(int id);
 //Relay* getRelays();
-void getLeds(Led* leds);
+//void getLeds(Led* leds);
 //Channel* getChannelById(int id);
 RelayChannel* getRelayChannelById(int id);
 void disableIOacitivty();

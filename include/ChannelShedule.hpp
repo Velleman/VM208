@@ -2,17 +2,21 @@
 #include "RelayChannel.h"
 #include "time.h"
 struct Shedule{
-    tm dateTime;
+    //tm dateTime;
+    uint8_t dow;
+    uint8_t hour;
+    uint8_t minute;
     bool onOff;
     bool enable;
 };
 class ChannelShedule{
 public:
-    ChannelShedule(RelayChannel* channel);
+    ChannelShedule(RelayChannel* channel=nullptr);
     void setShedule(uint8_t dayOfWeek,uint8_t hour,uint8_t minute,bool onOff,bool enable);
     void Update(tm* time);
     uint8_t getDoW();
     Shedule* getShedule(uint8_t dow,uint8_t onOff);
+    void setChannel(RelayChannel* channel);
 private:
     Shedule _shedules[14];
     RelayChannel* _channel;

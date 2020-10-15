@@ -11,8 +11,6 @@
 #include <SPIFFS.h>
 #include "config_vm208.hpp"
 
-#include "input.hpp"
-#include "output.hpp"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include <DNSServer.h>

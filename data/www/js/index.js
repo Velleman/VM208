@@ -1,3 +1,6 @@
+var selectedInterface = -1;
+var selectedSocket = 0;
+
 function requestSettings() {
     var e = new Object;
     e = $.ajax({
@@ -12,9 +15,41 @@ function requestSettings() {
                 console.log(t)
             }
         }
+    });
+    e = $.ajax({
+        type: "GET",
+        url: "/layout",
+        dataType: "text",
+        data: $(this).serialize(),
+        success: function (e) {
+            try {
+                json = $.parseJSON(e);
+                applyModuleLayout(json);
+            } catch (t) {
+                console.log(t)
+            }
+        }
     })
 }
 
+function applyModuleLayout(json) {
+    //populate dropdowns
+
+    if (json.VM20EX) {
+        $("#SelectInterface").innerHTML += "<option value=\"0\">Extention</option>";
+    } else {
+        if (json.Interfaces.length) {
+            for (var i = 0; i < json.Interfaces.length; i++) {
+                var name  = i+1;
+                $("#SelectInterface").innerHTML += "<option value=\"" + name + "\">Interface " + name + "</option>";
+                SelectInterface.innerHTML += "<option value=\"" + name + "\">Interface " + name + "</option>";
+            }
+        } else {
+
+        }
+    }
+
+}
 
 function isElementVisible(e) {
     var t = $(window).scrollTop(),
@@ -56,7 +91,9 @@ function sendRelay(e, t) {
     relayName = relayName.replace('Status', '');
     var payload = {
         index: parseInt(relayName),
-        state: "TURN OFF" == $(t).html() ? "0" : "1"
+        state: "TURN OFF" == $(t).html() ? "0" : "1",
+        interface: selectedInterface,
+        socket: selectedSocket
     };
     $.ajax({
         type: "POST",
@@ -101,7 +138,9 @@ function sendPulse(i, t) {
         relayName = relayName.replace('Start', '');
         var payload = {
             index: parseInt(relayName),
-            value: $("#value_pulse" + relayName).val()
+            value: $("#value_pulse" + relayName).val(),
+            interface: selectedInterface,
+            socket: selectedSocket
         };
         t.innerHTML = "STOP";
         $.ajax({
@@ -123,6 +162,8 @@ function sendPulse(i, t) {
         relayName = relayName.replace('Start', '');
         var payload = {
             index: parseInt(relayName),
+            interface: selectedInterface,
+            socket: selectedSocket
         };
         t.innerHTML = "START";
         $.ajax({
@@ -148,7 +189,9 @@ function sendTimer(i, t) {
         relayName = relayName.replace('Start', '');
         var payload = {
             index: parseInt(relayName),
-            value: $("#value_timer" + relayName).val()
+            value: $("#value_timer" + relayName).val(),
+            interface: selectedInterface,
+            socket: selectedSocket
         };
         t.innerHTML = "STOP";
         $.ajax({
@@ -171,6 +214,8 @@ function sendTimer(i, t) {
         relayName = relayName.replace('Start', '');
         var payload = {
             index: parseInt(relayName),
+            interface: selectedInterface,
+            socket: selectedSocket
         };
         t.innerHTML = "START";
         $.ajax({
@@ -245,10 +290,15 @@ function sliderOnInitialized() {
 function timerRelayEvent() {
 
     if (location.pathname == "/index.html" || location.pathname == "/") {
+        var payload = {
+            interface: selectedInterface,
+            socket: selectedSocket
+        };
         $.ajax({
             type: "GET",
             url: "/status",
             dataType: "text",
+            data: payload,
             success: function (e) {
                 try {
                     updateIO(e), setTimeout(function () {
@@ -273,29 +323,19 @@ function updateIO(e) {
     try {
         var t = $.parseJSON(e);
         //var a;
-        for (a = 1; a <= 4; a++) {
-            $("#relay" + a + "Status").html(t.Interface0.VM208[a - 1].state ? "TURN OFF" : "TURN ON");
-            $("#pulse" + a + "Start").html(t.Interface0.VM208[a - 1].pulseActive ? "STOP" : "START");
-            $("#timer" + a + "Start").html(t.Interface0.VM208[a - 1].timerActive ? "STOP" : "START");
-            $("#Name" + a).html(t.Interface0.VM208[a - 1].name);
-        }
-        if (t.Interface0.VM208EX) {
-            for (a = 5; a <= 12; a++) {
-                ("#relay" + a + "Status").html(t.Interface0.VM208EX[a - 1].state ? "TURN OFF" : "TURN ON");
-                $("#pulse" + a + "Start").html(t.Interface0.VM208EX[a - 1].pulseActive ? "STOP" : "START");
-                $("#timer" + a + "Start").html(t.Interface0.VM208EX[a - 1].timerActive ? "STOP" : "START");
-                $("#Name" + a).html(t.Interface0.VM208EX[a - 1].name);
+        if (selectedInterface == "-1") {
+            for (a = 1; a <= 4; a++) {
+                $("#relay" + a + "Status").html(t.Channels[a-1].state ? "TURN OFF" : "TURN ON");
+                $("#pulse" + a + "Start").html(t.Channels[a-1].pulseActive ? "STOP" : "START");
+                $("#timer" + a + "Start").html(t.Channels[a-1].timerActive ? "STOP" : "START");
+                $("#Name" + a).html(t.Channels[a-1].name);
             }
         } else {
-            for (a = 13; a <= totalChannels; a++) {
-                var index = a - 13;
-                var interface = Math.floor(index / 32);
-                var module = Math.floor((index - (interface * 32)) / 8);
-                var channel = index % 8;
-                $("#relay" + a + "Status").html(t.Interfaces[interface][module][channel].state ? "TURN OFF" : "TURN ON");
-                $("#pulse" + a + "Start").html(t.Interfaces[interface][module][channel].pulseActive ? "STOP" : "START");
-                $("#timer" + a + "Start").html(t.Interfaces[interface][module][channel].timerActive ? "STOP" : "START");
-                $("#Name" + a).html(t.Interfaces[interface][module][channel].name);
+            for (a = 1; a <= 8; a++) {
+                $("#relay" + a + "Status").html(t.Channels[a-1].state ? "TURN OFF" : "TURN ON");
+                $("#pulse" + a + "Start").html(t.Channels[a-1].pulseActive ? "STOP" : "START");
+                $("#timer" + a + "Start").html(t.Channels[a-1].timerActive ? "STOP" : "START");
+                $("#Name" + a).html(t.Channels[a-1].name);
             }
         }
     } catch (s) {
@@ -349,6 +389,10 @@ function openSheduler(e, f) {
 
 function enableButtons() {
     var e;
+    if(selectedInterface == "-1")
+        totalChannels = 4;
+    else 
+        totalChannels = 8;
     for (e = 1; e <= totalChannels; e++) {
         $("#relay" + e + "Status").removeClass("pure-button-disabled");
         $("#relay" + e + "Status").click(function () {
@@ -370,20 +414,38 @@ function enableButtons() {
 }
 var json, notif_select = new Object;
 $(document).ready(function () {
-    requestBoardInfo(), requestSettings(), getStatusForTable(), $("#splashscreen").delay(750).fadeOut(500)
+    requestBoardInfo(), requestSettings(), getStatusForTable(), $("#splashscreen").delay(750).fadeOut(500);
+    $('#SelectInterface').on('change', function () {
+        selectedInterface = this.value;
+        if(selectedInterface != "-1" && selectedInterface != "0")
+        {
+            $('#SelectSocket').val(1);
+            selectedSocket = 1;
+        }
+        generateTable();
+    });
+    $('#SelectSocket').on('change', function () {
+        selectedSocket = this.value;
+        generateTable();
+    });
+
 });
 var current_slide = 0;
 var totalChannels;
 function getStatusForTable() {
-
+    var e= {
+        interface:selectedInterface,
+        socket:selectedSocket
+    };
     $.ajax({
         type: "GET",
         url: "/status",
         dataType: "text",
+        data:e,
         success: function (e) {
             try {
                 generateTable(e);
-                enableButtons();
+                //enableButtons();
             } catch (t) {
                 console.log(t)
             }
@@ -396,7 +458,13 @@ function generateTable(e) {
     var channelId = 1;
     var ioData = $.parseJSON(e);
     var table = $('#VM208TableBody');
-    for (i = 1; i < 5; i++) {
+    table.empty();
+    var rows;
+    if(selectedInterface == "-1")
+        rows = 5;
+    else
+        rows = 9;
+    for (i = 1; i < rows; i++) {
         table.append('<tr> \
         <td id="Name'+ channelId + '"> RELAY' + i + ' </td> \
         <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
@@ -404,191 +472,28 @@ function generateTable(e) {
         <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
         <td  class="col5" > <button class="pure-button" id="shedule'+ channelId + 'Start">EDIT</button> <span class="dot" id="dot' + channelId + '"></span> </td> \
      </tr>');
+        
+        $("#relay" + channelId + "Status").removeClass("pure-button-disabled");
+        $("#relay" + channelId + "Status").click(function () {
+            sendRelay(channelId, this);
+        });
+        $("#pulse" + channelId + "Start").removeClass("pure-button-disabled");
+        $("#pulse" + channelId + "Start").click(function () {
+            sendPulse(channelId, this);
+        });
+        $("#timer" + channelId + "Start").removeClass("pure-button-disabled");
+        $("#timer" + channelId + "Start").click(function () {
+            sendTimer(channelId, this);
+        });
+        $("#shedule" + channelId + "Start").removeClass("pure-button-disabled");
+        $("#shedule" + channelId + "Start").click(function () {
+            openSheduler(channelId, this);
+        });
         channelId++;
     }
-
-
-    if (ioData.Interface0.VM208EX) {
-        var html = '<table id="VM208EX" class="pure-table status-table">\
-        <thead>\
-           <tr>\
-              <th class="col1">Relays</th>\
-              <th class="col2">Toggle</th>\
-              <th class="col3">Pulse</th>\
-              <th class="col4">Timer</th>\
-              <th class="col5">Sheduler</th>\
-           </tr>\
-        <tbody>';
-
-
-        for (i = 1; i < 9; i++) {
-            html += '<tr> \
-        <td id="Name'+ channelId + '"> RELAY' + i + ' </td> \
-        <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
-        <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
-        <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
-        <td  class="col5" > <button class="pure-button" id="shedule'+ channelId + 'Start">EDIT</button> <span class="dot" id="dot' + channelId + '"></span> </td> \
-        </tr>';
-            channelId++;
-        }
-        html += '</tbody></table>';
-        var table = $('#VM208EX');
-        table.append(html);
-    } else {
-        channelId += 8;
-        var table = $('#modules');
-        if (ioData.Interfaces) {
-            for (i = 0; i < ioData.Interfaces.length; i++) {
-                InterfaceNr = i + 1;
-                table.append('<h2>Interface' + InterfaceNr + '</h2>');
-                for (j = 0; j < ioData.Interfaces[i].length; j++) {
-
-                    var ModuleNr = j + 1
-                    var html = '<h3>Module ' + ModuleNr + '</h3><table id="Module' + j + '" class="pure-table status-table">\
-                                <thead>\
-                                    <tr>\
-                                        <th class="col1">Relays</th>\
-                                        <th class="col2">Toggle</th>\
-                                        <th class="col3">Pulse</th>\
-                                        <th class="col4">Timer</th>\
-                                        <th class="col5">Sheduler</th>\
-                                   </tr>\
-                                <tbody>';
-                    for (k = 1; k < 9; k++) {
-                        html += '<tr> \
-                <td id="Name'+ channelId + '"> RELAY' + k + ' </td> \
-                <td> <button class="pure-button relayButton pure-button-disabled" id=relay'+ channelId + 'Status>OFF</button> </td> \
-                <td class="col3" > <input type="number" style="width:30%" name="value_pulse'+ channelId + '" id="value_pulse' + channelId + '" value="100" min="1" max="60000"><label for="value_pulse' + channelId + '">ms</label>  </label> <button class="pure-button pure-button-disabled" id=pulse' + channelId + 'Start>START</button></form> </td> \
-                <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
-                <td  class="col5" > <button class="pure-button" id="shedule'+ channelId + 'Start">EDIT</button> <span class="dot" id="dot' + channelId + '"></span> </td> \
-                </tr>';
-                        channelId++;
-                    }
-                    html += '</tbody></table>';
-                    table.append(html);
-                }
-            }
-        }
-    }
-    totalChannels = channelId - 1;
 }
 
 
 $(function () {
     timerRelayEvent();
-    /*$("#relay1Status").click(function () {
-        sendRelay(1, this)
-    }), $("#relay2Status").click(function () {
-        sendRelay(2, this)
-    }), $("#relay3Status").click(function () {
-        sendRelay(3, this)
-    }), $("#relay4Status").click(function () {
-        sendRelay(4, this)
-    }), $("#relay5Status").click(function () {
-        sendRelay(5, this)
-    }), $("#relay6Status").click(function () {
-        sendRelay(6, this)
-    }), $("#relay7Status").click(function () {
-        sendRelay(7, this)
-    }), $("#relay8Status").click(function () {
-        sendRelay(8, this)
-    }), $("#relay9Status").click(function () {
-        sendRelay(9, this)
-    }), $("#relay10Status").click(function () {
-        sendRelay(10, this)
-    }), $("#relay11Status").click(function () {
-        sendRelay(11, this)
-    }), $("#relay12Status").click(function () {
-        sendRelay(12, this)
-    })*/
-
-    /*, $("#mosfet1Status").click(function () {
-        sendMosfet(1, this)
-    }), $("#mosfet2Status").click(function () {
-        sendMosfet(2, this)
-    }), $("#pulse1Start").click(function () {
-        sendPulse(1, $("#value_pulse1").val(), this)
-    }), $("#pulse2Start").click(function () {
-        sendPulse(2, $("#value_pulse2").val(), this)
-    }), $("#pulse3Start").click(function () {
-        sendPulse(3, $("#value_pulse3").val(), this)
-    }), $("#pulse4Start").click(function () {
-        sendPulse(4, $("#value_pulse4").val(), this)
-    }), $("#pulse5Start").click(function () {
-        sendPulse(5, $("#value_pulse5").val(), this)
-    }), $("#pulse6Start").click(function () {
-        sendPulse(6, $("#value_pulse6").val(), this)
-    }), $("#pulse7Start").click(function () {
-        sendPulse(7, $("#value_pulse7").val(), this)
-    }), $("#pulse8Start").click(function () {
-        sendPulse(8, $("#value_pulse8").val(), this)
-    }), $("#pulse9Start").click(function () {
-        sendPulse(9, $("#value_pulse9").val(), this)
-    }), $("#pulse10Start").click(function () {
-        sendPulse(10, $("#value_pulse10").val(), this)
-    }), $("#pulse11Start").click(function () {
-        sendPulse(11, $("#value_pulse11").val(), this)
-    }), $("#pulse12Start").click(function () {
-        sendPulse(12, $("#value_pulse12").val(), this)
-    }), $("#timer1Start").click(function () {
-        sendTimer(1, $("#value_timer1").val(), this)
-    }), $("#timer2Start").click(function () {
-        sendTimer(2, $("#value_timer2").val(), this)
-    }), $("#timer3Start").click(function () {
-        sendTimer(3, $("#value_timer3").val(), this)
-    }), $("#timer4Start").click(function () {
-        sendTimer(4, $("#value_timer4").val(), this)
-    }), $("#timer5Start").click(function () {
-        sendTimer(5, $("#value_timer5").val(), this)
-    }), $("#timer6Start").click(function () {
-        sendTimer(6, $("#value_timer6").val(), this)
-    }), $("#timer7Start").click(function () {
-        sendTimer(7, $("#value_timer7").val(), this)
-    }), $("#timer8Start").click(function () {
-        sendTimer(8, $("#value_timer8").val(), this)
-    }), $("#timer9Start").click(function () {
-        sendTimer(9, $("#value_timer9").val(), this)
-    }), $("#timer10Start").click(function () {
-        sendTimer(10, $("#value_timer10").val(), this)
-    }), $("#timer11Start").click(function () {
-        sendTimer(11, $("#value_timer11").val(), this)
-    }), $("#timer12Start").click(function () {
-        sendTimer(12, $("#value_timer12").val(), this)
-    }),
-    $("#shedule1Start").click(function () {
-        location.href = "shedule.html?relay=1";
-    }),
-    $("#shedule2Start").click(function () {
-        location.href = "shedule.html?relay=2";
-    }),
-    $("#shedule3Start").click(function () {
-        location.href = "shedule.html?relay=3";
-    }),
-    $("#shedule4Start").click(function () {
-        location.href = "shedule.html?relay=4";
-    }),
-    $("#shedule5Start").click(function () {
-        location.href = "shedule.html?relay=5";
-    }),
-    $("#shedule6Start").click(function () {
-        location.href = "shedule.html?relay=6";
-    }),
-    $("#shedule7Start").click(function () {
-        location.href = "shedule.html?relay=7";
-    }),
-    $("#shedule8Start").click(function () {
-        location.href = "shedule.html?relay=8";
-    }),
-    $("#shedule9Start").click(function () {
-        location.href = "shedule.html?relay=9";
-    }),
-    $("#shedule10Start").click(function () {
-        location.href = "shedule.html?relay=10";
-    }),
-    $("#shedule11Start").click(function () {
-        location.href = "shedule.html?relay=11";
-    }),
-    $("#shedule12Start").click(function () {
-        location.href = "shedule.html?relay=12";
-    })*/
 });

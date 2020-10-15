@@ -5,7 +5,7 @@ Copyright 2019 Velleman nv
 */
 #include "IO.hpp"
 #include <I2CDev.h>
-#include "tca_thread_safe.hpp"
+//#include "tca_thread_safe.hpp"
 #include "esp_log.h"
 #include "mail.hpp"
 #include "ETH.h"
@@ -82,14 +82,14 @@ void Init_IO(bool setState)
   xTaskCreate(pulseTask, "pulse", 6144, NULL, (tskIDLE_PRIORITY + 5), NULL);
 }
 
-Input **readInputs(Input **inputs)
+/*Input **readInputs(Input **inputs)
 {
   for (int i = 0; i < INPUT_MAX; i++)
   {
     inputs[i]->read();
   }
   return inputs;
-}
+}*/
 
 void IO_task(void *arg)
 {

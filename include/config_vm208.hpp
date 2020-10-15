@@ -6,8 +6,8 @@
 #include "FS.h"
 #define ARDUINOJSON_USE_LONG_LONG 1
 #include "ArduinoJson.h"
-#include "relay.hpp"
-#include "mosfet.hpp"
+//#include "relay.hpp"
+//#include "mosfet.hpp"
 //#include "VM208TimerChannel.hpp"
 #include "ChannelShedule.hpp"
 class Configuration
@@ -67,7 +67,7 @@ private:
   bool _notif_ext_connected;
   bool _notif_manual_input;
   String _names[268];
-  ChannelShedule* _cs[268];
+  ChannelShedule _cs[268];
 public:
   Configuration();
   static const char *SSID_KEY;
