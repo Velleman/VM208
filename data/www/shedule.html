@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html lang=en>
-   <head>
-      <title>VM208 Shedule Page</title>
-   <body>
-      <meta charset=ISO-8859-1>
-      <meta content="width=device-width,initial-scale=1" name=viewport>
-      <meta content="The VM208 shedule page" name=description>
-      <link href=css/pure-min.css rel=stylesheet>
-      <link href=css/layouts/side-menu.css rel=stylesheet>
-      <link href=css/grids.css rel=stylesheet>
-      <link href=css/vm208.css rel=stylesheet>
-      <style>table{table-layout: fixed; width: 190px}</style>
-      <div id=layout>
-      <a class=menu-link href=#menu id=menuLink><span></span></a> 
+
+<head>
+   <title>VM208 Shedule Page</title>
+
+<body>
+   <meta charset=ISO-8859-1>
+   <meta content="width=device-width,initial-scale=1" name=viewport>
+   <meta content="The VM208 shedule page" name=description>
+   <link href=css/pure-min.css rel=stylesheet>
+   <link href=css/layouts/side-menu.css rel=stylesheet>
+   <link href=css/grids.css rel=stylesheet>
+   <link href=css/vm208.css rel=stylesheet>
+   <style>
+      table {
+         table-layout: fixed;
+         width: 190px
+      }
+   </style>
+   <div id=layout>
+      <a class=menu-link href=#menu id=menuLink><span></span></a>
       <div id=menu>
          <div class="pure-menu pure-menu-open">
             <ul class=pure-menu-list>
@@ -27,113 +34,192 @@
             <h2>View the status of your IO's</h2>
          </div>
          <div class=content>
-         <form class="pure-form pure-form-aligned">
-        <fieldset>
-		<div class="pure-control-group">
-            <label for="Relay">Relay:</label>
-        <select id="Relay" name="Relay">
-            
-        </select>  
-		</div>
-        <table class="pure-table status-table-shedule">
-                     <colgroup>
-                        <col>
-                        <col>
-                        <col>
-                        <col>
-                     </colgroup>
-                     <thead>
-                        <tr>
-                           <th>Day</th>
-                           <th>Start Time</th>
-                           <th>Stop Time</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        <tr>
-                           <td> Monday</td>
-                           <td> <div class="textMobile">Start Time:</div><input type="time" id="alarm_1" name="start_time_monday" value="00:00" required> <input type="checkbox" id="alam_enabeled_1" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
-                           <td> <div class="textMobile">Stop Time:</div><input type="time" id="alarm_8" name="stop_time_monday" value="00:00" required> <input type="checkbox" id="alam_enabeled_8" class="shedule_check" name="alarm_enabled_monday"> Enable</td>
-                          
-                        </tr>
-                        <tr>
-                           <td> Tuesday </td>
-                           <td> <div class="textMobile">Start Time:</div><input type="time" id="alarm_2" name="start_time_tuesday" value="00:01" required> <input type="checkbox" id="alam_enabeled_2" class="shedule_check" name="alarm_enabled_tuesday"> Enable</td>
-                           <td> <div class="textMobile">Stop Time:</div><input type="time" id="alarm_9" name="start_time_tuesday" value="00:01" required> <input type="checkbox" id="alam_enabeled_9" class="shedule_check" name="alarm_enabled_tuesday"> Enable</td>
-                           
-                        </tr>
-                        <tr>
-                           <td> Wednesday </td>
-                           <td> <div class="textMobile">Start Time:</div><input type="time" id="alarm_3" name="start_time_wednesday" value="00:01" required><input type="checkbox" id="alam_enabeled_3" class="shedule_check" name="alarm_enabled_wednesday"> Enable</td>
-                           <td> <div class="textMobile">Stop Time:</div><input type="time" id="alarm_10" name="stop_time_wednesday" value="00:01" required><input type="checkbox" id="alam_enabeled_10" class="shedule_check" name="alarm_enabled_wednesday"> Enable</td>
+            <form class="pure-form pure-form-aligned">
+               <fieldset>
+                  <div class="pure-g">
+                        <div class="pure-u-3-24"></div>
+                        <div class="pure-u-7-24">
+                           <label for="SelectInterface">Interface</label>
+                           <select id="SelectInterface">
+                              <option value="-1">Base</option>
 
-                        </tr>
-                        <tr>
+                           </select>
+                        </div>
+                        <div class="pure-u-7-24">
+                           <label for="SelectSocket">Socket</label>
+                           <select id="SelectSocket">
+                              <option value="0">None</option>
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                              <option value="4">4</option>
+                           </select>
+                        </div>
+                        <div class="pure-u-7-24">
+                           <label for="Relay">Relay:</label>
+                           <select id="Relay" name="Relay">
 
-                           <td> Thursday</td>
-                           <td> <div class="textMobile">Start Time:</div><input type="time" id="alarm_4" name="start_time_thursday" value="00:01" required><input type="checkbox" id="alam_enabeled_4" class="shedule_check" name="alarm_enabled_thursday"> Enable</td>
-                           <td> <div class="textMobile">Stop Time:</div><input type="time" id="alarm_11" name="stop_time_thursday" value="00:01" required><input type="checkbox" id="alam_enabeled_11" class="shedule_check" name="alarm_enabled_thursday"> Enable</td>
+                           </select>
+                        </div>
+                  </div>
+      <table class="pure-table status-table-shedule">
+         <colgroup>
+            <col>
+            <col>
+            <col>
+            <col>
+         </colgroup>
+         <thead>
+            <tr>
+               <th>Day</th>
+               <th>Start Time</th>
+               <th>Stop Time</th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr>
+               <td> Monday</td>
+               <td>
+                  <div class="textMobile">Start Time:</div><input type="time" id="alarm_1" name="start_time_monday"
+                     value="00:00" required> <input type="checkbox" id="alam_enabeled_1" class="shedule_check"
+                     name="alarm_enabled_monday"> Enable
+               </td>
+               <td>
+                  <div class="textMobile">Stop Time:</div><input type="time" id="alarm_8" name="stop_time_monday"
+                     value="00:00" required> <input type="checkbox" id="alam_enabeled_8" class="shedule_check"
+                     name="alarm_enabled_monday"> Enable
+               </td>
 
-                        </tr>                     
-                        <tr>
+            </tr>
+            <tr>
+               <td> Tuesday </td>
+               <td>
+                  <div class="textMobile">Start Time:</div><input type="time" id="alarm_2" name="start_time_tuesday"
+                     value="00:01" required> <input type="checkbox" id="alam_enabeled_2" class="shedule_check"
+                     name="alarm_enabled_tuesday"> Enable
+               </td>
+               <td>
+                  <div class="textMobile">Stop Time:</div><input type="time" id="alarm_9" name="start_time_tuesday"
+                     value="00:01" required> <input type="checkbox" id="alam_enabeled_9" class="shedule_check"
+                     name="alarm_enabled_tuesday"> Enable
+               </td>
 
-                           <td> Friday </td>
-                           <td> <div class="textMobile">Start Time:</div><input type="time" id="alarm_5" name="start_time_friday" value="00:01" required><input type="checkbox" id="alam_enabeled_5" class="shedule_check" name="alarm_enabled_friday"> Enable</td>
-                           <td> <div class="textMobile">Stop Time:</div><input type="time" id="alarm_12" name="stop_time_friday" value="00:01" required><input type="checkbox" id="alam_enabeled_12" class="shedule_check" name="alarm_enabled_friday"> Enable</td>
+            </tr>
+            <tr>
+               <td> Wednesday </td>
+               <td>
+                  <div class="textMobile">Start Time:</div><input type="time" id="alarm_3" name="start_time_wednesday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_3" class="shedule_check"
+                     name="alarm_enabled_wednesday"> Enable
+               </td>
+               <td>
+                  <div class="textMobile">Stop Time:</div><input type="time" id="alarm_10" name="stop_time_wednesday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_10" class="shedule_check"
+                     name="alarm_enabled_wednesday"> Enable
+               </td>
 
-                        </tr>
-                        <tr>
+            </tr>
+            <tr>
 
-                           <td> Saturday </td>
-                           <td> <div class="textMobile">Start Time:</div><input type="time" id="alarm_6" name="start_time_saturday" value="00:01" required><input type="checkbox" id="alam_enabeled_6" class="shedule_check" name="alarm_enabled_saturday"> Enable</td>
-                           <td> <div class="textMobile">Stop Time:</div><input type="time" id="alarm_13" name="stop_time_saturday" value="00:01" required><input type="checkbox" id="alam_enabeled_13" class="shedule_check" name="alarm_enabled_saturday"> Enable</td>
-                        </tr>
-                        <tr>
+               <td> Thursday</td>
+               <td>
+                  <div class="textMobile">Start Time:</div><input type="time" id="alarm_4" name="start_time_thursday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_4" class="shedule_check"
+                     name="alarm_enabled_thursday"> Enable
+               </td>
+               <td>
+                  <div class="textMobile">Stop Time:</div><input type="time" id="alarm_11" name="stop_time_thursday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_11" class="shedule_check"
+                     name="alarm_enabled_thursday"> Enable
+               </td>
 
-                           <td> Sunday </td>
-                           <td> <div class="textMobile">Start Time:</div><input type="time" id="alarm_7" name="start_time_sunday" value="00:01" required></input><input type="checkbox" id="alam_enabeled_7" class="shedule_check" name="alarm_enabled_sunday"> Enable</td>
-                           <td> <div class="textMobile">Stop Time:</div><input type="time" id="alarm_14" name="stop_time_sunday" value="00:01" required><input type="checkbox" id="alam_enabeled_14" class="shedule_check" name="alarm_enabled_sunday"> Enable</td>
-                        </tr>
-                     </tbody>
-                  </table>                
-				<div class="pure-controls">
-                <button type="button" onClick="updateShedule()" class="pure-button pure-button-primary">Save</button>
-				</div>
-            </fieldset>
-            </form>
-         </div>
-         <div class=header id=about>
-            <h1>About</h1>
-            <h2>Device information</h2>
-         </div>
-         <div class=content>
-           <dl>
-               <dt>Board name</dt>
-               <dd>
-                  <div id="boardname">name</div>
-               </dd>
-               <dt>MAC address Wifi</dt>
-               <dd>
-                  <div id="mac_wifi">mac</div>
-               </dd>
-               <dt>MAC address Ethernet</dt>
-               <dd>
-                  <div id="mac_eth">mac</div>
-               </dd>
-               <dt>Local time</dt>
-               <dd>
-                  <div id="localtime">localtime</div>
-               </dd>
-               <dt>System up-time</dt>
-               <dd>
-                  <div id="uptime">uptime</div>
-               </dd>
-               <dt>Firmware version</dt>
-               <dd>
-                  <div id="version">version</div>
-               </dd>
-               
-            </dl>
-         </div>
+            </tr>
+            <tr>
+
+               <td> Friday </td>
+               <td>
+                  <div class="textMobile">Start Time:</div><input type="time" id="alarm_5" name="start_time_friday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_5" class="shedule_check"
+                     name="alarm_enabled_friday"> Enable
+               </td>
+               <td>
+                  <div class="textMobile">Stop Time:</div><input type="time" id="alarm_12" name="stop_time_friday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_12" class="shedule_check"
+                     name="alarm_enabled_friday"> Enable
+               </td>
+
+            </tr>
+            <tr>
+
+               <td> Saturday </td>
+               <td>
+                  <div class="textMobile">Start Time:</div><input type="time" id="alarm_6" name="start_time_saturday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_6" class="shedule_check"
+                     name="alarm_enabled_saturday"> Enable
+               </td>
+               <td>
+                  <div class="textMobile">Stop Time:</div><input type="time" id="alarm_13" name="stop_time_saturday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_13" class="shedule_check"
+                     name="alarm_enabled_saturday"> Enable
+               </td>
+            </tr>
+            <tr>
+
+               <td> Sunday </td>
+               <td>
+                  <div class="textMobile">Start Time:</div><input type="time" id="alarm_7" name="start_time_sunday"
+                     value="00:01" required></input><input type="checkbox" id="alam_enabeled_7" class="shedule_check"
+                     name="alarm_enabled_sunday"> Enable
+               </td>
+               <td>
+                  <div class="textMobile">Stop Time:</div><input type="time" id="alarm_14" name="stop_time_sunday"
+                     value="00:01" required><input type="checkbox" id="alam_enabeled_14" class="shedule_check"
+                     name="alarm_enabled_sunday"> Enable
+               </td>
+            </tr>
+         </tbody>
+      </table>
+      <div class="pure-controls">
+         <button type="button" onClick="updateShedule()" class="pure-button pure-button-primary">Save</button>
       </div>
-      <script src=js/jquery.min.js></script> <script src=js/ui.js></script> <script src=js/shedule.js></script> <script src=""></script>
+      </fieldset>
+      </form>
+   </div>
+   <div class=header id=about>
+      <h1>About</h1>
+      <h2>Device information</h2>
+   </div>
+   <div class=content>
+      <dl>
+         <dt>Board name</dt>
+         <dd>
+            <div id="boardname">name</div>
+         </dd>
+         <dt>MAC address Wifi</dt>
+         <dd>
+            <div id="mac_wifi">mac</div>
+         </dd>
+         <dt>MAC address Ethernet</dt>
+         <dd>
+            <div id="mac_eth">mac</div>
+         </dd>
+         <dt>Local time</dt>
+         <dd>
+            <div id="localtime">localtime</div>
+         </dd>
+         <dt>System up-time</dt>
+         <dd>
+            <div id="uptime">uptime</div>
+         </dd>
+         <dt>Firmware version</dt>
+         <dd>
+            <div id="version">version</div>
+         </dd>
+
+      </dl>
+   </div>
+   </div>
+   <script src=js/jquery.min.js></script>
+   <script src=js/ui.js></script>
+   <script src=js/shedule.js></script>
+   <script src=""></script>

@@ -1,20 +1,27 @@
+var selectedInterface = 0;
+var selectedSocket = 0;
+var selectedRelay = 0;
 function requestSettings() {
     var e = new Object;
+
     e = $.ajax({
         type: "GET",
-        url: "/settings",
+        url: "/layout",
         dataType: "text",
         data: $(this).serialize(),
         success: function (e) {
             try {
-                json = $.parseJSON(e), update_content()
+                json = $.parseJSON(e);
+                applyModuleLayout(json);
             } catch (t) {
                 console.log(t)
             }
         }
     });
+
     var relay = GetURLParameter('relay');
-    
+    relay = converToChannelID(selectedInterface,selectedSocket,selectedRelay);
+    console.log("ChannelID is:" + relay);
     e = $.ajax({
         type: "GET",
         url: "/getalarms",
@@ -27,23 +34,7 @@ function requestSettings() {
                 json = $.parseJSON(e);
                 console.log(json);
                 applyShedule(json);
-                
-            } catch (t) {
-                console.log(t)
-            }
-        }
-    });
 
-    e = $.ajax({
-        type: "GET",
-        url: "/status",
-        dataType: "text",
-        success: function (e) {
-            try {
-                json = $.parseJSON(e);
-                console.log(json);
-                populateDropDown(json);
-                $("#Relay").val(relay); //Set relay as selected option
             } catch (t) {
                 console.log(t)
             }
@@ -51,27 +42,63 @@ function requestSettings() {
     });
 }
 
+function applyModuleLayout(json)
+{
+    if (json.VM20EX) {
+        $("#SelectInterface").innerHTML += "<option value=\"0\">Extention</option>";
+    } else {
+        if (json.Interfaces.length) {
+            for (var i = 0; i < json.Interfaces.length; i++) {
+                var name  = i+1;
+                $("#SelectInterface").innerHTML += "<option value=\"" + name + "\">Interface " + name + "</option>";
+                SelectInterface.innerHTML += "<option value=\"" + name + "\">Interface " + name + "</option>";
+            }
+        } else {
+
+        }
+    }
+
+    var dropdown = $("#Relay");
+        if(selectedInterface == "-1")
+        {
+            dropdown[0].innerHTML = "";
+            for (var i = 0; i < 4; i++) {
+                var value = i+1;
+                dropdown[0].innerHTML += "<option value=" + value + ">" + "Relay " + value + "</option>";
+            }
+        }else{
+            dropdown[0].innerHTML = "";
+            for (var i = 0; i < 8; i++) {
+                var value = i+1;
+                dropdown[0].innerHTML += "<option value=" + value + ">" + "Relay " +value + "</option>";
+            }
+        }
+        dropdown.val(selectedRelay);
+        $("#SelectInterface").val(selectedInterface);
+        $("#SelectSocket").val(selectedSocket);
+}
+
 function populateDropDown(json) {
     var dropdown = $("#Relay");
     var index = 1;
     for (var i = 0; i < 4; i++) {
         console.log(json.Interface0.VM208[i].name);
-        dropdown[0].innerHTML += "<option value="+index+">"+json.Interface0.VM208[i].name +"</option>";
+        dropdown[0].innerHTML += "<option value=" + index + ">" + json.Interface0.VM208[i].name + "</option>";
         index++;
     }
     try {
         console.log(json.Interface1.VM208EX[0].name);
-        dropdown[0].innerHTML += "<option value="+index+">"+json.Interfaces[i][j][k].name +"</option>";
+        dropdown[0].innerHTML += "<option value=" + index + ">" + json.Interfaces[i][j][k].name + "</option>";
     }
     catch {
-        index+=8;
+        index += 8;
         for (var i = 0; i < json.Interfaces.length; i++)//Interfaces
         {
             for (var j = 0; j < json.Interfaces[i].length; j++)//Modules
             {
                 for (var k = 0; k < json.Interfaces[i][j].length; k++)//Channels
                 {
-                    dropdown[0].innerHTML += "<option value="+index+">"+json.Interfaces[i][j][k].name +"</option>";
+                    dropdown[0].innerHTML += "<option value=" + index + ">" + json.Interfaces[i][j][k].name + "</option>";
                     index++;
                 }
             }
@@ -126,16 +153,83 @@ function update_content() {
 }
 
 $(document).ready(function () {
+    selectedRelay = parseInt(GetURLParameter('relay'));
+    selectedInterface = parseInt(GetURLParameter('interface'));
+    selectedSocket = parseInt(GetURLParameter('socket'));
     requestBoardInfo();
     requestSettings();
     $("#Relay").change(function () {
-        var relay = $("#Relay").val();
+        selectedRelay = parseInt($("#Relay").val());
+        var channelID = converToChannelID(selectedInterface,selectedSocket,selectedRelay);
         e = $.ajax({
             type: "GET",
             url: "/getalarms",
             dataType: "text",
             data: {
-                channel: relay
+                channel: channelID
+            },
+            success: function (e) {
+                try {
+                    json = $.parseJSON(e);
+                    applyShedule(json);
+                } catch (t) {
+                    console.log(t)
+                }
+            }
+        });
+    });
+    $("#SelectInterface").change(function () {
+        selectedInterface = parseInt($("#SelectInterface").val());
+        
+        var dropdown = $("#Relay");
+        if(selectedInterface == "-1")
+        {
+            dropdown[0].innerHTML = "";
+            for (var i = 0; i < 4; i++) {
+                var value = i+1;
+                dropdown[0].innerHTML += "<option value=" + value + ">" + "Relay " + value + "</option>";
+            }
+            selectedRelay = 1;
+
+        }else{
+            dropdown[0].innerHTML = "";
+            for (var i = 0; i < 8; i++) {
+                var value = i+1;
+                dropdown[0].innerHTML += "<option value=" + value + ">" + "Relay " +value + "</option>";
+            }
+        }
+        if(selectedInterface != "-1" && selectedInterface != "0")
+        {
+            $('#SelectSocket').val(1);
+            selectedSocket = 1;
+        }
+        var channelID = converToChannelID(selectedInterface,selectedSocket,selectedRelay);
+        e = $.ajax({
+            type: "GET",
+            url: "/getalarms",
+            dataType: "text",
+            data: {
+                channel: channelID
+            },
+            success: function (e) {
+                try {
+                    json = $.parseJSON(e);
+                    applyShedule(json);
+                } catch (t) {
+                    console.log(t)
+                }
+            }
+        });
+    });
+    $("#SelectSocket").change(function () {
+        selectedSocket = parseInt($("#SelectSocket").val());
+        var channelID = converToChannelID(selectedInterface,selectedSocket,selectedRelay);
+        e = $.ajax({
+            type: "GET",
+            url: "/getalarms",
+            dataType: "text",
+            data: {
+                channel: channelID
             },
             success: function (e) {
                 try {
@@ -194,10 +288,9 @@ function requestBoardInfo() {
 
 function updateShedule() {
     if (ValidateShedule()) {
-        var relay = $("#Relay").val();
-
+        var channelID = converToChannelID(selectedInterface,selectedSocket,selectedRelay);
         var e = {
-            relay: relay,
+            relay: channelID,
             alarm_time_1: $("#alarm_1").val(),
             alarm_enable_1: $("#alam_enabeled_1").is(":checked"),
             alarm_time_2: $("#alarm_2").val(),
@@ -273,3 +366,16 @@ function updateBoardInfo(e) {
     $("#localtime").text(boardInfo.LOCAL_TIME);
 }
 
+function converToChannelID(interface, socket, relay) {
+    var channelID = 0;
+    if (interface == -1) {
+        channelID = relay;
+    }
+    else if (interface == 0) {
+        channelID = parseInt(relay) + 4;
+    }
+    else {
+        channelID = 12 + ((interface - 1) * 32) + ((socket - 1) * 8) + relay;
+    }
+    return channelID;
+}
