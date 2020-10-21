@@ -44,13 +44,12 @@ function requestSettings() {
 
 function applyModuleLayout(json)
 {
-    if (json.VM20EX) {
-        $("#SelectInterface").innerHTML += "<option value=\"0\">Extention</option>";
+    if (json.VM208EX) {
+        SelectInterface.innerHTML += "<option value=\"0\">Extention</option>";
     } else {
         if (json.Interfaces.length) {
             for (var i = 0; i < json.Interfaces.length; i++) {
                 var name  = i+1;
-                $("#SelectInterface").innerHTML += "<option value=\"" + name + "\">Interface " + name + "</option>";
                 SelectInterface.innerHTML += "<option value=\"" + name + "\">Interface " + name + "</option>";
             }
         } else {

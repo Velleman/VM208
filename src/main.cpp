@@ -64,7 +64,7 @@ static void checkSheduler(void *pvParameter)
   }
   vTaskDelete(NULL);
 }
-
+TaskHandle_t taskHandle;
 void setup()
 {
   g_Mutex = xSemaphoreCreateMutex();
@@ -113,16 +113,18 @@ void setup()
   }
   else
   {
-    Serial.printf("%s", config.getSSID());
-    Serial.printf("%s", config.getWifiPassword());
-    xTaskCreate(IO_task, "IO_task", 3072, NULL, (tskIDLE_PRIORITY + 2), NULL);
+    Serial.printf("%s", config.getSSID().c_str());
+    Serial.printf("%s", config.getWifiPassword().c_str());
+    
     WiFi.onEvent(WiFiEvent);
     if (!startEth()) //No cable inserted
     {
       startWifi();
     }
   }
-
+  
+  xTaskCreate(IO_task, "io_task", 2048, NULL, (tskIDLE_PRIORITY + 3), &taskHandle);
+  
   xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
   //xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
 

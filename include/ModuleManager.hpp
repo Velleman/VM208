@@ -23,6 +23,6 @@ class ModuleManager{
         vector<RelayModule *> _modules;
         vector<RelayModule *> _modulesOnInterface[8];
         VM208INT _interfaces[8];
-        const bool _demo = true;
+        const bool _demo = false;
         uint8_t _interfaceDetected = 0;
 };

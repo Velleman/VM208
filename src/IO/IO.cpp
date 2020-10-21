@@ -67,7 +67,7 @@ void Init_IO(bool setState)
   gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
   gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
 
-  if (mm.getAmount() > 4) //if a module is detected the second interrupt pin is used.
+  if (mm.isExtensionConnected()) //if a module is detected the second interrupt pin is used.
     gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
 
   Serial.println("Found modules: ");
@@ -95,11 +95,9 @@ void IO_task(void *arg)
 {
 
   uint32_t io_num;
-  //xTaskCreate(updateIO, "checkExtension", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
   while (1)
   {
-
-    if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY)) //|| digitalRead(INT_PIN) == LOW)
+    if (xQueueReceive(int_evt_queue, &io_num, 100 / portTICK_PERIOD_MS) || digitalRead(INT_PIN) == LOW)
     {
       Serial.println("Handle Interrupt");
       if (io_num == INT2_PIN) //read extension
@@ -112,8 +110,8 @@ void IO_task(void *arg)
       }
     }
     io_num = 0;
+    delay(50);
   }
-  delay(200);
 }
 
 void toggleChannel(VM208 *ex, uint8_t channel)

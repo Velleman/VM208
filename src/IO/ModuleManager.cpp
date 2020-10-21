@@ -66,7 +66,7 @@ void ModuleManager::DetectModules()
         byte error = Wire.endTransmission();
         Serial.print("return value I2C: ");
         Serial.println(error);
-        if (!error)
+        if (error == 0 || error == 2)
         {
             Serial.println("native VM208EX found");
             _extensionModule = new VM208EX();
@@ -185,6 +185,8 @@ uint8_t ModuleManager::getAmount()
     {
         amount += _modulesOnInterface[i].size();
     }
+    Serial.print("Get Amount is: ");
+    Serial.println(amount);
     return amount;
 }
 
@@ -225,7 +227,7 @@ RelayChannel *ModuleManager::getChannel(int channelId)
     {
         if (_extensionModule != nullptr)
         {
-            return _extensionModule->getChannel(channelId - 1);
+            return _extensionModule->getChannel(channelId - 5); //zero based + 4 offset
         }
         else
         {
@@ -273,7 +275,7 @@ uint16_t ModuleManager::getChannelId(uint8_t interface, uint8_t module, uint8_t 
         channels += 13;
         channelId = channels;
     }
-    Serial.printf("Channel ID is %d", channelId);
+    Serial.printf("Channel ID is %d\r\n", channelId);
     return channelId;
 } 
 
