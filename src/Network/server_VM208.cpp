@@ -93,13 +93,28 @@ void startServer()
     state = p->value();
     auto interface = request->getParam(2)->value().toInt();
     auto socket = request->getParam(3)->value().toInt();
-    relay = convertToChannelId(relay, interface, socket);
+    //relay = convertToChannelId(relay, interface, socket);
     Serial.printf("Channel is :%d", relay);
-    RelayChannel *channel = mm.getChannel(relay);
     if (xSemaphoreTake(g_Mutex, 100 / portTICK_PERIOD_MS))
     {
-      if (channel != nullptr)
-        state.toInt() ? channel->turnOn() : channel->turnOff();
+      if (interface != 0 && interface != -1)
+      {
+        VM208EX *module = (VM208EX *)mm.getModuleFromInterface(interface - 1, socket - 1);
+
+        if (state.toInt())
+          module->turnOnChannel(relay - 1);
+        else
+          module->turnOffChannel(relay - 1);
+      }
+      else
+      {
+        VM208 *module = mm.getBaseModule();
+        if (state.toInt())
+          module->turnOnChannel(relay - 1);
+        else
+          module->turnOffChannel(relay - 1);
+      }
+      //state.toInt() ? channel->turnOn() : channel->turnOff();
       xSemaphoreGive(g_Mutex);
     }
     xQueueSend(pulseStopQueue, &relay, 0);
@@ -853,20 +868,23 @@ void sendIOState(AsyncWebServerRequest *request, int8_t interface, uint8_t socke
     {
       uint8_t moduleNr = 2 + ((interface - 1) * 4) + (socket - 1);
       VM208EX *module = (VM208EX *)mm.getModule(moduleNr);
-
-      for (int j = 0; j < 8; j++)
+      if (module != nullptr)
       {
-        auto channelID = convertToChannelId(j + 1, interface, socket);
-        VM208EXChannel *ch = module->getChannel(j, false);
-        JsonObject &channel = channels.createNestedObject();
-        channel.set("name", ch->getName());
-        channel.set("state", ch->isOn());
-        channel.set("pulseActive", pulseStatus.status[channelID - 1]);
-        channel.set("timerActive", timerStatus.status[channelID - 1]);
+        for (int j = 0; j < 8; j++)
+        {
+          auto channelID = convertToChannelId(j + 1, interface, socket);
+          VM208EXChannel *ch = module->getChannel(j, false);
+          JsonObject &channel = channels.createNestedObject();
+          channel.set("name", ch->getName());
+          channel.set("state", ch->isOn());
+          channel.set("pulseActive", pulseStatus.status[channelID - 1]);
+          channel.set("timerActive", timerStatus.status[channelID - 1]);
+        }
       }
     }
   }
-  root.set("input", false);
+  
+  root.set("input", mm.getBaseModule()->getUserInputState());
   root.printTo(*response);
   request->send(response);
   jsonBuffer.clear();

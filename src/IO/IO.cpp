@@ -21,7 +21,7 @@ QueueHandle_t pulseQueue;
 QueueHandle_t pulseStopQueue;
 QueueHandle_t pulseStatusQueue;
 
-static void gpio_isr_handler(void *arg)
+static void IRAM_ATTR gpio_isr_handler(void *arg)
 {
   if ((millis() - previousTime) > 200)
   {
@@ -57,9 +57,19 @@ void Init_IO(bool setState)
   //io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
   gpio_config(&io_conf);
 
-  gpio_set_direction(GPIO_NUM_35, GPIO_MODE_INPUT);
+  /*gpio_set_direction(GPIO_NUM_35, GPIO_MODE_INPUT);
   gpio_pullup_en(GPIO_NUM_35);
-  gpio_set_intr_type(GPIO_NUM_35, GPIO_INTR_NEGEDGE);
+  pinMode(35,INPUT);
+  gpio_set_intr_type(GPIO_NUM_35, GPIO_INTR_NEGEDGE);*/
+  io_conf.intr_type = GPIO_INTR_NEGEDGE;
+  //bit mask of the pins, use GPIO4/35 here
+  io_conf.pin_bit_mask = (1ULL << 35);
+  //set as input mode
+  io_conf.mode = GPIO_MODE_INPUT;
+  //enable pull-up mode
+  //io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+  //io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+  gpio_config(&io_conf);
 
   //create a queue to handle gpio event from isr
   int_evt_queue = xQueueCreate(10, sizeof(uint32_t));
@@ -68,7 +78,9 @@ void Init_IO(bool setState)
   gpio_isr_handler_add(INT_PIN, gpio_isr_handler, (void *)INT_PIN);
 
   if (mm.isExtensionConnected()) //if a module is detected the second interrupt pin is used.
+  {
     gpio_isr_handler_add(INT2_PIN, gpio_isr_handler, (void *)INT2_PIN);
+  }
 
   Serial.println("Found modules: ");
   Serial.println(mm.getAmount());
@@ -102,7 +114,22 @@ void IO_task(void *arg)
       Serial.println("Handle Interrupt");
       if (io_num == INT2_PIN) //read extension
       {
-        toggleChannel((VM208EX *)mm.getModule(1), mm.getModule(1)->getPressedButton());
+        if (mm.isExtensionConnected())
+        {
+          toggleChannel((VM208EX *)mm.getModule(1), mm.getModule(1)->getPressedButton());
+        }
+        else
+        {
+          for (int i = 0; i < 8; i++) // go over each interface
+          {
+            uint8_t socket = mm.getInterface(i)->handleInterrupt();
+            if (socket)//if 0 then no interrupt happend on that interface, socket == module ID
+            {
+              auto button = mm.getModuleFromInterface(i, socket - 1)->getPressedButton(); //From Interface I take module and retreive the pressed button
+              (*((VM208EX *)mm.getModuleFromInterface(i, socket - 1)))[button].toggle(); //use the button id to toggle it
+            }
+          }
+        }
       }
       else
       {

@@ -30,13 +30,25 @@ void timerTask(void *arg)
             timers[channelId - 1].enabled = true;
             timers[channelId - 1].endTime = millis() + time;
             RelayChannel *channel = mm.getChannel(channelId);
-            if (channel != nullptr)
+            if (channelId < 5)
             {
-                unsigned long startTime = millis();
+                VM208 *module = (VM208 *)mm.getModuleFromChannelID(channelId);
                 xSemaphoreTake(g_Mutex, portMAX_DELAY);
+                module->Activate();
                 channel->toggle();
+                module->Disactivate();
                 xSemaphoreGive(g_Mutex);
             }
+            else
+            {
+                VM208EX *module = (VM208EX *)mm.getModuleFromChannelID(channelId);
+                xSemaphoreTake(g_Mutex, portMAX_DELAY);
+                module->Activate();
+                channel->toggle();
+                module->Disactivate();
+                xSemaphoreGive(g_Mutex);
+            }
+            //Update Status
             for (int i = 0; i < 268; i++)
             {
                 status.status[i] = timers[i].enabled;
@@ -45,7 +57,7 @@ void timerTask(void *arg)
         }
         if (xQueueReceive(timerStopQueue, &relay, 0))
         {
-            timers[relay -1].enabled = false;
+            timers[relay - 1].enabled = false;
             for (int i = 0; i < 268; i++)
             {
                 status.status[i] = timers[i].enabled;
@@ -58,9 +70,24 @@ void timerTask(void *arg)
             {
                 if (timers[i].enabled && timers[i].endTime < millis())
                 {
-                    xSemaphoreTake(g_Mutex, portMAX_DELAY);
-                    mm.getChannel(i + 1)->toggle();
-                    xSemaphoreGive(g_Mutex);
+                    if (i < 4)
+                    {
+                        VM208 *module = (VM208 *)mm.getModuleFromChannelID(i+1);
+                        xSemaphoreTake(g_Mutex, portMAX_DELAY);
+                        module->Activate();
+                        mm.getChannel(i+1)->toggle();
+                        module->Disactivate();
+                        xSemaphoreGive(g_Mutex);
+                    }
+                    else
+                    {
+                        VM208EX *module = (VM208EX *)mm.getModuleFromChannelID(i+1);
+                        xSemaphoreTake(g_Mutex, portMAX_DELAY);
+                        module->Activate();
+                        mm.getChannel(i+1)->toggle();
+                        module->Disactivate();
+                        xSemaphoreGive(g_Mutex);
+                    }
                     timers[i].enabled = false;
                     for (int i = 0; i < 268; i++)
                     {
@@ -101,12 +128,25 @@ void pulseTask(void *arg)
             timers[channelId - 1].enabled = true;
             timers[channelId - 1].endTime = millis() + time;
             RelayChannel *channel = mm.getChannel(channelId);
-            if (channel != nullptr)
+            if (channelId < 5)
             {
+                VM208 *module = (VM208 *)mm.getModuleFromChannelID(channelId);
                 xSemaphoreTake(g_Mutex, portMAX_DELAY);
+                module->Activate();
                 channel->toggle();
+                module->Disactivate();
                 xSemaphoreGive(g_Mutex);
             }
+            else
+            {
+                VM208EX *module = (VM208EX *)mm.getModuleFromChannelID(channelId);
+                xSemaphoreTake(g_Mutex, portMAX_DELAY);
+                module->Activate();
+                channel->toggle();
+                module->Disactivate();
+                xSemaphoreGive(g_Mutex);
+            }
+            //Update status
             for (int i = 0; i < 268; i++)
             {
                 status.status[i] = timers[i].enabled;
@@ -128,9 +168,24 @@ void pulseTask(void *arg)
             {
                 if (timers[i].enabled && timers[i].endTime < millis())
                 {
-                    xSemaphoreTake(g_Mutex, portMAX_DELAY);
-                    mm.getChannel(i + 1)->toggle();
-                    xSemaphoreGive(g_Mutex);
+                    if (i < 4)
+                    {
+                        VM208 *module = (VM208 *)mm.getModuleFromChannelID(i+1);
+                        xSemaphoreTake(g_Mutex, portMAX_DELAY);
+                        module->Activate();
+                        mm.getChannel(i+1)->toggle();
+                        module->Disactivate();
+                        xSemaphoreGive(g_Mutex);
+                    }
+                    else
+                    {
+                        VM208EX *module = (VM208EX *)mm.getModuleFromChannelID(i+1);
+                        xSemaphoreTake(g_Mutex, portMAX_DELAY);
+                        module->Activate();
+                        mm.getChannel(i+1)->toggle();
+                        module->Disactivate();
+                        xSemaphoreGive(g_Mutex);
+                    }
                     timers[i].enabled = false;
                     for (int i = 0; i < 268; i++)
                     {

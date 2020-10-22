@@ -1,6 +1,6 @@
 var selectedInterface = -1;
 var selectedSocket = 0;
-
+var jsonLayout;
 function requestSettings() {
     var e = new Object;
     e = $.ajax({
@@ -34,13 +34,13 @@ function requestSettings() {
 
 function applyModuleLayout(json) {
     //populate dropdowns
-
+    jsonLayout = json;
     if (json.VM208EX) {
         SelectInterface.innerHTML += "<option value=\"0\">Extention</option>";
     } else {
         if (json.Interfaces.length) {
             for (var i = 0; i < json.Interfaces.length; i++) {
-                var name  = i+1;
+                var name = i + 1;
                 SelectInterface.innerHTML += "<option value=\"" + name + "\">Interface " + name + "</option>";
             }
         } else {
@@ -324,17 +324,17 @@ function updateIO(e) {
         //var a;
         if (selectedInterface == "-1") {
             for (a = 1; a <= 4; a++) {
-                $("#relay" + a + "Status").html(t.Channels[a-1].state ? "TURN OFF" : "TURN ON");
-                $("#pulse" + a + "Start").html(t.Channels[a-1].pulseActive ? "STOP" : "START");
-                $("#timer" + a + "Start").html(t.Channels[a-1].timerActive ? "STOP" : "START");
-                $("#Name" + a).html(t.Channels[a-1].name);
+                $("#relay" + a + "Status").html(t.Channels[a - 1].state ? "TURN OFF" : "TURN ON");
+                $("#pulse" + a + "Start").html(t.Channels[a - 1].pulseActive ? "STOP" : "START");
+                $("#timer" + a + "Start").html(t.Channels[a - 1].timerActive ? "STOP" : "START");
+                $("#Name" + a).html(t.Channels[a - 1].name);
             }
         } else {
             for (a = 1; a <= 8; a++) {
-                $("#relay" + a + "Status").html(t.Channels[a-1].state ? "TURN OFF" : "TURN ON");
-                $("#pulse" + a + "Start").html(t.Channels[a-1].pulseActive ? "STOP" : "START");
-                $("#timer" + a + "Start").html(t.Channels[a-1].timerActive ? "STOP" : "START");
-                $("#Name" + a).html(t.Channels[a-1].name);
+                $("#relay" + a + "Status").html(t.Channels[a - 1].state ? "TURN OFF" : "TURN ON");
+                $("#pulse" + a + "Start").html(t.Channels[a - 1].pulseActive ? "STOP" : "START");
+                $("#timer" + a + "Start").html(t.Channels[a - 1].timerActive ? "STOP" : "START");
+                $("#Name" + a).html(t.Channels[a - 1].name);
             }
         }
     } catch (s) {
@@ -384,14 +384,14 @@ function openSheduler(e, f) {
     id = id.replace('shedule', '');
     id = id.replace('Start', '');
     selectedInterface
-    location.href = "shedule.html?relay=" + id+"&interface="+selectedInterface+"&socket="+selectedSocket;
+    location.href = "shedule.html?relay=" + id + "&interface=" + selectedInterface + "&socket=" + selectedSocket;
 }
 
 function enableButtons() {
     var e;
-    if(selectedInterface == "-1")
+    if (selectedInterface == "-1")
         totalChannels = 4;
-    else 
+    else
         totalChannels = 8;
     for (e = 1; e <= totalChannels; e++) {
         $("#relay" + e + "Status").removeClass("pure-button-disabled");
@@ -417,11 +417,7 @@ $(document).ready(function () {
     requestBoardInfo(), requestSettings(), getStatusForTable(), $("#splashscreen").delay(750).fadeOut(500);
     $('#SelectInterface').on('change', function () {
         selectedInterface = this.value;
-        if(selectedInterface != "-1" && selectedInterface != "0")
-        {
-            $('#SelectSocket').val(1);
-            selectedSocket = 1;
-        }
+        updateSocket();
         generateTable();
     });
     $('#SelectSocket').on('change', function () {
@@ -430,18 +426,49 @@ $(document).ready(function () {
     });
 
 });
+
+function updateSocket() {
+
+    SelectSocket.innerHTML = "";
+    if (selectedInterface == "0" || selectedInterface == "-1") {
+        SelectSocket.innerHTML = "<option value=\"0\">None</option>";
+        selectedSocket = 0;
+    } else {
+        selectedSocket = 0;
+        if (jsonLayout.Interfaces[selectedInterface - 1].Socket1) {
+            SelectSocket.innerHTML += "<option value=\"1\">1</option>";
+            if(!selectedSocket)
+                selectedSocket = 1;
+        }
+        if (jsonLayout.Interfaces[selectedInterface - 1].Socket2) {
+            SelectSocket.innerHTML += "<option value=\"2\">2</option>";
+            if(!selectedSocket)
+                selectedSocket = 2;
+        }
+        if (jsonLayout.Interfaces[selectedInterface - 1].Socket3) {
+            SelectSocket.innerHTML += "<option value=\"3\">3</option>";
+            if(!selectedSocket)
+                selectedSocket = 3;
+        }
+        if (jsonLayout.Interfaces[selectedInterface - 1].Socket4) {
+            SelectSocket.innerHTML += "<option value=\"4\">4</option>";
+            if(!selectedSocket)
+                selectedSocket = 4;
+        }
+    }
+}
 var current_slide = 0;
 var totalChannels;
 function getStatusForTable() {
-    var e= {
-        interface:selectedInterface,
-        socket:selectedSocket
+    var e = {
+        interface: selectedInterface,
+        socket: selectedSocket
     };
     $.ajax({
         type: "GET",
         url: "/status",
         dataType: "text",
-        data:e,
+        data: e,
         success: function (e) {
             try {
                 generateTable(e);
@@ -460,7 +487,7 @@ function generateTable(e) {
     var table = $('#VM208TableBody');
     table.empty();
     var rows;
-    if(selectedInterface == "-1")
+    if (selectedInterface == "-1")
         rows = 5;
     else
         rows = 9;
@@ -472,7 +499,7 @@ function generateTable(e) {
         <td class="col4" > <input type="number" style="width:30%" name="value_timer'+ channelId + '" id="value_timer' + channelId + '" value="1" min="1" max="60000"><label for="value_timer' + channelId + '">min</label> <button class="pure-button pure-button-disabled" id=timer' + channelId + 'Start>START</button> </value> </td> \
         <td  class="col5" > <button class="pure-button" id="shedule'+ channelId + 'Start">EDIT</button> <span class="dot" id="dot' + channelId + '"></span> </td> \
      </tr>');
-        
+
         $("#relay" + channelId + "Status").removeClass("pure-button-disabled");
         $("#relay" + channelId + "Status").click(function () {
             sendRelay(channelId, this);

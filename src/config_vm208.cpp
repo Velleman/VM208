@@ -112,7 +112,9 @@ void Configuration::loadAlarms()
             auto channel = mm.getChannel(i + 1);
             if (channel != nullptr)
             {
+                Serial.printf("Channel Shedule index: %d\r\n",i);
                 _cs[i].setChannel(channel);
+                _cs[i].setChannelID(i+1);
                 for (uint8_t j = 0; j < 14; j++)
                 {
                     JsonObject &Channels_0_alarms_i = alarms[j];
@@ -123,6 +125,7 @@ void Configuration::loadAlarms()
                     bool onOff = (j < 7);
                     _cs[i].setShedule(dow, hour, minute, onOff, enabled);
                 }
+                mm.getModuleFromChannelID(i+1)->Disactivate();
             }
             file.close();
             jsonBuffer.clear();

@@ -1,8 +1,15 @@
 #include "ChannelShedule.hpp"
+#include "global.hpp"
 
-ChannelShedule::ChannelShedule(RelayChannel *channel)
+ChannelShedule::ChannelShedule(RelayChannel *channel,uint16_t id)
 {
+    _channelID = id;
     _channel = channel;
+}
+
+void ChannelShedule::setChannelID(uint16_t id)
+{
+    _channelID = id;
 }
 
 void ChannelShedule::setChannel(RelayChannel *channel)
@@ -36,7 +43,11 @@ void ChannelShedule::Update(tm *time)
         {
             _isStartTriggered = true;
             if (_channel != nullptr)
+            {
+                mm.getModuleFromChannelID(_channelID)->Activate();
                 _channel->turnOn();
+                mm.getModuleFromChannelID(_channelID)->Disactivate();
+            }
         }
     }
     else if (stop->hour == time->tm_hour && stop->minute == time->tm_min && stop->enable)
@@ -45,7 +56,11 @@ void ChannelShedule::Update(tm *time)
         {
             _isStopTriggered = true;
             if (_channel != nullptr)
+            {
+                mm.getModuleFromChannelID(_channelID)->Activate();
                 _channel->turnOff();
+                mm.getModuleFromChannelID(_channelID)->Disactivate();
+            }
         }
     }
     else
