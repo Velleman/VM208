@@ -123,22 +123,27 @@ void startServer()
   });
 
   server.on("/mosfet", HTTP_POST, [](AsyncWebServerRequest *request) {
-    String relay;
-    String state;
-    AsyncWebParameter *p = request->getParam(0);
-    relay = p->value();
-    p = request->getParam(1);
-    state = p->value();
-    /*Mosfet *m = getMosfetById(relay.toInt());
-    if (state == "0")
+    uint8_t mosfet;
+    uint8_t state;
+    mosfet = request->getParam(0)->value().toInt();
+    state = request->getParam(1)->value().toInt();
+    if (mosfet == 1)
     {
-      m->turnOff();
+      if (state == 1)
+        mm.getBaseModule()->turnOnMosfet1();
+      else
+      {
+        mm.getBaseModule()->turnOffMosfet1();
+      }
+      
+    }else{
+      if (state == 1)
+        mm.getBaseModule()->turnOnMosfet2();
+      else
+      {
+        mm.getBaseModule()->turnOffMosfet2();
+      }
     }
-    else
-    {
-      m->turnOn();
-    }*/
-
     sendIOState(request);
   });
 
@@ -883,7 +888,8 @@ void sendIOState(AsyncWebServerRequest *request, int8_t interface, uint8_t socke
       }
     }
   }
-  
+  root.set("m1", mm.getBaseModule()->getMosfet1State());
+  root.set("m2", mm.getBaseModule()->getMosfet2State());
   root.set("input", mm.getBaseModule()->getUserInputState());
   root.printTo(*response);
   request->send(response);

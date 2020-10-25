@@ -318,9 +318,9 @@ function timerRelayEvent() {
 
 
 function updateIO(e) {
-
+    var t = $.parseJSON(e);
     try {
-        var t = $.parseJSON(e);
+
         //var a;
         if (selectedInterface == "-1") {
             for (a = 1; a <= 4; a++) {
@@ -337,9 +337,13 @@ function updateIO(e) {
                 $("#Name" + a).html(t.Channels[a - 1].name);
             }
         }
+
     } catch (s) {
         console.log(s)
     }
+    $("#mosfet1Status").html(t.m1 ? "TURN OFF" : "TURN ON");
+    $("#mosfet2Status").html(t.m2 ? "TURN OFF" : "TURN ON");
+    $("#inputStatus").html(t.input ? "ON" : "OFF");
 }
 
 function requestBoardInfo() {
@@ -437,22 +441,22 @@ function updateSocket() {
         selectedSocket = 0;
         if (jsonLayout.Interfaces[selectedInterface - 1].Socket1) {
             SelectSocket.innerHTML += "<option value=\"1\">1</option>";
-            if(!selectedSocket)
+            if (!selectedSocket)
                 selectedSocket = 1;
         }
         if (jsonLayout.Interfaces[selectedInterface - 1].Socket2) {
             SelectSocket.innerHTML += "<option value=\"2\">2</option>";
-            if(!selectedSocket)
+            if (!selectedSocket)
                 selectedSocket = 2;
         }
         if (jsonLayout.Interfaces[selectedInterface - 1].Socket3) {
             SelectSocket.innerHTML += "<option value=\"3\">3</option>";
-            if(!selectedSocket)
+            if (!selectedSocket)
                 selectedSocket = 3;
         }
         if (jsonLayout.Interfaces[selectedInterface - 1].Socket4) {
             SelectSocket.innerHTML += "<option value=\"4\">4</option>";
-            if(!selectedSocket)
+            if (!selectedSocket)
                 selectedSocket = 4;
         }
     }
@@ -518,6 +522,17 @@ function generateTable(e) {
         });
         channelId++;
     }
+
+    $("#mosfet1Status").removeClass("pure-button-disabled");
+    $("#mosfet1Status").click(function () {
+        sendMosfet(1, this);
+    });
+    $("#mosfet2Status").removeClass("pure-button-disabled");
+    $("#mosfet2Status").click(function () {
+        sendMosfet(2, this);
+    });
+
+
 }
 
 

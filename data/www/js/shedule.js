@@ -1,6 +1,7 @@
 var selectedInterface = 0;
 var selectedSocket = 0;
 var selectedRelay = 0;
+var jsonLayout;
 function requestSettings() {
     var e = new Object;
 
@@ -11,8 +12,8 @@ function requestSettings() {
         data: $(this).serialize(),
         success: function (e) {
             try {
-                json = $.parseJSON(e);
-                applyModuleLayout(json);
+                jsonLayout = $.parseJSON(e);
+                applyModuleLayout(jsonLayout);
             } catch (t) {
                 console.log(t)
             }
@@ -46,6 +47,7 @@ function applyModuleLayout(json)
 {
     if (json.VM208EX) {
         SelectInterface.innerHTML += "<option value=\"0\">Extention</option>";
+
     } else {
         if (json.Interfaces.length) {
             for (var i = 0; i < json.Interfaces.length; i++) {
@@ -56,7 +58,9 @@ function applyModuleLayout(json)
 
         }
     }
-
+    
+    updateSocket();
+    
     var dropdown = $("#Relay");
         if(selectedInterface == "-1")
         {
@@ -75,6 +79,37 @@ function applyModuleLayout(json)
         dropdown.val(selectedRelay);
         $("#SelectInterface").val(selectedInterface);
         $("#SelectSocket").val(selectedSocket);
+}
+
+function updateSocket() {
+
+    SelectSocket.innerHTML = "";
+    if (selectedInterface == "0" || selectedInterface == "-1") {
+        SelectSocket.innerHTML = "<option value=\"0\">None</option>";
+        selectedSocket = 0;
+    } else {
+        selectedSocket = 0;
+        if (jsonLayout.Interfaces[selectedInterface - 1].Socket1) {
+            SelectSocket.innerHTML += "<option value=\"1\">1</option>";
+            if (!selectedSocket)
+                selectedSocket = 1;
+        }
+        if (jsonLayout.Interfaces[selectedInterface - 1].Socket2) {
+            SelectSocket.innerHTML += "<option value=\"2\">2</option>";
+            if (!selectedSocket)
+                selectedSocket = 2;
+        }
+        if (jsonLayout.Interfaces[selectedInterface - 1].Socket3) {
+            SelectSocket.innerHTML += "<option value=\"3\">3</option>";
+            if (!selectedSocket)
+                selectedSocket = 3;
+        }
+        if (jsonLayout.Interfaces[selectedInterface - 1].Socket4) {
+            SelectSocket.innerHTML += "<option value=\"4\">4</option>";
+            if (!selectedSocket)
+                selectedSocket = 4;
+        }
+    }
 }
 
 function populateDropDown(json) {
@@ -157,7 +192,7 @@ $(document).ready(function () {
     selectedSocket = parseInt(GetURLParameter('socket'));
     requestBoardInfo();
     requestSettings();
-    $("#Relay").change(function () {
+    $("#Relay").change(function () { //When relay dropdown is changed by user get the new shedule
         selectedRelay = parseInt($("#Relay").val());
         var channelID = converToChannelID(selectedInterface,selectedSocket,selectedRelay);
         e = $.ajax({
@@ -177,6 +212,7 @@ $(document).ready(function () {
             }
         });
     });
+
     $("#SelectInterface").change(function () {
         selectedInterface = parseInt($("#SelectInterface").val());
         
@@ -197,11 +233,7 @@ $(document).ready(function () {
                 dropdown[0].innerHTML += "<option value=" + value + ">" + "Relay " +value + "</option>";
             }
         }
-        if(selectedInterface != "-1" && selectedInterface != "0")
-        {
-            $('#SelectSocket').val(1);
-            selectedSocket = 1;
-        }
+        updateSocket();
         var channelID = converToChannelID(selectedInterface,selectedSocket,selectedRelay);
         e = $.ajax({
             type: "GET",
@@ -220,6 +252,7 @@ $(document).ready(function () {
             }
         });
     });
+
     $("#SelectSocket").change(function () {
         selectedSocket = parseInt($("#SelectSocket").val());
         var channelID = converToChannelID(selectedInterface,selectedSocket,selectedRelay);
