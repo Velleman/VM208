@@ -61,7 +61,7 @@ void applyWifiNetworkSettings()
 
 bool startEth()
 {
-  /*pinMode(GPIO_NUM_2, OUTPUT);
+  pinMode(GPIO_NUM_2, OUTPUT);
   digitalWrite(GPIO_NUM_2, HIGH);
   ETH.begin(0, PIN_PHY_POWER, 23, 18, ETH_PHY_LAN8720, ETH_CLOCK_GPIO0_IN);
   if (!config.getETH_DHCPEnable())
@@ -79,8 +79,8 @@ bool startEth()
     ETH.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS);
   }
 
-  return ETH.linkUp();*/
-  return false;
+  return ETH.linkUp();
+  //return false;
 }
 
 void startWifi()

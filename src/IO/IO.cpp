@@ -109,7 +109,7 @@ void IO_task(void *arg)
   uint32_t io_num;
   while (1)
   {
-    if (xQueueReceive(int_evt_queue, &io_num, 100 / portTICK_PERIOD_MS) || digitalRead(INT_PIN) == LOW)
+    if (xQueueReceive(int_evt_queue, &io_num, 100 / portTICK_PERIOD_MS) || digitalRead(INT_PIN) == LOW)// || digitalRead(INT2_PIN) == LOW)
     {
       Serial.println("Handle Interrupt");
       if (io_num == INT2_PIN) //read extension
@@ -123,10 +123,19 @@ void IO_task(void *arg)
           for (int i = 0; i < 8; i++) // go over each interface
           {
             uint8_t socket = mm.getInterface(i)->handleInterrupt();
-            if (socket)//if 0 then no interrupt happend on that interface, socket == module ID
+            for (int j = 0; j < 4; j++)
             {
-              auto button = mm.getModuleFromInterface(i, socket - 1)->getPressedButton(); //From Interface I take module and retreive the pressed button
-              (*((VM208EX *)mm.getModuleFromInterface(i, socket - 1)))[button].toggle(); //use the button id to toggle it
+              auto interrruptTriggered = (socket >> j) & 0x01;
+              if (interrruptTriggered) //if 0 then no interrupt happend on that interface, socket == module ID
+              {
+                mm.getModuleFromInterface(i, j)->Activate();
+                auto button = mm.getModuleFromInterface(i, j)->getPressedButton(); //From Interface I take module and retreive the pressed button
+                if (button != 0)
+                {
+                  (*((VM208EX *)mm.getModuleFromInterface(i, j)))[button - 1].toggle(); //use the button id to toggle it
+                }
+                mm.getModuleFromInterface(i, j)->Disactivate();
+              }
             }
           }
         }

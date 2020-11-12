@@ -108,11 +108,20 @@ void startServer()
       }
       else
       {
-        VM208 *module = mm.getBaseModule();
-        if (state.toInt())
-          module->turnOnChannel(relay - 1);
-        else
-          module->turnOffChannel(relay - 1);
+        if (interface == -1)
+        {
+          VM208 *module = mm.getBaseModule();
+          if (state.toInt())
+            module->turnOnChannel(relay - 1);
+          else
+            module->turnOffChannel(relay - 1);
+        }else{
+          VM208EX *module = (VM208EX*)mm.getModule(1);
+          if (state.toInt())
+            module->turnOnChannel(relay - 1);
+          else
+            module->turnOffChannel(relay - 1);
+        }
       }
       //state.toInt() ? channel->turnOn() : channel->turnOff();
       xSemaphoreGive(g_Mutex);
@@ -135,8 +144,9 @@ void startServer()
       {
         mm.getBaseModule()->turnOffMosfet1();
       }
-      
-    }else{
+    }
+    else
+    {
       if (state == 1)
         mm.getBaseModule()->turnOnMosfet2();
       else
