@@ -601,7 +601,8 @@ $(function () {
 function sendTimeSettings() {
     var e = {
         timezone: $("#timezone_dropdown").val() * 3600,
-        dst: $("#DST_enable").prop("checked")
+        dst: $("#DST_enable").prop("checked") == true? 3600:0,
+        timezoneid: $("#timezone_dropdown :selected").attr('timeZoneId')
     };
 
     $("#sendTimeSettings").html("SAVING...");
@@ -612,7 +613,7 @@ function sendTimeSettings() {
         data: e,
         success: function (e) {
             try {
-                "OK" == e ? ($("#sendTimeSettings").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE EMAILSETTINGS")
+                "OK" == e ? ($("#sendTimeSettings").html("SAVED"), requestSettings()) : console.log("FAILED TO SAVE TIMESETTINGS")
             } catch (t) {
                 console.log(t)
             }
@@ -621,10 +622,10 @@ function sendTimeSettings() {
 }
 
 function updateTimeSettings() {
-    var timezone = json.TIMEZONE;
+    var timezoneid = json.TIMEZONEID
     var DST = json.DST;
-    timezone /= 3600;
-    $("#timezone_dropdown").val(timezone);
+    var option = $("#timezone_dropdown")[0][timezoneid-1];
+    option.selected = true;
     $("#DST_enable").prop("checked", (DST == 3600));
 }
 

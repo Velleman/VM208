@@ -353,7 +353,7 @@ function updateShedule() {
             alarm_enable_14: $("#alam_enabeled_14").is(":checked"),
 
         };
-        $("#sendAuthSettingsButton").innerHTML = "SAVING...";
+        $("#sendAuthSettingsButton").html("SAVING...");
         $.ajax({
             type: "POST",
             url: "/shedule_set",
@@ -361,7 +361,7 @@ function updateShedule() {
             data: e,
             success: function (e) {
                 try {
-                    $("#sendAuthSettingsButton").innerHTML = "Save"
+                    $("#sendAuthSettingsButton").html("Save");
                     /*json = $.parseJSON(e);
                     var relay = $("#Relay").val();
                     applyShedule(json);*/

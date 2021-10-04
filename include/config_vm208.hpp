@@ -35,9 +35,10 @@ private:
   String _WIFI_SubnetMask;
   String _WIFI_PrimaryDNS;
   String _WIFI_SecondaryDNS;
-  String _version = "1.0.1";
+  String _version = "1.1.0";
   long _timezoneSeconds;
   int _DSTseconds;
+  int _timezone_id;
   const char *configPath = "/config.json";
   const char *alarmPath = "/alarms/";
   const char *emailPath = "/email.json";
@@ -88,6 +89,7 @@ public:
   static const char *WIFI_PRIMARYDNS_KEY;
   static const char *WIFI_SECONDARYDNS_KEY;
   static const char *VERSION_KEY;
+  static const char *TIMEZONEID_KEY;
   static const char *TIMEZONE_KEY;
   static const char *DST_KEY;
   static const char *ALARM_WEEKDAY_KEY;
@@ -236,6 +238,8 @@ public:
   bool getNotification_manual_input();
   void setNotification_manual_input(bool enable);
 
+  void setTimeZoneID(int timezoneID);
+  int getTimeZoneID();
   void setDST(int seconds);
   int getDST();
   void load();

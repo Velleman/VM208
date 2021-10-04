@@ -161,6 +161,7 @@ void Configuration::load()
             _ETH_SubnetMask = root[ETH_SUBNETMASK_KEY].as<String>();
             _ETH_PrimaryDNS = root[ETH_PRIMARYDNS_KEY].as<String>();
             _ETH_SecondaryDNS = root[ETH_SECONDARYDNS_KEY].as<String>();
+            _timezone_id = root[TIMEZONEID_KEY].as<int>();
             _timezoneSeconds = root[TIMEZONE_KEY].as<long>();
             _DSTseconds = root[DST_KEY].as<int>();
             _firstTime = root[FIRST_TIME_KEY].as<bool>();
@@ -377,6 +378,7 @@ void Configuration::writeConfig()
     root[WIFI_SUBNETMASK_KEY] = _WIFI_SubnetMask;
     root[WIFI_PRIMARYDNS_KEY] = _WIFI_PrimaryDNS;
     root[WIFI_SECONDARYDNS_KEY] = _WIFI_SecondaryDNS;
+    root[TIMEZONEID_KEY] = _timezone_id;
     root[TIMEZONE_KEY] = _timezoneSeconds;
     root[DST_KEY] = _DSTseconds;
     root[FIRST_TIME_KEY] = _firstTime;
@@ -651,6 +653,16 @@ void Configuration::setWIFI_SecondaryDNS(String secondaryDNS)
     _WIFI_SecondaryDNS = secondaryDNS;
 }
 
+void Configuration::setTimeZoneID(int timezoneid)
+{
+    _timezone_id = timezoneid;
+}
+
+int Configuration::getTimeZoneID()
+{
+    return _timezone_id;
+}
+
 void Configuration::setTimezone(long seconds)
 {
     _timezoneSeconds = seconds;
@@ -837,6 +849,7 @@ const char *Configuration::WIFI_SUBNETMASK_KEY = "WIFI_SUBNET";
 const char *Configuration::WIFI_PRIMARYDNS_KEY = "WIFI_PRIMARYDNS";
 const char *Configuration::WIFI_SECONDARYDNS_KEY = "WIFI_SECONDARYDNS";
 const char *Configuration::VERSION_KEY = "VERSION";
+const char *Configuration::TIMEZONEID_KEY = "TIMEZONEID";
 const char *Configuration::TIMEZONE_KEY = "TIMEZONE";
 const char *Configuration::DST_KEY = "DST";
 const char *Configuration::ALARM_WEEKDAY_KEY = "dow";

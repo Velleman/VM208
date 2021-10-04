@@ -58,17 +58,48 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_names(), update_sheduler_state()
+    update_names()
 }
 
-function update_sheduler_state() {
-    /*for (var i = 0; i < 12; i++) {
-        for (var j = 0; j < 14; j++) {
-            if (json.Channels[i].alarms[j].enabled) {
-                $("#dot" + (i + 1)).css("background-color", "#3f9f31");
+function requestShedule(channel) {
+
+    var relay = converToChannelID(-1, 0, channel);
+    relay += 1;
+    console.log("ChannelID is:" + relay);
+    e = $.ajax({
+        type: "GET",
+        url: "/getalarms",
+        dataType: "text",
+        data: {
+            channel: relay
+        },
+        success: function (e) {
+            try {
+                json = $.parseJSON(e);
+                console.log(json);
+                update_sheduler_state(json, relay);
+                channel++;
+                if (jsonLayout.VM208EX == true) {
+                    if (channel < 12)
+                        requestShedule(channel);
+                }else{
+                    if(channel < 4)
+                        requestShedule(channel);
+                }
+            } catch (t) {
+                console.log(t)
             }
         }
-    }*/
+    });
+
+}
+
+function update_sheduler_state(shedule, relay) {
+    for (var j = 0; j < 14; j++) {
+        if (shedule.Channel.alarms[j].enabled) {
+            $("#dot" + relay).css("background-color", "#3f9f31");
+        }
+    }
 }
 
 function update_names() {
@@ -476,12 +507,13 @@ function getStatusForTable() {
         success: function (e) {
             try {
                 generateTable(e);
-                //enableButtons();
+                requestShedule(0);
             } catch (t) {
                 console.log(t)
             }
         },
-    })
+    });
+
 
 }
 
@@ -539,3 +571,18 @@ function generateTable(e) {
 $(function () {
     timerRelayEvent();
 });
+
+
+function converToChannelID(interface, socket, relay) {
+    var channelID = 0;
+    if (interface == -1) {
+        channelID = relay;
+    }
+    else if (interface == 0) {
+        channelID = parseInt(relay) + 4;
+    }
+    else {
+        channelID = 12 + ((interface - 1) * 32) + ((socket - 1) * 8) + relay;
+    }
+    return channelID;
+}
