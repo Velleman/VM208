@@ -18,7 +18,7 @@
 #include "network_VM208.hpp"
 #include "time_VM208.hpp"
 #include <DNSServer.h>
-//static const char *TAG = "VM208_MAIN";
+// static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
 // Define NTP Client to get time
@@ -32,7 +32,7 @@ int8_t timeZone = 1;
 int8_t minutesTimeZone = 0;
 const PROGMEM char *ntpServer = "pool.ntp.org";
 bool wifiFirstConnected = false;
-//DNSServer dnsServer;
+// DNSServer dnsServer;
 Configuration config;
 bool gotETH_IP;
 bool gotSTA_IP;
@@ -42,7 +42,7 @@ String getMacAsString(uint8_t *mac);
 static void checkSheduler(void *pvParameter)
 {
   delay(500); // wait to load all channels
-  //uint8_t *id = (uint8_t *)pvParameter;
+  // uint8_t *id = (uint8_t *)pvParameter;
   uint8_t day;
   time_t t;
   struct tm *current_time;
@@ -84,24 +84,36 @@ void setup()
   Serial.printf("START\n");
 
   ESP_LOGI(TAG, "APP MAIN ENTRY");
+  Serial.printf("SPIFFS.begin()\r\n");
   SPIFFS.begin();
+  Serial.printf("config.load()\r\n");
   config.load();
+  Serial.printf("Init_IO\r\n");
   Init_IO(setState);
 
   s_wifi_event_group = xEventGroupCreate();
 
-  //ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
+  // ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
-  //check if button 1 and 4 is pressed
-  //start AP for WiFi Config
+  // check if button 1 and 4 is pressed
+  // start AP for WiFi Config
+  WiFi.onEvent(WiFiEvent);
   ESP_LOGI(TAG, "Check Buttons");
-  if (false)//((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
+  if (((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
   {
     Serial.print("It's the first time :");
-    Serial.println(config.getFirstTime());
-    Serial.println(mm.getBaseModule()->getChannel(0)->isButtonPressed());
-    Serial.println(mm.getBaseModule()->getChannel(3)->isButtonPressed());
-    startEth();
+    mm.getBaseModule()->getChannel(0)->turnLedOn();
+    mm.getBaseModule()->getChannel(3)->turnLedOn();
+    delay(500);
+    mm.getBaseModule()->getChannel(0)->turnLedOff();
+    mm.getBaseModule()->getChannel(3)->turnLedOff();
+    delay(500);
+    mm.getBaseModule()->getChannel(0)->turnLedOn();
+    mm.getBaseModule()->getChannel(3)->turnLedOn();
+    delay(500);
+    mm.getBaseModule()->getChannel(0)->turnLedOff();
+    mm.getBaseModule()->getChannel(3)->turnLedOff();
+    //startEth();
     ESP_LOGI(TAG, "Start AP");
     WiFi.softAP("VM208_AP", "VellemanForMakers");
     WiFi.enableSTA(false);
@@ -115,24 +127,28 @@ void setup()
   {
     Serial.printf("%s", config.getSSID().c_str());
     Serial.printf("%s", config.getWifiPassword().c_str());
+
     
-    WiFi.onEvent(WiFiEvent);
-    if (!startEth()) //No cable inserted
+    if (!startEth()) // No cable inserted
     {
       startWifi();
     }
   }
-  
-  xTaskCreate(IO_task, "io_task", 2048, NULL, (tskIDLE_PRIORITY + 3), &taskHandle);
-  
+
+  if (WiFi.getMode() != WIFI_MODE_AP)
+  {
+    xTaskCreate(IO_task, "io_task", 2048, NULL, (tskIDLE_PRIORITY + 3), &taskHandle);
+  }
+
   xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
-  //xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  // xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
   //#region hide
   if (udp.listen(30303))
   {
 
-    udp.onPacket([](AsyncUDPPacket packet) {
+    udp.onPacket([](AsyncUDPPacket packet)
+                 {
       Serial.print("UDP Packet Type: ");
       Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
       Serial.print(", From: ");
@@ -155,8 +171,7 @@ void setup()
       uint8_t mac[6];
       esp_read_mac(mac, ESP_MAC_ETH);
       message += getMacAsString(mac);
-      packet.print(message);
-    });
+      packet.print(message); });
   }
   if (!MDNS.begin("VM208"))
   {
@@ -168,11 +183,16 @@ void setup()
     MDNS.addService("http", "tcp", 80);
   }
   //}
-  xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  if (WiFi.getMode() != WIFI_MODE_AP)
+  {
+    xTaskCreate(checkSheduler, "Sheduler", 8192, NULL, (tskIDLE_PRIORITY + 2), NULL);
+  }
 
   startServer();
   if (WiFi.getMode() != WIFI_MODE_AP)
+  {
     sendBootMail();
+  }
 }
 
 void loop()

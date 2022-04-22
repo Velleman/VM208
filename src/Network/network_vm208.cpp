@@ -181,7 +181,7 @@ void WiFiEvent(WiFiEvent_t event)
   case SYSTEM_EVENT_ETH_DISCONNECTED:
     gotETH_IP = false;
     ESP_LOGI(TAG, "Ethernet Link Down");
-    //startWifi();
+    startWifi();
     break;
   case SYSTEM_EVENT_ETH_START:
     ESP_LOGI(TAG, "Ethernet Started");

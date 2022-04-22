@@ -35,7 +35,7 @@ void Init_IO(bool setState)
 {
 
   Wire.begin(33, 32, 10000);
-  Wire.setTimeOut(1000);
+  Wire.setTimeOut(100);
   mm.DetectModules();
   config.loadAlarms();
   /*gpio_pullup_en(GPIO_NUM_33);
