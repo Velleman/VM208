@@ -1,0 +1,89 @@
+{
+    "alarms": [
+        {
+            "enabled": false, 
+            "minute": 28, 
+            "dow": 0, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 28, 
+            "dow": 1, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 28, 
+            "dow": 2, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 28, 
+            "dow": 3, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 28, 
+            "dow": 4, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 28, 
+            "dow": 5, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 28, 
+            "dow": 6, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 29, 
+            "dow": 0, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 29, 
+            "dow": 1, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 29, 
+            "dow": 2, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 29, 
+            "dow": 3, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 29, 
+            "dow": 4, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 29, 
+            "dow": 5, 
+            "hour": 13
+        }, 
+        {
+            "enabled": false, 
+            "minute": 29, 
+            "dow": 6, 
+            "hour": 13
+        }
+    ], 
+    "name": "Channel62"
+}

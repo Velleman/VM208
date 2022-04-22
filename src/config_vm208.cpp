@@ -90,6 +90,49 @@ String Configuration::getUserPw() const
     return _userPW;
 }
 
+void Configuration::loadAlarms()
+{
+    if (true)
+    {
+
+        ESP_LOGI(TAG, "file exist");
+
+        //StaticJsonBuffer<300000> jsonBuffer;
+
+        for (uint16_t i = 0; i < 268; i++)
+        {
+            String path = alarmPath;
+            path += i;
+            path += ".json";
+            File file = loadFile(path.c_str());
+            DynamicJsonBuffer jsonBuffer;
+            JsonObject &root = jsonBuffer.parseObject(file);
+            JsonArray &alarms = root["alarms"];
+
+            auto channel = mm.getChannel(i + 1);
+            if (channel != nullptr)
+            {
+                Serial.printf("Channel Shedule index: %d\r\n",i);
+                _cs[i].setChannel(channel);
+                _cs[i].setChannelID(i+1);
+                for (uint8_t j = 0; j < 14; j++)
+                {
+                    JsonObject &Channels_0_alarms_i = alarms[j];
+                    uint dow = Channels_0_alarms_i[ALARM_WEEKDAY_KEY];
+                    uint hour = Channels_0_alarms_i[ALARM_HOUR_KEY];
+                    uint minute = Channels_0_alarms_i[ALARM_MINUTE_KEY];
+                    bool enabled = Channels_0_alarms_i[ALARM_ENABLED_KEY];
+                    bool onOff = (j < 7);
+                    _cs[i].setShedule(dow, hour, minute, onOff, enabled);
+                }
+                mm.getModuleFromChannelID(i+1)->Disactivate();
+            }
+            file.close();
+            jsonBuffer.clear();
+        }
+    }
+}
+
 void Configuration::load()
 {
     if (SPIFFS.exists(configPath))
@@ -118,6 +161,7 @@ void Configuration::load()
             _ETH_SubnetMask = root[ETH_SUBNETMASK_KEY].as<String>();
             _ETH_PrimaryDNS = root[ETH_PRIMARYDNS_KEY].as<String>();
             _ETH_SecondaryDNS = root[ETH_SECONDARYDNS_KEY].as<String>();
+            _timezone_id = root[TIMEZONEID_KEY].as<int>();
             _timezoneSeconds = root[TIMEZONE_KEY].as<long>();
             _DSTseconds = root[DST_KEY].as<int>();
             _firstTime = root[FIRST_TIME_KEY].as<bool>();
@@ -153,7 +197,7 @@ void Configuration::load()
             _email_user = root[EMAIL_USER_KEY].as<String>();
             _email_pw = root[EMAIL_PW_KEY].as<String>();
             _email_recipient = root[EMAIL_RECEIVER_KEY].as<String>();
-         _email_subject = root[EMAIL_TITLE_KEY].as<String>();
+            _email_subject = root[EMAIL_TITLE_KEY].as<String>();
             _notif_boot = root[NOTIF_BOOT_KEY].as<bool>();
             _notif_ext_connected = root[NOTIF_EXT_CONNECT_KEY].as<bool>();
             _notif_input_change = root[NOTIF_INPUT_CHANGE_KEY].as<bool>();
@@ -170,6 +214,76 @@ void Configuration::load()
     {
         ESP_LOGI(TAG, "file doesnt exist");
     }
+    if (SPIFFS.exists(namesPath))
+    {
+        ESP_LOGI(TAG, "file exist");
+        File file = loadFile(namesPath);
+        /* while (file.available())
+        {
+            Serial.write(file.read());
+        }*/
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject &root = jsonBuffer.parseObject(file);
+        JsonArray &names = root["names"];
+        if (root.containsKey("names"))
+        {
+            for (int i = 0; i < 268; i++)
+            {
+                _names[i] = names[i].as<String>();
+            }
+        }
+        else
+        {
+            Serial.println("LOAD NAME CONFIG: FILE IS INVALID");
+        }
+        file.close();
+        jsonBuffer.clear();
+    }
+    else
+    {
+        ESP_LOGI(TAG, "file doesnt exist");
+    }
+
+    //SPIFFS.end();
+}
+
+ChannelShedule *Configuration::getShedule(uint16_t index)
+{
+    if (index < 268)
+        return &_cs[index];
+    else
+    {
+        return nullptr;
+    }
+}
+
+String Configuration::getNameFromChannel(uint16_t index)
+{
+    return _names[index];
+}
+
+void Configuration::saveNames()
+{
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject &root = jsonBuffer.createObject();
+    JsonArray &names = root.createNestedArray("names");
+
+    for (int i = 0; i < 268; i++)
+    {
+        names.add(_names[i]);
+    }
+    File file = SPIFFS.open(namesPath, FILE_WRITE);
+    if (root.printTo(file) == 0)
+    {
+        Serial.println("Error writing to file");
+    }
+    file.close();
+    jsonBuffer.clear();
+}
+
+void Configuration::setName(uint16_t channelId, String name)
+{
+    _names[channelId - 1] = name;
 }
 
 void Configuration::save()
@@ -264,6 +378,7 @@ void Configuration::writeConfig()
     root[WIFI_SUBNETMASK_KEY] = _WIFI_SubnetMask;
     root[WIFI_PRIMARYDNS_KEY] = _WIFI_PrimaryDNS;
     root[WIFI_SECONDARYDNS_KEY] = _WIFI_SecondaryDNS;
+    root[TIMEZONEID_KEY] = _timezone_id;
     root[TIMEZONE_KEY] = _timezoneSeconds;
     root[DST_KEY] = _DSTseconds;
     root[FIRST_TIME_KEY] = _firstTime;
@@ -286,11 +401,11 @@ void Configuration::writeAlarms()
     DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
     JsonArray &Channels = root.createNestedArray("Channels");
-    Channel *c;
+    //VM208TimeChannel *c;
     Alarm *a;
     for (int i = 0; i < 12; i++)
     {
-        c = getChannelById(i + 1);
+        /*c = (VM208TimeChannel *)getRelayChannelById(i + 1);
         JsonObject &Channel = Channels.createNestedObject();
         Channel[CHANNEL_NAME_KEY] = c->getName();
 
@@ -304,7 +419,7 @@ void Configuration::writeAlarms()
             Channels_alarms_settings[ALARM_MINUTE_KEY] = a->getMinute();
             Channels_alarms_settings[ALARM_STATE_KEY] = a->getState();
             Channels_alarms_settings[ALARM_ENABLED_KEY] = a->isEnabled();
-        }
+        }*/
     }
     //Write json file
     File file = SPIFFS.open(alarmPath, "w");
@@ -312,7 +427,42 @@ void Configuration::writeAlarms()
     file.close();
 }
 
-Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
+void Configuration::writeAlarm(uint16_t id)
+{
+    String path = alarmPath;
+    path += id - 1;
+    path += ".json";
+
+    if (SPIFFS.exists(path))
+    {
+        ESP_LOGI(TAG, "remove file");
+        SPIFFS.remove(path);
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject &root = jsonBuffer.createObject();
+        JsonArray &alarms = root.createNestedArray("alarms");
+
+        for (uint8_t j = 0; j < 14; j++)
+        {
+            uint8_t dow = j > 6 ? j - 7 : j;
+            uint8_t onOff = j < 7;
+            Shedule *shedule = _cs[id - 1].getShedule(dow, onOff);
+            JsonObject &alarm = alarms.createNestedObject();
+            /*alarm["dow"] = shedule->dateTime.tm_wday;
+            alarm["hour"] = shedule->dateTime.tm_hour;
+            alarm["minute"] = shedule->dateTime.tm_min;*/
+            alarm["dow"] = shedule->dow;
+            alarm["hour"] = shedule->hour;
+            alarm["minute"] = shedule->minute;
+            alarm["enabled"] = shedule->enable;
+        }
+        File file = SPIFFS.open(path, "w");
+        root.printTo(file);
+        file.close();
+        jsonBuffer.clear();
+    }
+}
+
+/*Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
 {
     Channel c;
     if (SPIFFS.exists(alarmPath))
@@ -343,8 +493,9 @@ Channel Configuration::createChannel(uint8_t id, Relay *r, Led *l)
     }
     return c;
     SPIFFS.end();
-}
+}*/
 
+/*
 Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
 {
 
@@ -374,8 +525,8 @@ Channel Configuration::createMosfetChannel(uint8_t id, Mosfet *r)
         jsonBuffer.clear();
         return c;
     }*/
-    return Channel("", nullptr, nullptr, 0);
-}
+/*return Channel("", nullptr, nullptr, 0);
+}*/
 
 File Configuration::loadFile(const char *path)
 {
@@ -502,6 +653,16 @@ void Configuration::setWIFI_SecondaryDNS(String secondaryDNS)
     _WIFI_SecondaryDNS = secondaryDNS;
 }
 
+void Configuration::setTimeZoneID(int timezoneid)
+{
+    _timezone_id = timezoneid;
+}
+
+int Configuration::getTimeZoneID()
+{
+    return _timezone_id;
+}
+
 void Configuration::setTimezone(long seconds)
 {
     _timezoneSeconds = seconds;
@@ -592,7 +753,7 @@ String Configuration::getEmailSubject()
 }
 void Configuration::setEmailSubject(String title)
 {
- _email_subject = title;
+    _email_subject = title;
 }
 
 void Configuration::setMosfet1Name(String name)
@@ -665,6 +826,11 @@ bool Configuration::getNotification_manual_input()
     return _notif_manual_input;
 }
 
+void Configuration::setShedule(uint16_t channel, uint8_t dayOfWeek, uint8_t hour, uint8_t min, bool onOff, bool enable)
+{
+    _cs[channel].setShedule(dayOfWeek, hour, min, onOff, enable);
+}
+
 const char *Configuration::SSID_KEY = "SSID";
 const char *Configuration::WIFI_PW_KEY = "WiFi_PW";
 const char *Configuration::BOARDNAME_KEY = "BOARDNAME";
@@ -683,6 +849,7 @@ const char *Configuration::WIFI_SUBNETMASK_KEY = "WIFI_SUBNET";
 const char *Configuration::WIFI_PRIMARYDNS_KEY = "WIFI_PRIMARYDNS";
 const char *Configuration::WIFI_SECONDARYDNS_KEY = "WIFI_SECONDARYDNS";
 const char *Configuration::VERSION_KEY = "VERSION";
+const char *Configuration::TIMEZONEID_KEY = "TIMEZONEID";
 const char *Configuration::TIMEZONE_KEY = "TIMEZONE";
 const char *Configuration::DST_KEY = "DST";
 const char *Configuration::ALARM_WEEKDAY_KEY = "dow";

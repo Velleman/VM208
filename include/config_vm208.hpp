@@ -6,9 +6,10 @@
 #include "FS.h"
 #define ARDUINOJSON_USE_LONG_LONG 1
 #include "ArduinoJson.h"
-#include "channel.hpp"
-#include "relay.hpp"
-#include "mosfet.hpp"
+//#include "relay.hpp"
+//#include "mosfet.hpp"
+//#include "VM208TimerChannel.hpp"
+#include "ChannelShedule.hpp"
 class Configuration
 {
 private:
@@ -34,14 +35,17 @@ private:
   String _WIFI_SubnetMask;
   String _WIFI_PrimaryDNS;
   String _WIFI_SecondaryDNS;
-  String _version = "1.0.1";
+  String _version = "1.2.0";
   long _timezoneSeconds;
   int _DSTseconds;
+  int _timezone_id;
   const char *configPath = "/config.json";
-  const char *alarmPath = "/alarms.json";
+  const char *alarmPath = "/alarms/";
   const char *emailPath = "/email.json";
+  const char *namesPath = "/names.json";
   void writeConfig();
   void writeAlarms();
+  
   void writeEmailSettings();
   File loadFile(const char *path);
   //DynamicJsonBuffer jsonBuffer;
@@ -63,7 +67,8 @@ private:
   bool _notif_input_change;
   bool _notif_ext_connected;
   bool _notif_manual_input;
-
+  String _names[268];
+  ChannelShedule _cs[268];
 public:
   Configuration();
   static const char *SSID_KEY;
@@ -84,6 +89,7 @@ public:
   static const char *WIFI_PRIMARYDNS_KEY;
   static const char *WIFI_SECONDARYDNS_KEY;
   static const char *VERSION_KEY;
+  static const char *TIMEZONEID_KEY;
   static const char *TIMEZONE_KEY;
   static const char *DST_KEY;
   static const char *ALARM_WEEKDAY_KEY;
@@ -106,6 +112,8 @@ public:
   static const char *NOTIF_INPUT_CHANGE_KEY;
   static const char *NOTIF_EXT_CONNECT_KEY;
   static const char *NOTIF_MANUAL_INPUT_KEY;
+
+  void writeAlarm(uint16_t id);
 
   //getter setter SSID
   String getVersion() const;
@@ -185,8 +193,8 @@ public:
 
   String getChannelNameById(uint8_t id);
 
-  Channel createChannel(uint8_t id, Relay *r, Led *l);
-  Channel createMosfetChannel(uint8_t id, Mosfet *r);
+  //Channel createChannel(uint8_t id, Relay *r, Led *l);
+  //Channel createMosfetChannel(uint8_t id, Mosfet *r);
 
   bool getFirstTime();
   void setFirstTime(bool first_time);
@@ -230,13 +238,21 @@ public:
   bool getNotification_manual_input();
   void setNotification_manual_input(bool enable);
 
+  void setTimeZoneID(int timezoneID);
+  int getTimeZoneID();
   void setDST(int seconds);
   int getDST();
   void load();
+  void loadAlarms();
   void save();
   void saveAlarms();
   void saveEmailSettings();
+  String getNameFromChannel(uint16_t index);
+  void saveNames();
+  void setName(uint16_t channelID,String name);
 
+  void setShedule(uint16_t channel,uint8_t dayOfWeek,uint8_t hour,uint8_t min,bool onOff,bool enbale);
+  ChannelShedule* getShedule(uint16_t index);
   ~Configuration();
 };
 

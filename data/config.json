@@ -1,6 +1,6 @@
 {
-    "SSID": "Eminent_RnD",
-    "WiFi_PW": "2017wifi",
+    "SSID": "",
+    "WiFi_PW": "",
     "BOARDNAME": "VM208",
     "USERNAME": "ADMIN",
     "USERPW": "VM208",
@@ -16,6 +16,7 @@
     "WIFI_SUBNET": "255.255.255.0",
     "WIFI_PRIMARYDNS": "8.8.8.8",
     "WIFI_SECONDARYDNS": "8.8.4.4",
+    "TIMEZONEID": 33,
     "TIMEZONE": 3600,
     "DST": 3600,
     "first_time": false,

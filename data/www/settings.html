@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="The VM208 settings page">
     <title>VM208 Settings Page</title>
-	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="stylesheet" href="css/pure-min.css">
     <link rel="stylesheet" href="css/layouts/side-menu.css">
     <link rel="stylesheet" href="css/grids.css">
@@ -26,7 +26,8 @@
                 <ul class="pure-menu-list">
                     <li class="pure-menu-item"><a class="pure-menu-link" href="index.html">Control</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#authentication">Authentication</a> </li>
-					<li class="pure-menu-item"><a class="pure-menu-link" href="#WLAN credentials">WLAN Credentials</a> </li>
+                    <li class="pure-menu-item"><a class="pure-menu-link" href="#WLAN credentials">WLAN Credentials</a>
+                    </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#network">Network</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#email">E-mail</a> </li>
                     <li class="pure-menu-item"><a class="pure-menu-link" href="#customize">Customize</a> </li>
@@ -39,7 +40,8 @@
         <div id="main">
             <div class="header" id="authentication">
                 <h1>Authentication</h1>
-                <h2>Manage access</h2> </div>
+                <h2>Manage access</h2>
+            </div>
             <div class="content">
                 <form id="authForm" class="pure-form pure-form-aligned">
                     <fieldset>
@@ -49,16 +51,19 @@
                             <input type="text" maxlength="32" name="login_field" id="login_field" value=""> </div>
                         <div class="pure-control-group">
                             <label for="password_field">Password:</label>
-                            <input type="password" maxlength="32" name="password_field" id="password_field" placeholder ="Your password"> </div>
+                            <input type="password" maxlength="32" name="password_field" id="password_field"
+                                placeholder="Your password"> </div>
                         <div class="pure-controls">
-                            <button type="submit" id="sendAuthSettingsButton" class="pure-button pure-button-primary">Save and reboot</button>
+                            <button type="submit" id="sendAuthSettingsButton"
+                                class="pure-button pure-button-primary">Save and reboot</button>
                         </div>
                     </fieldset>
                 </form>
             </div>
-			<div class="header" id="WLAN credentials">
+            <div class="header" id="WLAN credentials">
                 <h1>WLAN credentials</h1>
-                <h2>Configuring the WLAN Credentials</h2> </div>
+                <h2>Configuring the WLAN Credentials</h2>
+            </div>
             <div class="content">
                 <form id="wlanCredsForm" class="pure-form pure-form-aligned">
                     <fieldset>
@@ -68,16 +73,19 @@
                             <input type="text" maxlength="32" name="ssid_field" id="ssid_field" value=""> </div>
                         <div class="pure-control-group">
                             <label for="password_wifi_field">Password:</label>
-                            <input type="password" maxlength="32" name="password_wifi_field" id="password_wifi_field" placeholder ="Your password"> </div>
+                            <input type="password" maxlength="32" name="password_wifi_field" id="password_wifi_field"
+                                placeholder="Your password"> </div>
                         <div class="pure-controls">
-                            <button type="submit" id="sendWlanCredsButton" class="pure-button pure-button-primary">Save and reboot</button>
+                            <button type="submit" id="sendWlanCredsButton" class="pure-button pure-button-primary">Save
+                                and reboot</button>
                         </div>
                     </fieldset>
                 </form>
             </div>
             <div class="header" id="ethernet">
                 <h1>Network</h1>
-                <h2>Network Ethernet configuration</h2> </div>
+                <h2>Network Ethernet configuration</h2>
+            </div>
             <div class="content">
                 <form id="ethSettingsForm" class="pure-form pure-form-aligned">
                     <fieldset>
@@ -87,27 +95,34 @@
                         </div>
                         <div class="pure-control-group">
                             <label for="value_eth_ipaddress">IP address:</label>
-                            <input type="text" maxlength="64" name="value_eth_ipaddress" id="value_eth_ipaddress" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_eth_ipaddress" id="value_eth_ipaddress"
+                                value="0.0.0.0"> </div>
                         <div class="pure-control-group">
                             <label for="value_eth_gateway">Gateway:</label>
-                            <input type="text" maxlength="64" name="value_eth_gateway" id="value_eth_gateway" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_eth_gateway" id="value_eth_gateway"
+                                value="0.0.0.0"> </div>
                         <div class="pure-control-group">
                             <label for="value_eth_subnetmask">Subnet mask:</label>
-                            <input type="text" maxlength="64" name="value_eth_subnetmask" id="value_eth_subnetmask" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_eth_subnetmask" id="value_eth_subnetmask"
+                                value="0.0.0.0"> </div>
                         <div class="pure-control-group">
                             <label for="value_eth_primarydns">Primary DNS:</label>
-                            <input type="text" maxlength="64" name="value_eth_primarydns" id="value_eth_primarydns" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_eth_primarydns" id="value_eth_primarydns"
+                                value="0.0.0.0"> </div>
                         <div class="pure-control-group">
                             <label for="value_eth_secondarydns">Secondary DNS:</label>
-                            <input type="text" maxlength="64" name="value_eth_secondarydns" id="value_eth_secondarydns" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_eth_secondarydns" id="value_eth_secondarydns"
+                                value="0.0.0.0"> </div>
                     </fieldset>
                     <div class="pure-controls">
-                        <button type="submit" id="sendEthNetworkSettingsButton" class="pure-button pure-button-primary">Save and reboot</button>
+                        <button type="submit" id="sendEthNetworkSettingsButton"
+                            class="pure-button pure-button-primary">Save and reboot</button>
                     </div>
                 </form>
             </div>
             <div class="header" id="wlan">
-                <h2>Network WLAN configuration</h2> </div>
+                <h2>Network WLAN configuration</h2>
+            </div>
             <div class="content">
                 <form id="wlanSettingsForm" class="pure-form pure-form-aligned">
                     <fieldset>
@@ -117,35 +132,43 @@
                         </div>
                         <div class="pure-control-group">
                             <label for="value_wifi_ipaddress">IP address:</label>
-                            <input type="text" maxlength="64" name="value_wifi_ipaddress" id="value_wifi_ipaddress" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_wifi_ipaddress" id="value_wifi_ipaddress"
+                                value="0.0.0.0"> </div>
                         <div class="pure-control-group">
                             <label for="value_wifi_gateway">Gateway:</label>
-                            <input type="text" maxlength="64" name="value_wifi_gateway" id="value_wifi_gateway" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_wifi_gateway" id="value_wifi_gateway"
+                                value="0.0.0.0"> </div>
                         <div class="pure-control-group">
                             <label for="value_wifi_subnetmask">Subnet mask:</label>
-                            <input type="text" maxlength="64" name="value_wifi_subnetmask" id="value_wifi_subnetmask" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_wifi_subnetmask" id="value_wifi_subnetmask"
+                                value="0.0.0.0"> </div>
                         <div class="pure-control-group">
                             <label for="value_wifi_primarydns">Primary DNS:</label>
-                            <input type="text" maxlength="64" name="value_wifi_primarydns" id="value_wifi_primarydns" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_wifi_primarydns" id="value_wifi_primarydns"
+                                value="0.0.0.0"> </div>
                         <div class="pure-control-group">
                             <label for="value_wifi_secondarydns">Secondary DNS:</label>
-                            <input type="text" maxlength="64" name="value_wifi_secondarydns" id="value_wifi_secondarydns" value="0.0.0.0"> </div>
+                            <input type="text" maxlength="64" name="value_wifi_secondarydns"
+                                id="value_wifi_secondarydns" value="0.0.0.0"> </div>
                     </fieldset>
                     <div class="pure-controls">
-                        <button type="submit" id="sendWifiNetworkSettingsButton" class="pure-button pure-button-primary">Save and reboot</button>
+                        <button type="submit" id="sendWifiNetworkSettingsButton"
+                            class="pure-button pure-button-primary">Save and reboot</button>
                     </div>
                 </form>
             </div>
             <div class="header" id="email">
                 <h1>E-mail</h1>
-                <h2>E-mail settings</h2> </div>
+                <h2>E-mail settings</h2>
+            </div>
             <div class="content">
                 <form id="mailSettingsForm" class="pure-form pure-form-aligned">
                     <fieldset>
                         <legend>Server</legend>
                         <div class="pure-control-group">
                             <label for="smtp_server">Server:</label>
-                            <input type="text" name="server" maxlength="64" id="smtp_server" value="smtp.example.com"> </div>
+                            <input type="text" name="server" maxlength="64" id="smtp_server" value="smtp.example.com">
+                        </div>
                         <div class="pure-control-group">
                             <label for="smtp_port">Port:</label>
                             <input type="text" name="port" id="smtp_port" value="25">
@@ -165,15 +188,18 @@
                         <legend>Receiver</legend>
                         <div class="pure-control-group">
                             <label for="smtp_user">Recipient:</label>
-                            <input type="text" maxlength="64" name="recipient" value="recipient" id="smtp_recipient"></div>
-                            <div class="pure-control-group">
+                            <input type="text" maxlength="64" name="recipient" value="recipient" id="smtp_recipient">
+                        </div>
+                        <div class="pure-control-group">
                             <label for="smtp_title">Subject:</label>
-                            <input type="text" maxlength="64" name="title" value="title" id="smtp_title"> 
-                            </div>
+                            <input type="text" maxlength="64" name="title" value="title" id="smtp_title">
+                        </div>
                     </fieldset>
                     <div class="pure-controls">
-                        <button type="submit" id="sendMailSettingsButton" class="pure-button pure-button-primary">Save</button>
-                        <button type="button" id="testMailSettingsButton" class="pure-button pure-button-primary">Test mail settings</button>
+                        <button type="submit" id="sendMailSettingsButton"
+                            class="pure-button pure-button-primary">Save</button>
+                        <button type="button" id="testMailSettingsButton" class="pure-button pure-button-primary">Test
+                            mail settings</button>
                     </div>
                 </form>
             </div>
@@ -192,41 +218,31 @@
                     <fieldset>
                         <legend>Relays</legend>
                         <div class="pure-control-group">
-                            <label for="name_relay1">Relay 1:</label>
-                            <input type="text" maxlength="16" name="name_relay1" id="name_relay1" value="Relay 1"> </div>
+                            <div id="interface_dropdown_div">
+                            </div>
+                            <br>
+                            <div id="module_dropdown_div">
+
+                            </div>
+                            <br>
+                            <div id="channel_dropdown_div">
+                                <label for="channel_dropdown">Channel:</label>
+                                <select id="channel_dropdown">
+                                    <option id="Channel1">Channel 1</option>
+                                    <option id="Channel1">Channel 2</option>
+                                    <option id="Channel1">Channel 3</option>
+                                    <option id="Channel1">Channel 4</option>
+                                    <option id="Channel1">Channel 5</option>
+                                    <option id="Channel1">Channel 6</option>
+                                    <option id="Channel1">Channel 7</option>
+                                    <option id="Channel1">Channel 8</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="pure-control-group">
-                            <label for="name_relay2">Relay 2:</label>
-                            <input type="text" maxlength="16" name="name_relay2" id="name_relay2" value="Relay 2"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay3">Relay 3:</label>
-                            <input type="text" maxlength="16" name="name_relay3" id="name_relay3" value="Relay 3"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 4:</label>
-                            <input type="text" maxlength="16" name="name_relay4" id="name_relay4" value="Relay 4"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 5:</label>
-                            <input type="text" maxlength="16" name="name_relay5" id="name_relay5" value="Relay 5"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 6:</label>
-                            <input type="text" maxlength="16" name="name_relay6" id="name_relay6" value="Relay 6"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 7:</label>
-                            <input type="text" maxlength="16" name="name_relay7" id="name_relay7" value="Relay 7"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 8:</label>
-                            <input type="text" maxlength="16" name="name_relay8" id="name_relay8" value="Relay 8"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 9:</label>
-                            <input type="text" maxlength="16" name="name_relay9" id="name_relay9" value="Relay 9"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 10:</label>
-                            <input type="text" maxlength="16" name="name_relay10" id="name_relay10" value="Relay 10"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 11:</label>
-                            <input type="text" maxlength="16" name="name_relay11" id="name_relay11" value="Relay 11"> </div>
-                        <div class="pure-control-group">
-                            <label for="name_relay4">Relay 12:</label>
-                            <input type="text" maxlength="16" name="name_relay12" id="name_relay12" value="Relay 12"> </div>
+                            <label for="name_channel">Channel Name</label>
+                            <input type="text" maxlength="16" name="name_channel" id="name_channel" value="CHANNEL">
+                        </div>
                     </fieldset>
                     <fieldset>
                         <legend>MOSFETs</legend>
@@ -243,16 +259,19 @@
                         <legend>Inputs</legend>
                         <div class="pure-control-group">
                             <label for="name_input1">Input 1:</label>
-                            <input type="text" maxlength="16" name="name_input1" id="name_input1" value="Input 1"> </div>
+                            <input type="text" maxlength="16" name="name_input1" id="name_input1" value="Input 1">
+                        </div>
                     </fieldset>
                     <div class="pure-controls">
-                        <button type="submit" id="sendNameSettingsButton" class="pure-button pure-button-primary">Save</button>
+                        <button type="submit" id="sendNameSettingsButton"
+                            class="pure-button pure-button-primary">Save</button>
                     </div>
                 </form>
             </div>
             <div class="header" id="notifications">
                 <h1>Notifications</h1>
-                <h2>Configure e-mail notifications</h2> </div>
+                <h2>Configure e-mail notifications</h2>
+            </div>
             <div class="content">
                 <form id="AlarmForm" class="pure-form pure-form-aligned">
                     <fieldset>
@@ -274,14 +293,16 @@
                             <input id="AlarmManInput" type="checkbox">
                         </div>
                         <div class="pure-controls">
-                            <button type="button" id="sendAlarmButton" class="pure-button pure-button-primary">Save</button>
+                            <button type="button" id="sendAlarmButton"
+                                class="pure-button pure-button-primary">Save</button>
                         </div>
                     </fieldset>
                 </form>
             </div>
             <div class="header" id="Time">
                 <h1>Time</h1>
-                <h2>Configure timezone settings</h2> </div>
+                <h2>Configure timezone settings</h2>
+            </div>
             <div class="content">
                 <form id="TimeForm" class="pure-form pure-form-aligned">
                     <fieldset>
@@ -289,88 +310,171 @@
                         <div class="pure-control-group">
                             <label for="notification_select">Timezone:</label>
                             <select id="timezone_dropdown">
-                                <option timeZoneId="1" gmtAdjustment="GMT-12:00" useDaylightTime="0" value="-12">(GMT-12:00) International Date Line West</option>
-                                <option timeZoneId="2" gmtAdjustment="GMT-11:00" useDaylightTime="0" value="-11">(GMT-11:00) Midway Island, Samoa</option>
-                                <option timeZoneId="3" gmtAdjustment="GMT-10:00" useDaylightTime="0" value="-10">(GMT-10:00) Hawaii</option>
-                                <option timeZoneId="4" gmtAdjustment="GMT-09:00" useDaylightTime="1" value="-9">(GMT-09:00) Alaska</option>
-                                <option timeZoneId="5" gmtAdjustment="GMT-08:00" useDaylightTime="1" value="-8">(GMT-08:00) Pacific Time (US & Canada)</option>
-                                <option timeZoneId="6" gmtAdjustment="GMT-08:00" useDaylightTime="1" value="-8">(GMT-08:00) Tijuana, Baja California</option>
-                                <option timeZoneId="7" gmtAdjustment="GMT-07:00" useDaylightTime="0" value="-7">(GMT-07:00) Arizona</option>
-                                <option timeZoneId="8" gmtAdjustment="GMT-07:00" useDaylightTime="1" value="-7">(GMT-07:00) Chihuahua, La Paz, Mazatlan</option>
-                                <option timeZoneId="9" gmtAdjustment="GMT-07:00" useDaylightTime="1" value="-7">(GMT-07:00) Mountain Time (US & Canada)</option>
-                                <option timeZoneId="10" gmtAdjustment="GMT-06:00" useDaylightTime="0" value="-6">(GMT-06:00) Central America</option>
-                                <option timeZoneId="11" gmtAdjustment="GMT-06:00" useDaylightTime="1" value="-6">(GMT-06:00) Central Time (US & Canada)</option>
-                                <option timeZoneId="12" gmtAdjustment="GMT-06:00" useDaylightTime="1" value="-6">(GMT-06:00) Guadalajara, Mexico City, Monterrey</option>
-                                <option timeZoneId="13" gmtAdjustment="GMT-06:00" useDaylightTime="0" value="-6">(GMT-06:00) Saskatchewan</option>
-                                <option timeZoneId="14" gmtAdjustment="GMT-05:00" useDaylightTime="0" value="-5">(GMT-05:00) Bogota, Lima, Quito, Rio Branco</option>
-                                <option timeZoneId="15" gmtAdjustment="GMT-05:00" useDaylightTime="1" value="-5">(GMT-05:00) Eastern Time (US & Canada)</option>
-                                <option timeZoneId="16" gmtAdjustment="GMT-05:00" useDaylightTime="1" value="-5">(GMT-05:00) Indiana (East)</option>
-                                <option timeZoneId="17" gmtAdjustment="GMT-04:00" useDaylightTime="1" value="-4">(GMT-04:00) Atlantic Time (Canada)</option>
-                                <option timeZoneId="18" gmtAdjustment="GMT-04:00" useDaylightTime="0" value="-4">(GMT-04:00) Caracas, La Paz</option>
-                                <option timeZoneId="19" gmtAdjustment="GMT-04:00" useDaylightTime="0" value="-4">(GMT-04:00) Manaus</option>
-                                <option timeZoneId="20" gmtAdjustment="GMT-04:00" useDaylightTime="1" value="-4">(GMT-04:00) Santiago</option>
-                                <option timeZoneId="21" gmtAdjustment="GMT-03:30" useDaylightTime="1" value="-3.5">(GMT-03:30) Newfoundland</option>
-                                <option timeZoneId="22" gmtAdjustment="GMT-03:00" useDaylightTime="1" value="-3">(GMT-03:00) Brasilia</option>
-                                <option timeZoneId="23" gmtAdjustment="GMT-03:00" useDaylightTime="0" value="-3">(GMT-03:00) Buenos Aires, Georgetown</option>
-                                <option timeZoneId="24" gmtAdjustment="GMT-03:00" useDaylightTime="1" value="-3">(GMT-03:00) Greenland</option>
-                                <option timeZoneId="25" gmtAdjustment="GMT-03:00" useDaylightTime="1" value="-3">(GMT-03:00) Montevideo</option>
-                                <option timeZoneId="26" gmtAdjustment="GMT-02:00" useDaylightTime="1" value="-2">(GMT-02:00) Mid-Atlantic</option>
-                                <option timeZoneId="27" gmtAdjustment="GMT-01:00" useDaylightTime="0" value="-1">(GMT-01:00) Cape Verde Is.</option>
-                                <option timeZoneId="28" gmtAdjustment="GMT-01:00" useDaylightTime="1" value="-1">(GMT-01:00) Azores</option>
-                                <option timeZoneId="29" gmtAdjustment="GMT+00:00" useDaylightTime="0" value="0">(GMT+00:00) Casablanca, Monrovia, Reykjavik</option>
-                                <option timeZoneId="30" gmtAdjustment="GMT+00:00" useDaylightTime="1" value="0">(GMT+00:00) Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London</option>
-                                <option timeZoneId="31" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1">(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</option>
-                                <option timeZoneId="32" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1">(GMT+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague</option>
-                                <option timeZoneId="33" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1" selected>(GMT+01:00) Brussels, Copenhagen, Madrid, Paris</option>
-                                <option timeZoneId="34" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1">(GMT+01:00) Sarajevo, Skopje, Warsaw, Zagreb</option>
-                                <option timeZoneId="35" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1">(GMT+01:00) West Central Africa</option>
-                                <option timeZoneId="36" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">(GMT+02:00) Amman</option>
-                                <option timeZoneId="37" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">(GMT+02:00) Athens, Bucharest, Istanbul</option>
-                                <option timeZoneId="38" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">(GMT+02:00) Beirut</option>
-                                <option timeZoneId="39" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">(GMT+02:00) Cairo</option>
-                                <option timeZoneId="40" gmtAdjustment="GMT+02:00" useDaylightTime="0" value="2">(GMT+02:00) Harare, Pretoria</option>
-                                <option timeZoneId="41" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">(GMT+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius</option>
-                                <option timeZoneId="42" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">(GMT+02:00) Jerusalem</option>
-                                <option timeZoneId="43" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">(GMT+02:00) Minsk</option>
-                                <option timeZoneId="44" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">(GMT+02:00) Windhoek</option>
-                                <option timeZoneId="45" gmtAdjustment="GMT+03:00" useDaylightTime="0" value="3">(GMT+03:00) Kuwait, Riyadh, Baghdad</option>
-                                <option timeZoneId="46" gmtAdjustment="GMT+03:00" useDaylightTime="1" value="3">(GMT+03:00) Moscow, St. Petersburg, Volgograd</option>
-                                <option timeZoneId="47" gmtAdjustment="GMT+03:00" useDaylightTime="0" value="3">(GMT+03:00) Nairobi</option>
-                                <option timeZoneId="48" gmtAdjustment="GMT+03:00" useDaylightTime="0" value="3">(GMT+03:00) Tbilisi</option>
-                                <option timeZoneId="49" gmtAdjustment="GMT+03:30" useDaylightTime="1" value="3.5">(GMT+03:30) Tehran</option>
-                                <option timeZoneId="50" gmtAdjustment="GMT+04:00" useDaylightTime="0" value="4">(GMT+04:00) Abu Dhabi, Muscat</option>
-                                <option timeZoneId="51" gmtAdjustment="GMT+04:00" useDaylightTime="1" value="4">(GMT+04:00) Baku</option>
-                                <option timeZoneId="52" gmtAdjustment="GMT+04:00" useDaylightTime="1" value="4">(GMT+04:00) Yerevan</option>
-                                <option timeZoneId="53" gmtAdjustment="GMT+04:30" useDaylightTime="0" value="4.5">(GMT+04:30) Kabul</option>
-                                <option timeZoneId="54" gmtAdjustment="GMT+05:00" useDaylightTime="1" value="5">(GMT+05:00) Yekaterinburg</option>
-                                <option timeZoneId="55" gmtAdjustment="GMT+05:00" useDaylightTime="0" value="5">(GMT+05:00) Islamabad, Karachi, Tashkent</option>
-                                <option timeZoneId="56" gmtAdjustment="GMT+05:30" useDaylightTime="0" value="5.5">(GMT+05:30) Sri Jayawardenapura</option>
-                                <option timeZoneId="57" gmtAdjustment="GMT+05:30" useDaylightTime="0" value="5.5">(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi</option>
-                                <option timeZoneId="58" gmtAdjustment="GMT+05:45" useDaylightTime="0" value="5.75">(GMT+05:45) Kathmandu</option>
-                                <option timeZoneId="59" gmtAdjustment="GMT+06:00" useDaylightTime="1" value="6">(GMT+06:00) Almaty, Novosibirsk</option>
-                                <option timeZoneId="60" gmtAdjustment="GMT+06:00" useDaylightTime="0" value="6">(GMT+06:00) Astana, Dhaka</option>
-                                <option timeZoneId="61" gmtAdjustment="GMT+06:30" useDaylightTime="0" value="6.5">(GMT+06:30) Yangon (Rangoon)</option>
-                                <option timeZoneId="62" gmtAdjustment="GMT+07:00" useDaylightTime="0" value="7">(GMT+07:00) Bangkok, Hanoi, Jakarta</option>
-                                <option timeZoneId="63" gmtAdjustment="GMT+07:00" useDaylightTime="1" value="7">(GMT+07:00) Krasnoyarsk</option>
-                                <option timeZoneId="64" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">(GMT+08:00) Beijing, Chongqing, Hong Kong, Urumqi</option>
-                                <option timeZoneId="65" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">(GMT+08:00) Kuala Lumpur, Singapore</option>
-                                <option timeZoneId="66" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">(GMT+08:00) Irkutsk, Ulaan Bataar</option>
-                                <option timeZoneId="67" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">(GMT+08:00) Perth</option>
-                                <option timeZoneId="68" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">(GMT+08:00) Taipei</option>
-                                <option timeZoneId="69" gmtAdjustment="GMT+09:00" useDaylightTime="0" value="9">(GMT+09:00) Osaka, Sapporo, Tokyo</option>
-                                <option timeZoneId="70" gmtAdjustment="GMT+09:00" useDaylightTime="0" value="9">(GMT+09:00) Seoul</option>
-                                <option timeZoneId="71" gmtAdjustment="GMT+09:00" useDaylightTime="1" value="9">(GMT+09:00) Yakutsk</option>
-                                <option timeZoneId="72" gmtAdjustment="GMT+09:30" useDaylightTime="0" value="9.5">(GMT+09:30) Adelaide</option>
-                                <option timeZoneId="73" gmtAdjustment="GMT+09:30" useDaylightTime="0" value="9.5">(GMT+09:30) Darwin</option>
-                                <option timeZoneId="74" gmtAdjustment="GMT+10:00" useDaylightTime="0" value="10">(GMT+10:00) Brisbane</option>
-                                <option timeZoneId="75" gmtAdjustment="GMT+10:00" useDaylightTime="1" value="10">(GMT+10:00) Canberra, Melbourne, Sydney</option>
-                                <option timeZoneId="76" gmtAdjustment="GMT+10:00" useDaylightTime="1" value="10">(GMT+10:00) Hobart</option>
-                                <option timeZoneId="77" gmtAdjustment="GMT+10:00" useDaylightTime="0" value="10">(GMT+10:00) Guam, Port Moresby</option>
-                                <option timeZoneId="78" gmtAdjustment="GMT+10:00" useDaylightTime="1" value="10">(GMT+10:00) Vladivostok</option>
-                                <option timeZoneId="79" gmtAdjustment="GMT+11:00" useDaylightTime="1" value="11">(GMT+11:00) Magadan, Solomon Is., New Caledonia</option>
-                                <option timeZoneId="80" gmtAdjustment="GMT+12:00" useDaylightTime="1" value="12">(GMT+12:00) Auckland, Wellington</option>
-                                <option timeZoneId="81" gmtAdjustment="GMT+12:00" useDaylightTime="0" value="12">(GMT+12:00) Fiji, Kamchatka, Marshall Is.</option>
-                                <option timeZoneId="82" gmtAdjustment="GMT+13:00" useDaylightTime="0" value="13">(GMT+13:00) Nuku'alofa</option>
+                                <option timeZoneId="1" gmtAdjustment="GMT-12:00" useDaylightTime="0" value="-12">
+                                    (GMT-12:00) International Date Line West</option>
+                                <option timeZoneId="2" gmtAdjustment="GMT-11:00" useDaylightTime="0" value="-11">
+                                    (GMT-11:00) Midway Island, Samoa</option>
+                                <option timeZoneId="3" gmtAdjustment="GMT-10:00" useDaylightTime="0" value="-10">
+                                    (GMT-10:00) Hawaii</option>
+                                <option timeZoneId="4" gmtAdjustment="GMT-09:00" useDaylightTime="1" value="-9">
+                                    (GMT-09:00) Alaska</option>
+                                <option timeZoneId="5" gmtAdjustment="GMT-08:00" useDaylightTime="1" value="-8">
+                                    (GMT-08:00) Pacific Time (US & Canada)</option>
+                                <option timeZoneId="6" gmtAdjustment="GMT-08:00" useDaylightTime="1" value="-8">
+                                    (GMT-08:00) Tijuana, Baja California</option>
+                                <option timeZoneId="7" gmtAdjustment="GMT-07:00" useDaylightTime="0" value="-7">
+                                    (GMT-07:00) Arizona</option>
+                                <option timeZoneId="8" gmtAdjustment="GMT-07:00" useDaylightTime="1" value="-7">
+                                    (GMT-07:00) Chihuahua, La Paz, Mazatlan</option>
+                                <option timeZoneId="9" gmtAdjustment="GMT-07:00" useDaylightTime="1" value="-7">
+                                    (GMT-07:00) Mountain Time (US & Canada)</option>
+                                <option timeZoneId="10" gmtAdjustment="GMT-06:00" useDaylightTime="0" value="-6">
+                                    (GMT-06:00) Central America</option>
+                                <option timeZoneId="11" gmtAdjustment="GMT-06:00" useDaylightTime="1" value="-6">
+                                    (GMT-06:00) Central Time (US & Canada)</option>
+                                <option timeZoneId="12" gmtAdjustment="GMT-06:00" useDaylightTime="1" value="-6">
+                                    (GMT-06:00) Guadalajara, Mexico City, Monterrey</option>
+                                <option timeZoneId="13" gmtAdjustment="GMT-06:00" useDaylightTime="0" value="-6">
+                                    (GMT-06:00) Saskatchewan</option>
+                                <option timeZoneId="14" gmtAdjustment="GMT-05:00" useDaylightTime="0" value="-5">
+                                    (GMT-05:00) Bogota, Lima, Quito, Rio Branco</option>
+                                <option timeZoneId="15" gmtAdjustment="GMT-05:00" useDaylightTime="1" value="-5">
+                                    (GMT-05:00) Eastern Time (US & Canada)</option>
+                                <option timeZoneId="16" gmtAdjustment="GMT-05:00" useDaylightTime="1" value="-5">
+                                    (GMT-05:00) Indiana (East)</option>
+                                <option timeZoneId="17" gmtAdjustment="GMT-04:00" useDaylightTime="1" value="-4">
+                                    (GMT-04:00) Atlantic Time (Canada)</option>
+                                <option timeZoneId="18" gmtAdjustment="GMT-04:00" useDaylightTime="0" value="-4">
+                                    (GMT-04:00) Caracas, La Paz</option>
+                                <option timeZoneId="19" gmtAdjustment="GMT-04:00" useDaylightTime="0" value="-4">
+                                    (GMT-04:00) Manaus</option>
+                                <option timeZoneId="20" gmtAdjustment="GMT-04:00" useDaylightTime="1" value="-4">
+                                    (GMT-04:00) Santiago</option>
+                                <option timeZoneId="21" gmtAdjustment="GMT-03:30" useDaylightTime="1" value="-3.5">
+                                    (GMT-03:30) Newfoundland</option>
+                                <option timeZoneId="22" gmtAdjustment="GMT-03:00" useDaylightTime="1" value="-3">
+                                    (GMT-03:00) Brasilia</option>
+                                <option timeZoneId="23" gmtAdjustment="GMT-03:00" useDaylightTime="0" value="-3">
+                                    (GMT-03:00) Buenos Aires, Georgetown</option>
+                                <option timeZoneId="24" gmtAdjustment="GMT-03:00" useDaylightTime="1" value="-3">
+                                    (GMT-03:00) Greenland</option>
+                                <option timeZoneId="25" gmtAdjustment="GMT-03:00" useDaylightTime="1" value="-3">
+                                    (GMT-03:00) Montevideo</option>
+                                <option timeZoneId="26" gmtAdjustment="GMT-02:00" useDaylightTime="1" value="-2">
+                                    (GMT-02:00) Mid-Atlantic</option>
+                                <option timeZoneId="27" gmtAdjustment="GMT-01:00" useDaylightTime="0" value="-1">
+                                    (GMT-01:00) Cape Verde Is.</option>
+                                <option timeZoneId="28" gmtAdjustment="GMT-01:00" useDaylightTime="1" value="-1">
+                                    (GMT-01:00) Azores</option>
+                                <option timeZoneId="29" gmtAdjustment="GMT+00:00" useDaylightTime="0" value="0">
+                                    (GMT+00:00) Casablanca, Monrovia, Reykjavik</option>
+                                <option timeZoneId="30" gmtAdjustment="GMT+00:00" useDaylightTime="1" value="0">
+                                    (GMT+00:00) Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London</option>
+                                <option timeZoneId="31" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1">
+                                    (GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna</option>
+                                <option timeZoneId="32" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1">
+                                    (GMT+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague</option>
+                                <option timeZoneId="33" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1"
+                                    selected>
+                                    (GMT+01:00) Brussels, Copenhagen, Madrid, Paris</option>
+                                <option timeZoneId="34" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1">
+                                    (GMT+01:00) Sarajevo, Skopje, Warsaw, Zagreb</option>
+                                <option timeZoneId="35" gmtAdjustment="GMT+01:00" useDaylightTime="1" value="1">
+                                    (GMT+01:00) West Central Africa</option>
+                                <option timeZoneId="36" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">
+                                    (GMT+02:00) Amman</option>
+                                <option timeZoneId="37" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">
+                                    (GMT+02:00) Athens, Bucharest, Istanbul</option>
+                                <option timeZoneId="38" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">
+                                    (GMT+02:00) Beirut</option>
+                                <option timeZoneId="39" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">
+                                    (GMT+02:00) Cairo</option>
+                                <option timeZoneId="40" gmtAdjustment="GMT+02:00" useDaylightTime="0" value="2">
+                                    (GMT+02:00) Harare, Pretoria</option>
+                                <option timeZoneId="41" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">
+                                    (GMT+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius</option>
+                                <option timeZoneId="42" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">
+                                    (GMT+02:00) Jerusalem</option>
+                                <option timeZoneId="43" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">
+                                    (GMT+02:00) Minsk</option>
+                                <option timeZoneId="44" gmtAdjustment="GMT+02:00" useDaylightTime="1" value="2">
+                                    (GMT+02:00) Windhoek</option>
+                                <option timeZoneId="45" gmtAdjustment="GMT+03:00" useDaylightTime="0" value="3">
+                                    (GMT+03:00) Kuwait, Riyadh, Baghdad</option>
+                                <option timeZoneId="46" gmtAdjustment="GMT+03:00" useDaylightTime="1" value="3">
+                                    (GMT+03:00) Moscow, St. Petersburg, Volgograd</option>
+                                <option timeZoneId="47" gmtAdjustment="GMT+03:00" useDaylightTime="0" value="3">
+                                    (GMT+03:00) Nairobi</option>
+                                <option timeZoneId="48" gmtAdjustment="GMT+03:00" useDaylightTime="0" value="3">
+                                    (GMT+03:00) Tbilisi</option>
+                                <option timeZoneId="49" gmtAdjustment="GMT+03:30" useDaylightTime="1" value="3.5">
+                                    (GMT+03:30) Tehran</option>
+                                <option timeZoneId="50" gmtAdjustment="GMT+04:00" useDaylightTime="0" value="4">
+                                    (GMT+04:00) Abu Dhabi, Muscat</option>
+                                <option timeZoneId="51" gmtAdjustment="GMT+04:00" useDaylightTime="1" value="4">
+                                    (GMT+04:00) Baku</option>
+                                <option timeZoneId="52" gmtAdjustment="GMT+04:00" useDaylightTime="1" value="4">
+                                    (GMT+04:00) Yerevan</option>
+                                <option timeZoneId="53" gmtAdjustment="GMT+04:30" useDaylightTime="0" value="4.5">
+                                    (GMT+04:30) Kabul</option>
+                                <option timeZoneId="54" gmtAdjustment="GMT+05:00" useDaylightTime="1" value="5">
+                                    (GMT+05:00) Yekaterinburg</option>
+                                <option timeZoneId="55" gmtAdjustment="GMT+05:00" useDaylightTime="0" value="5">
+                                    (GMT+05:00) Islamabad, Karachi, Tashkent</option>
+                                <option timeZoneId="56" gmtAdjustment="GMT+05:30" useDaylightTime="0" value="5.5">
+                                    (GMT+05:30) Sri Jayawardenapura</option>
+                                <option timeZoneId="57" gmtAdjustment="GMT+05:30" useDaylightTime="0" value="5.5">
+                                    (GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi</option>
+                                <option timeZoneId="58" gmtAdjustment="GMT+05:45" useDaylightTime="0" value="5.75">
+                                    (GMT+05:45) Kathmandu</option>
+                                <option timeZoneId="59" gmtAdjustment="GMT+06:00" useDaylightTime="1" value="6">
+                                    (GMT+06:00) Almaty, Novosibirsk</option>
+                                <option timeZoneId="60" gmtAdjustment="GMT+06:00" useDaylightTime="0" value="6">
+                                    (GMT+06:00) Astana, Dhaka</option>
+                                <option timeZoneId="61" gmtAdjustment="GMT+06:30" useDaylightTime="0" value="6.5">
+                                    (GMT+06:30) Yangon (Rangoon)</option>
+                                <option timeZoneId="62" gmtAdjustment="GMT+07:00" useDaylightTime="0" value="7">
+                                    (GMT+07:00) Bangkok, Hanoi, Jakarta</option>
+                                <option timeZoneId="63" gmtAdjustment="GMT+07:00" useDaylightTime="1" value="7">
+                                    (GMT+07:00) Krasnoyarsk</option>
+                                <option timeZoneId="64" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">
+                                    (GMT+08:00) Beijing, Chongqing, Hong Kong, Urumqi</option>
+                                <option timeZoneId="65" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">
+                                    (GMT+08:00) Kuala Lumpur, Singapore</option>
+                                <option timeZoneId="66" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">
+                                    (GMT+08:00) Irkutsk, Ulaan Bataar</option>
+                                <option timeZoneId="67" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">
+                                    (GMT+08:00) Perth</option>
+                                <option timeZoneId="68" gmtAdjustment="GMT+08:00" useDaylightTime="0" value="8">
+                                    (GMT+08:00) Taipei</option>
+                                <option timeZoneId="69" gmtAdjustment="GMT+09:00" useDaylightTime="0" value="9">
+                                    (GMT+09:00) Osaka, Sapporo, Tokyo</option>
+                                <option timeZoneId="70" gmtAdjustment="GMT+09:00" useDaylightTime="0" value="9">
+                                    (GMT+09:00) Seoul</option>
+                                <option timeZoneId="71" gmtAdjustment="GMT+09:00" useDaylightTime="1" value="9">
+                                    (GMT+09:00) Yakutsk</option>
+                                <option timeZoneId="72" gmtAdjustment="GMT+09:30" useDaylightTime="0" value="9.5">
+                                    (GMT+09:30) Adelaide</option>
+                                <option timeZoneId="73" gmtAdjustment="GMT+09:30" useDaylightTime="0" value="9.5">
+                                    (GMT+09:30) Darwin</option>
+                                <option timeZoneId="74" gmtAdjustment="GMT+10:00" useDaylightTime="0" value="10">
+                                    (GMT+10:00) Brisbane</option>
+                                <option timeZoneId="75" gmtAdjustment="GMT+10:00" useDaylightTime="1" value="10">
+                                    (GMT+10:00) Canberra, Melbourne, Sydney</option>
+                                <option timeZoneId="76" gmtAdjustment="GMT+10:00" useDaylightTime="1" value="10">
+                                    (GMT+10:00) Hobart</option>
+                                <option timeZoneId="77" gmtAdjustment="GMT+10:00" useDaylightTime="0" value="10">
+                                    (GMT+10:00) Guam, Port Moresby</option>
+                                <option timeZoneId="78" gmtAdjustment="GMT+10:00" useDaylightTime="1" value="10">
+                                    (GMT+10:00) Vladivostok</option>
+                                <option timeZoneId="79" gmtAdjustment="GMT+11:00" useDaylightTime="1" value="11">
+                                    (GMT+11:00) Magadan, Solomon Is., New Caledonia</option>
+                                <option timeZoneId="80" gmtAdjustment="GMT+12:00" useDaylightTime="1" value="12">
+                                    (GMT+12:00) Auckland, Wellington</option>
+                                <option timeZoneId="81" gmtAdjustment="GMT+12:00" useDaylightTime="0" value="12">
+                                    (GMT+12:00) Fiji, Kamchatka, Marshall Is.</option>
+                                <option timeZoneId="82" gmtAdjustment="GMT+13:00" useDaylightTime="0" value="13">
+                                    (GMT+13:00) Nuku'alofa</option>
                             </select>
                         </div>
                         <div class="pure-controls">
@@ -378,7 +482,8 @@
                             <input type="checkbox" id="DST_enable"> </label>
                         </div>
                         <div class="pure-controls">
-                            <button type="button" id="sendTimeSettings" class="pure-button pure-button-primary">Save</button>
+                            <button type="button" id="sendTimeSettings"
+                                class="pure-button pure-button-primary">Save</button>
                         </div>
 
                     </fieldset>
