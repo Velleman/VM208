@@ -84,11 +84,8 @@ void setup()
   Serial.printf("START\n");
 
   ESP_LOGI(TAG, "APP MAIN ENTRY");
-  Serial.printf("SPIFFS.begin()\r\n");
   SPIFFS.begin();
-  Serial.printf("config.load()\r\n");
   config.load();
-  Serial.printf("Init_IO\r\n");
   Init_IO(setState);
 
   s_wifi_event_group = xEventGroupCreate();
