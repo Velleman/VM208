@@ -809,12 +809,14 @@ void sendIOState(AsyncWebServerRequest *request)
   JsonArray &channels = interface.createNestedArray("VM208");
   for (int j = 0; j < 4; j++)
   {
+    xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS);
     VM208Channel *ch = module->getChannel(j);
     JsonObject &channel = channels.createNestedObject();
     channel.set("name", ch->getName());
     channel.set("state", ch->isOn());
     channel.set("pulseActive", pulseStatus.status[j]);
     channel.set("timerActive", timerStatus.status[j]);
+    xSemaphoreGive(g_Mutex);
   }
   if (mm.getAmount() > 1)
   {
@@ -823,12 +825,14 @@ void sendIOState(AsyncWebServerRequest *request)
       JsonArray &channels = interface.createNestedArray("VM208EX");
       for (int j = 0; j < 8; j++)
       {
+        xSemaphoreTake(g_Mutex, 100 / portTICK_PERIOD_MS);
         VM208EXChannel ch = (*(VM208EX *)mm.getModule(1))[j];
         JsonObject &channel = channels.createNestedObject();
         channel.set("name", ch.getName());
         channel.set("state", ch.isOn());
         channel.set("pulseActive", pulseStatus.status[4 + j]);
         channel.set("timerActive", timerStatus.status[4 + j]);
+        xSemaphoreGive(g_Mutex);
       }
     }
     else
@@ -877,41 +881,26 @@ void sendIOState(AsyncWebServerRequest *request, int8_t interface, uint8_t socke
   JsonObject &root = jsonBuffer.createObject();
 
   JsonArray &channels = root.createNestedArray("Channels");
-  if (interface == -1)
+  if (xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS))
   {
-    VM208 *module = mm.getBaseModule();
-    for (int j = 0; j < 4; j++)
+    if (interface == -1)
     {
-      VM208Channel *ch = module->getChannel(j);
-      JsonObject &channel = channels.createNestedObject();
-      channel.set("name", ch->getName());
-      channel.set("state", ch->isOn());
-      channel.set("pulseActive", pulseStatus.status[j]);
-      channel.set("timerActive", timerStatus.status[j]);
-    }
-  }
-  else
-  {
-    if (interface == 0)
-    {
-      VM208EX *module = (VM208EX *)mm.getModule(1);
-      for (int j = 0; j < 8; j++)
+      VM208 *module = mm.getBaseModule();
+      for (int j = 0; j < 4; j++)
       {
-        auto channelID = convertToChannelId(j + 1, interface, socket);
-        VM208EXChannel *ch = module->getChannel(j, false);
+        VM208Channel *ch = module->getChannel(j);
         JsonObject &channel = channels.createNestedObject();
         channel.set("name", ch->getName());
         channel.set("state", ch->isOn());
-        channel.set("pulseActive", pulseStatus.status[channelID - 1]);
-        channel.set("timerActive", timerStatus.status[channelID - 1]);
+        channel.set("pulseActive", pulseStatus.status[j]);
+        channel.set("timerActive", timerStatus.status[j]);
       }
     }
     else
     {
-      uint8_t moduleNr = 2 + ((interface - 1) * 4) + (socket - 1);
-      VM208EX *module = (VM208EX *)mm.getModule(moduleNr);
-      if (module != nullptr)
+      if (interface == 0)
       {
+        VM208EX *module = (VM208EX *)mm.getModule(1);
         for (int j = 0; j < 8; j++)
         {
           auto channelID = convertToChannelId(j + 1, interface, socket);
@@ -923,11 +912,30 @@ void sendIOState(AsyncWebServerRequest *request, int8_t interface, uint8_t socke
           channel.set("timerActive", timerStatus.status[channelID - 1]);
         }
       }
+      else
+      {
+        uint8_t moduleNr = 2 + ((interface - 1) * 4) + (socket - 1);
+        VM208EX *module = (VM208EX *)mm.getModule(moduleNr);
+        if (module != nullptr)
+        {
+          for (int j = 0; j < 8; j++)
+          {
+            auto channelID = convertToChannelId(j + 1, interface, socket);
+            VM208EXChannel *ch = module->getChannel(j, false);
+            JsonObject &channel = channels.createNestedObject();
+            channel.set("name", ch->getName());
+            channel.set("state", ch->isOn());
+            channel.set("pulseActive", pulseStatus.status[channelID - 1]);
+            channel.set("timerActive", timerStatus.status[channelID - 1]);
+          }
+        }
+      }
     }
+    root.set("m1", mm.getBaseModule()->getMosfet1State());
+    root.set("m2", mm.getBaseModule()->getMosfet2State());
+    root.set("input", mm.getBaseModule()->getUserInputState());
+    xSemaphoreGive(g_Mutex);
   }
-  root.set("m1", mm.getBaseModule()->getMosfet1State());
-  root.set("m2", mm.getBaseModule()->getMosfet2State());
-  root.set("input", mm.getBaseModule()->getUserInputState());
   root.printTo(*response);
   request->send(response);
   jsonBuffer.clear();

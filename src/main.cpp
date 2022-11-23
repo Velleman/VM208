@@ -134,7 +134,7 @@ void setup()
 
   if (WiFi.getMode() != WIFI_MODE_AP)
   {
-    xTaskCreate(IO_task, "io_task", 2048, NULL, (tskIDLE_PRIORITY + 3), &taskHandle);
+    xTaskCreate(IO_task, "io_task", 4096, NULL, (tskIDLE_PRIORITY + 3), &taskHandle);
   }
 
   xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);

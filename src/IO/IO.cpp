@@ -109,10 +109,10 @@ void IO_task(void *arg)
   uint32_t io_num;
   while (1)
   {
-    if (xQueueReceive(int_evt_queue, &io_num, 100 / portTICK_PERIOD_MS) || digitalRead(INT_PIN) == LOW)// || digitalRead(INT2_PIN) == LOW)
+    if (xQueueReceive(int_evt_queue, &io_num, 100 / portTICK_PERIOD_MS) || digitalRead(INT_PIN) == LOW || digitalRead(INT2_PIN) == LOW)
     {
       Serial.println("Handle Interrupt");
-      if (io_num == INT2_PIN) //read extension
+      if (io_num == INT2_PIN || digitalRead(INT2_PIN) == LOW) //read extension
       {
         if (mm.isExtensionConnected())
         {
@@ -152,32 +152,45 @@ void IO_task(void *arg)
 
 void toggleChannel(VM208 *ex, uint8_t channel)
 {
-  if (channel && channel < 5)
+  if (xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS))
   {
-    VM208 vm = *ex;
-    vm[channel - 1].toggle();
+    if (channel && channel < 5)
+    {
+      VM208 vm = *ex;
+      vm[channel - 1].toggle();
+    }
+    xSemaphoreGive(g_Mutex);
   }
 }
 
 void toggleChannel(VM208EX *ex, uint8_t channel)
 {
-  if (channel)
+  if (xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS))
   {
-    (*ex)[channel - 1].toggle();
-    //(*(ex))[channel - 1].toggle();
+    if (channel)
+    {
+      (*ex)[channel - 1].toggle();
+      //(*(ex))[channel - 1].toggle();
+    }
+    xSemaphoreGive(g_Mutex);
   }
 }
 
 RelayChannel *getRelayChannelById(int id)
 {
-  if (id <= 4)
+  if (xSemaphoreTake(g_Mutex, 100 / portTICK_PERIOD_MS))
   {
-    VM208 *vm208 = (VM208 *)mm.getModule(0);
-    return &(*vm208)[id - 1];
+    if (id <= 4)
+    {
+      VM208 *vm208 = (VM208 *)mm.getModule(0);
+      return &(*vm208)[id - 1];
+    }
+    else
+    {
+      VM208EX *ex = (VM208EX *)mm.getModule(id / 8);
+      return &(*ex)[id % 8];
+    }
+    xSemaphoreGive(g_Mutex);
   }
-  else
-  {
-    VM208EX *ex = (VM208EX *)mm.getModule(id / 8);
-    return &(*ex)[id % 8];
-  }
+  return nullptr;
 }
