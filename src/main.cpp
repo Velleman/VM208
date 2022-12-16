@@ -96,6 +96,7 @@ void setup()
   // start AP for WiFi Config
   WiFi.onEvent(WiFiEvent);
   ESP_LOGI(TAG, "Check Buttons");
+  xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS);
   if (((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
   {
     Serial.print("It's the first time :");
@@ -110,7 +111,7 @@ void setup()
     delay(500);
     mm.getBaseModule()->getChannel(0)->turnLedOff();
     mm.getBaseModule()->getChannel(3)->turnLedOff();
-    //startEth();
+    xSemaphoreGive(g_Mutex);
     ESP_LOGI(TAG, "Start AP");
     WiFi.softAP("VM208_AP", "VellemanForMakers");
     WiFi.enableSTA(false);
@@ -122,6 +123,7 @@ void setup()
   }
   else
   {
+    xSemaphoreGive(g_Mutex);
     Serial.printf("%s", config.getSSID().c_str());
     Serial.printf("%s", config.getWifiPassword().c_str());
 
@@ -131,6 +133,7 @@ void setup()
       startWifi();
     }
   }
+  
 
   if (WiFi.getMode() != WIFI_MODE_AP)
   {

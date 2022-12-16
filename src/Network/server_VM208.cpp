@@ -26,7 +26,7 @@ AsyncWebServer server(80);
 void sendBoardInfo(AsyncWebServerRequest *request);
 void sendIOState(AsyncWebServerRequest *request);
 void sendIOState(AsyncWebServerRequest *request, int8_t interface, uint8_t socket);
-//String getMacAsString(uint8_t *mac);
+// String getMacAsString(uint8_t *mac);
 
 class CaptiveRequestHandler : public AsyncWebHandler
 {
@@ -36,7 +36,7 @@ public:
 
   bool canHandle(AsyncWebServerRequest *request)
   {
-    //request->addInterestingHeader("ANY");
+    // request->addInterestingHeader("ANY");
     return true;
   }
 
@@ -55,7 +55,7 @@ public:
 void startServer()
 {
 
-  //#region server
+  // #region server
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "text/plain", String(ESP.getFreeHeap())); });
 
@@ -70,8 +70,7 @@ void startServer()
               if (request->params() == 2)
               {
                 sendIOState(request, request->getParam(0)->value().toInt(), request->getParam(1)->value().toInt());
-              }
-            });
+              } });
 
   server.on("/auth_settings", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -81,8 +80,7 @@ void startServer()
                 config.setUserPw(request->getParam(1)->value());
                 config.save();
                 ESP.restart();
-              }
-            });
+              } });
 
   server.on("/relay", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -131,8 +129,7 @@ void startServer()
               }
               xQueueSend(pulseStopQueue, &relay, 0);
               xQueueSend(timerStopQueue, &relay, 0);
-              sendIOState(request, interface, socket);
-            });
+              sendIOState(request, interface, socket); });
 
   server.on("/mosfet", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -140,6 +137,8 @@ void startServer()
               uint8_t state;
               mosfet = request->getParam(0)->value().toInt();
               state = request->getParam(1)->value().toInt();
+              if(xSemaphoreTake(g_Mutex,100/portTICK_PERIOD_MS))
+              {
               if (mosfet == 1)
               {
                 if (state == 1)
@@ -158,8 +157,9 @@ void startServer()
                   mm.getBaseModule()->turnOffMosfet2();
                 }
               }
-              sendIOState(request);
-            });
+              }
+              xSemaphoreGive(g_Mutex);
+              sendIOState(request); });
 
   server.on("/pulse", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -177,8 +177,7 @@ void startServer()
               params.time = time.toInt();
               //send params to pulse queue
               xQueueSend(pulseQueue, &params, 0);
-              request->send(200);
-            });
+              request->send(200); });
 
   server.on("/stoppulse", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -193,8 +192,7 @@ void startServer()
               mm.getChannel(relay)->toggle();
               xSemaphoreGive(g_Mutex);
               xQueueSend(pulseStopQueue, &relay, 0);
-              request->send(200);
-            });
+              request->send(200); });
 
   server.on("/stoptimer", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -210,8 +208,7 @@ void startServer()
               //send params to pulse queue
               xQueueSend(timerStopQueue, &relay, 0);
 
-              request->send(200);
-            });
+              request->send(200); });
 
   server.on("/timer", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -229,8 +226,7 @@ void startServer()
               // send params to timer queue
               xQueueSend(timerQueue, &params, 0);
 
-              request->send(200);
-            });
+              request->send(200); });
 
   server.on("/getalarms", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -256,7 +252,7 @@ void startServer()
     }
   }*/
               uint16_t id = request->getParam(0)->value().toInt();
-              //Send the alarms
+              // Send the alarms
               AsyncResponseStream *response = request->beginResponseStream("application/json");
               DynamicJsonBuffer jsonBuffer;
               JsonObject &root = jsonBuffer.createObject();
@@ -272,7 +268,7 @@ void startServer()
                 Serial.println(dow);
                 Serial.print("onOff is ");
                 Serial.println(onOff);
-                Channels_alarms_settings["dow"] = dow; //shedule->getShedule(dow,onOff)->dateTime.tm_wday;
+                Channels_alarms_settings["dow"] = dow; // shedule->getShedule(dow,onOff)->dateTime.tm_wday;
                 Channels_alarms_settings["hour"] = shedule->getShedule(dow, onOff)->hour;
                 Channels_alarms_settings["minute"] = shedule->getShedule(dow, onOff)->minute;
                 Channels_alarms_settings["onoff"] = onOff;
@@ -281,7 +277,7 @@ void startServer()
               root.printTo(*response);
               request->send(response);
               jsonBuffer.clear();
-              //request->send(200);
+              // request->send(200);
             });
 
   server.on("/setalarm", HTTP_POST, [](AsyncWebServerRequest *request)
@@ -305,8 +301,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/email_settings", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -324,8 +319,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/testmail", HTTP_POST, [](AsyncWebServerRequest *request)
             { sendTestMail(); });
@@ -350,8 +344,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/wifi_creds_save", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -367,8 +360,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/eth_ip_save", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -390,8 +382,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/wifi_ip_save", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -413,8 +404,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/notif_setting", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -431,8 +421,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/names", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -479,8 +468,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/time_settings", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -502,8 +490,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on("/layout", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -540,8 +527,7 @@ void startServer()
               AsyncResponseStream *response = request->beginResponseStream("application/json");
               root.printTo(*response);
               request->send(response);
-              json.clear();
-            });
+              json.clear(); });
 
   server.on("/shedule_set", HTTP_POST, [](AsyncWebServerRequest *request)
             {
@@ -593,8 +579,7 @@ void startServer()
               else
               {
                 request->send(400);
-              }
-            });
+              } });
 
   server.on(
       "/doUpdate", HTTP_POST, [](AsyncWebServerRequest *request) {},
@@ -683,24 +668,21 @@ void startServer()
 
                           request->send(404);
                         }
-                      }
-                    });
+                      } });
   server.onFileUpload([](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final)
                       {
                         if (!index)
                           Serial.printf("UploadStart: %s\n", filename.c_str());
                         Serial.printf("%s", (const char *)data);
                         if (final)
-                          Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index + len);
-                      });
+                          Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index + len); });
   server.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
                        {
                          if (!index)
                            Serial.printf("BodyStart: %u\n", total);
                          Serial.printf("%s", (const char *)data);
                          if (index + len == total)
-                           Serial.printf("BodyEnd: %u\n", total);
-                       });
+                           Serial.printf("BodyEnd: %u\n", total); });
   server.begin();
 }
 
@@ -719,7 +701,7 @@ void handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size
     {
       SPIFFS.end();
     }
-    //disableIOacitivty();
+    // disableIOacitivty();
     if (!Update.begin(UPDATE_SIZE_UNKNOWN, cmd))
     {
       Update.printError(Serial);
@@ -793,16 +775,16 @@ void sendIOState(AsyncWebServerRequest *request)
   static pulseStatus_t timerStatus;
   xQueueReceive(pulseStatusQueue, &pulseStatus, 10 / portTICK_PERIOD_MS);
   xQueueReceive(timerStatusQueue, &timerStatus, 10 / portTICK_PERIOD_MS);
-  //AsyncResponseStream *response = request->beginResponseStream("application/json");
+  // AsyncResponseStream *response = request->beginResponseStream("application/json");
   request->send(200);
   return;
-  //const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
+  // const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
   DynamicJsonBuffer jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
-  //Input **inputs;
-  //inputs = getCurrentInputs();
-  //Mosfet *m1 = getMosfetById(1);
-  //Mosfet *m2 = getMosfetById(2);
+  // Input **inputs;
+  // inputs = getCurrentInputs();
+  // Mosfet *m1 = getMosfetById(1);
+  // Mosfet *m2 = getMosfetById(2);
   VM208 *module = (VM208 *)mm.getModule(0);
 
   JsonObject &interface = root.createNestedObject("Interface0");
@@ -820,7 +802,7 @@ void sendIOState(AsyncWebServerRequest *request)
   }
   if (mm.getAmount() > 1)
   {
-    if (mm.getModule(1)->hasSocket() == false) //native VM208EX
+    if (mm.getModule(1)->hasSocket() == false) // native VM208EX
     {
       JsonArray &channels = interface.createNestedArray("VM208EX");
       for (int j = 0; j < 8; j++)
@@ -862,9 +844,9 @@ void sendIOState(AsyncWebServerRequest *request)
       }*/
     }
   }
-  //root.set("input", false);
-  //root.printTo(*response);
-  //request->send(response);
+  // root.set("input", false);
+  // root.printTo(*response);
+  // request->send(response);
   jsonBuffer.clear();
 }
 
@@ -875,9 +857,9 @@ void sendIOState(AsyncWebServerRequest *request, int8_t interface, uint8_t socke
   xQueueReceive(pulseStatusQueue, &pulseStatus, 10 / portTICK_PERIOD_MS);
   xQueueReceive(timerStatusQueue, &timerStatus, 10 / portTICK_PERIOD_MS);
   AsyncResponseStream *response = request->beginResponseStream("application/json");
-  //const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
+  // const size_t capacity = JSON_OBJECT_SIZE(16) + 190;
   DynamicJsonBuffer jsonBuffer;
-  //StaticJsonBuffer<20000> jsonBuffer;
+  // StaticJsonBuffer<20000> jsonBuffer;
   JsonObject &root = jsonBuffer.createObject();
 
   JsonArray &channels = root.createNestedArray("Channels");
@@ -944,26 +926,26 @@ void sendIOState(AsyncWebServerRequest *request, int8_t interface, uint8_t socke
 void sendSettings(AsyncWebServerRequest *request)
 {
 
-  //AsyncResponseStream *response = request->beginResponseStream("application/json");
+  // AsyncResponseStream *response = request->beginResponseStream("application/json");
   AsyncJsonResponse *response = new AsyncJsonResponse();
-  //DynamicJsonBuffer jsonBuffer;
+  // DynamicJsonBuffer jsonBuffer;
   JsonObject &root = response->getRoot();
 
   root.set(config.USERNAME_KEY, config.getUserName());
   root.set(config.BOARDNAME_KEY, config.getBoardName());
   root.set(config.SSID_KEY, config.getSSID());
   root.set(config.ETH_DHCPEN_KEY, config.getETH_DHCPEnable());
-  root.set(config.ETH_IPADDR_KEY, config.getETH_IPAddress());          //TODO: change to interface settings
-  root.set(config.ETH_GATEWAY_KEY, config.getETH_Gateway());           //TODO: change to interface settings
-  root.set(config.ETH_SUBNETMASK_KEY, config.getETH_SubnetMask());     //TODO: change to interface settings
-  root.set(config.ETH_PRIMARYDNS_KEY, config.getETH_PrimaryDNS());     //TODO: change to interface settings
-  root.set(config.ETH_SECONDARYDNS_KEY, config.getETH_SecondaryDNS()); //TODO: change to interface settings
+  root.set(config.ETH_IPADDR_KEY, config.getETH_IPAddress());          // TODO: change to interface settings
+  root.set(config.ETH_GATEWAY_KEY, config.getETH_Gateway());           // TODO: change to interface settings
+  root.set(config.ETH_SUBNETMASK_KEY, config.getETH_SubnetMask());     // TODO: change to interface settings
+  root.set(config.ETH_PRIMARYDNS_KEY, config.getETH_PrimaryDNS());     // TODO: change to interface settings
+  root.set(config.ETH_SECONDARYDNS_KEY, config.getETH_SecondaryDNS()); // TODO: change to interface settings
   root.set(config.WIFI_DHCPEN_KEY, config.getWIFI_DHCPEnable());
-  root.set(config.WIFI_IPADDR_KEY, config.getWIFI_IPAddress());          //TODO: change to interface settings
-  root.set(config.WIFI_GATEWAY_KEY, config.getWIFI_Gateway());           //TODO: change to interface settings
-  root.set(config.WIFI_SUBNETMASK_KEY, config.getWIFI_SubnetMask());     //TODO: change to interface settings
-  root.set(config.WIFI_PRIMARYDNS_KEY, config.getWIFI_PrimaryDNS());     //TODO: change to interface settings
-  root.set(config.WIFI_SECONDARYDNS_KEY, config.getWIFI_SecondaryDNS()); //TODO: change to interface settings
+  root.set(config.WIFI_IPADDR_KEY, config.getWIFI_IPAddress());          // TODO: change to interface settings
+  root.set(config.WIFI_GATEWAY_KEY, config.getWIFI_Gateway());           // TODO: change to interface settings
+  root.set(config.WIFI_SUBNETMASK_KEY, config.getWIFI_SubnetMask());     // TODO: change to interface settings
+  root.set(config.WIFI_PRIMARYDNS_KEY, config.getWIFI_PrimaryDNS());     // TODO: change to interface settings
+  root.set(config.WIFI_SECONDARYDNS_KEY, config.getWIFI_SecondaryDNS()); // TODO: change to interface settings
   root.set(config.TIMEZONEID_KEY, config.getTimeZoneID());
   root.set(config.TIMEZONE_KEY, config.getTimezone());
   root.set(config.DST_KEY, config.getDST());
@@ -1048,4 +1030,4 @@ uint16_t convertToChannelId(uint8_t channel, int8_t interface, int8_t socket)
   }
   return channelID;
 }
-//#endregion server
+// #endregion server

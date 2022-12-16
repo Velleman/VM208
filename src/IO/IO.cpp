@@ -23,7 +23,7 @@ QueueHandle_t pulseStatusQueue;
 
 static void IRAM_ATTR gpio_isr_handler(void *arg)
 {
-  if ((millis() - previousTime) > 200)
+  if ((millis() - previousTime) > 50)
   {
     previousTime = millis();
     uint32_t gpio_num = (uint32_t)arg;
@@ -36,7 +36,9 @@ void Init_IO(bool setState)
 
   Wire.begin(33, 32, 10000);
   Wire.setTimeOut(100);
+  xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS);
   mm.DetectModules();
+  xSemaphoreGive(g_Mutex);
   config.loadAlarms();
   /*gpio_pullup_en(GPIO_NUM_33);
   gpio_pullup_en(GPIO_NUM_32);
@@ -122,7 +124,9 @@ void IO_task(void *arg)
         {
           for (int i = 0; i < 8; i++) // go over each interface
           {
+            xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS);
             uint8_t socket = mm.getInterface(i)->handleInterrupt();
+            
             for (int j = 0; j < 4; j++)
             {
               auto interrruptTriggered = (socket >> j) & 0x01;
@@ -137,6 +141,7 @@ void IO_task(void *arg)
                 mm.getModuleFromInterface(i, j)->Disactivate();
               }
             }
+            xSemaphoreGive(g_Mutex);
           }
         }
       }
