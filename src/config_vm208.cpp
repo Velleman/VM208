@@ -125,7 +125,9 @@ void Configuration::loadAlarms()
                     bool onOff = (j < 7);
                     _cs[i].setShedule(dow, hour, minute, onOff, enabled);
                 }
+                xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS);
                 mm.getModuleFromChannelID(i+1)->Disactivate();
+                xSemaphoreGive(g_Mutex);
             }
             file.close();
             jsonBuffer.clear();

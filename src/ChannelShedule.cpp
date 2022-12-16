@@ -44,9 +44,11 @@ void ChannelShedule::Update(tm *time)
             _isStartTriggered = true;
             if (_channel != nullptr)
             {
+                xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS);
                 mm.getModuleFromChannelID(_channelID)->Activate();
                 _channel->turnOn();
                 mm.getModuleFromChannelID(_channelID)->Disactivate();
+                xSemaphoreGive(g_Mutex);
             }
         }
     }
@@ -57,9 +59,11 @@ void ChannelShedule::Update(tm *time)
             _isStopTriggered = true;
             if (_channel != nullptr)
             {
+                xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS);
                 mm.getModuleFromChannelID(_channelID)->Activate();
                 _channel->turnOff();
                 mm.getModuleFromChannelID(_channelID)->Disactivate();
+                xSemaphoreGive(g_Mutex);
             }
         }
     }
