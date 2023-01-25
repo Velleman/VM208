@@ -111,18 +111,21 @@ void IO_task(void *arg)
   uint32_t io_num;
   while (1)
   {
-    if (xQueueReceive(int_evt_queue, &io_num, 100 / portTICK_PERIOD_MS) || digitalRead(INT_PIN) == LOW || digitalRead(INT2_PIN) == LOW)
+    if (xQueueReceive(int_evt_queue, &io_num, portMAX_DELAY / portTICK_PERIOD_MS)) //|| digitalRead(INT_PIN) == LOW || digitalRead(INT2_PIN) == LOW)
     {
-      Serial.println("Handle Interrupt");
-      if (io_num == INT2_PIN || digitalRead(INT2_PIN) == LOW) //read extension
+      
+      if (io_num == INT2_PIN )//|| digitalRead(INT2_PIN) == LOW) //read extension
       {
+        Serial.print("Pin is low:");
         if (mm.isExtensionConnected())
         {
+          Serial.println("VM208EX");
           toggleChannel((VM208EX *)mm.getModule(1), mm.getModule(1)->getPressedButton());
         }
         else
         {
-          for (int i = 0; i < 8; i++) // go over each interface
+          Serial.println("Extentions");
+          /*for (int i = 0; i < 8; i++) // go over each interface
           {
             xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS);
             uint8_t socket = mm.getInterface(i)->handleInterrupt();
@@ -142,12 +145,18 @@ void IO_task(void *arg)
               }
             }
             xSemaphoreGive(g_Mutex);
-          }
+          }*/
         }
       }
       else
       {
-        toggleChannel(mm.getBaseModule(), mm.getBaseModule()->getPressedButton());
+        Serial.println("Base");
+        if (xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS))
+        {
+          uint8_t channel = mm.getBaseModule()->getPressedButton();
+          xSemaphoreGive(g_Mutex);
+          toggleChannel(mm.getBaseModule(), channel);          
+        }
       }
     }
     io_num = 0;
