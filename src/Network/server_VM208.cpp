@@ -425,43 +425,32 @@ void startServer()
 
   server.on("/names", HTTP_POST, [](AsyncWebServerRequest *request)
             {
-              if (request->params() == 8)
+              if (request->params() == 7)
               {
                 Serial.printf("names save\n");
-                auto interface = request->getParam(0)->value().toInt();
-                auto module = request->getParam(1)->value().toInt();
-                auto channel = request->getParam(2)->value().toInt();
-                auto name = request->getParam(3)->value();
-                Serial.printf("Interface is %d\r\n", interface);
+                auto module = request->getParam(0)->value().toInt();
+                auto channelId = request->getParam(1)->value().toInt();
+                auto name = request->getParam(2)->value();
                 Serial.printf("module is %d\r\n", module);
-                Serial.printf("Channel is %d\r\n", channel);
+                Serial.printf("ChannelID is %d\r\n", channelId);
                 Serial.printf("Name is %s\r\n", name);
-                if (interface)
-                {
-                  auto m = (VM208EX *)mm.getModuleFromInterface(interface - 1, module);
-                  m->getChannel(channel)->setName(name);
-                  Serial.println(m->getChannel(channel)->getName());
-                }
-                else
-                {
                   if (module == 0)
                   {
                     auto m = (VM208 *)mm.getBaseModule();
-                    m->getChannel(channel)->setName(name);
-                    Serial.println(m->getChannel(channel)->getName());
+                    m->getChannel(channelId - 1)->setName(name);
+                    Serial.println(m->getChannel(channelId-1)->getName());
                   }
                   else
                   {
                     auto m = (VM208EX *)mm.getModule(1);
-                    m->getChannel(channel)->setName(name);
-                    Serial.println(m->getChannel(channel)->getName());
+                    m->getChannel(channelId - 1)->setName(name);
+                    Serial.println(m->getChannel(channelId-1)->getName());
                   }
-                }
-                config.setMosfet1Name(request->getParam(4)->value());
-                config.setMosfet2Name(request->getParam(5)->value());
-                config.setInputName(request->getParam(6)->value());
-                config.setBoardName(request->getParam(7)->value());
-                config.setName(mm.getChannelId(interface, module, channel), name);
+                config.setMosfet1Name(request->getParam(3)->value());
+                config.setMosfet2Name(request->getParam(4)->value());
+                config.setInputName(request->getParam(5)->value());
+                config.setBoardName(request->getParam(6)->value());
+                config.setName(mm.getChannelId(0, module, channelId), name);
                 config.saveNames();
                 request->send(200, "text/plain", "OK");
               }
@@ -991,10 +980,12 @@ bool ON_AP_VM208_FILTER(AsyncWebServerRequest *request)
   wifi_mode_t mode = WiFi.getMode();
   if ((mode == WIFI_MODE_AP) || (mode == WIFI_MODE_APSTA))
   {
+    Serial.println("AP-Filter: true");
     return true;
   }
   else
   {
+    Serial.println("AP-Filter: false");
     return false;
   }
 }
@@ -1005,10 +996,12 @@ bool ON_STA_VM208_FILTER(AsyncWebServerRequest *request)
   wifi_mode_t mode = WiFi.getMode();
   if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
   {
+    Serial.println("STA-Filter: false");
     return false;
   }
   else
   {
+    Serial.println("STA-Filter: true");
     return true;
   }
 }

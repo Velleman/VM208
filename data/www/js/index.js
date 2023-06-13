@@ -418,7 +418,6 @@ function openSheduler(e, f) {
     id = f.id;
     id = id.replace('shedule', '');
     id = id.replace('Start', '');
-    selectedInterface
     location.href = "shedule.html?relay=" + id + "&interface=" + selectedInterface + "&socket=" + selectedSocket;
 }
 

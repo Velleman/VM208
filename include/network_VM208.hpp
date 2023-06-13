@@ -2,7 +2,7 @@
 #define NETWORK_VM208_HPP
 #include <Arduino.h>
 #include <WiFi.h>
-#include "eth_phy/phy_lan8720.h"
+//#include "eth_phy/phy_lan8720.h"
 #define DEFAULT_ETHERNET_PHY_CONFIG phy_lan8720_default_ethernet_config
 #include <ETH.h>
 

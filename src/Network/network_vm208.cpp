@@ -2,6 +2,7 @@
 #include "time_VM208.hpp"
 #include "config_vm208.hpp"
 #include "global.hpp"
+const char *NETWORK_TAG = "NETWORK_VM208";
 
 void applyEthNetworkSettings()
 {
@@ -88,7 +89,7 @@ void startWifi()
 
   if (config.getSSID().equals("") && config.getWifiPassword().equals(""))
   {
-    ESP_LOGI(TAG, "INVALID WIFI CREDENTIALS");
+    ESP_LOGI(NETWORK_TAG, "INVALID WIFI CREDENTIALS");
   }
   else
   {
@@ -112,7 +113,7 @@ void startWifi()
     }
     char ssid[100];
     char pw[100];
-    WiFi.onEvent(WiFiGotIP, WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
+    WiFi.onEvent(WiFiGotIP, ARDUINO_EVENT_WIFI_STA_GOT_IP);
     config.getSSID().toCharArray(ssid, 100);
     config.getWifiPassword().toCharArray(pw, 100);
     Serial.println("Connecting to:");
@@ -176,15 +177,15 @@ void WiFiEvent(WiFiEvent_t event)
   {
   case SYSTEM_EVENT_ETH_CONNECTED:
     //WiFi.mode(WIFI_MODE_NULL);
-    ESP_LOGI(TAG, "Ethernet Link Up");
+    ESP_LOGI(NETWORK_TAG, "Ethernet Link Up");
     break;
   case SYSTEM_EVENT_ETH_DISCONNECTED:
     gotETH_IP = false;
-    ESP_LOGI(TAG, "Ethernet Link Down");
+    ESP_LOGI(NETWORK_TAG, "Ethernet Link Down");
     startWifi();
     break;
   case SYSTEM_EVENT_ETH_START:
-    ESP_LOGI(TAG, "Ethernet Started");
+    ESP_LOGI(NETWORK_TAG, "Ethernet Started");
     ETH.setHostname("VM208");
     break;
   case SYSTEM_EVENT_ETH_GOT_IP:
@@ -211,15 +212,15 @@ void WiFiEvent(WiFiEvent_t event)
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;
   case SYSTEM_EVENT_ETH_STOP:
-    ESP_LOGI(TAG, "Ethernet Stopped");
+    ESP_LOGI(NETWORK_TAG, "Ethernet Stopped");
     break;
   case SYSTEM_EVENT_STA_START:
     WiFi.setHostname("VM208");
     break;
   case SYSTEM_EVENT_STA_GOT_IP:
     gotSTA_IP = true;
-    ESP_LOGI(TAG, "GOT_STA_IP");
-    ESP_LOGI(TAG, "got ip:%s", WiFi.localIP());
+    ESP_LOGI(NETWORK_TAG, "GOT_STA_IP");
+    ESP_LOGI(NETWORK_TAG, "got ip:%s", WiFi.localIP());
     xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;

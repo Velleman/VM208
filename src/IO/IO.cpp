@@ -34,10 +34,11 @@ static void IRAM_ATTR gpio_isr_handler(void *arg)
 void Init_IO(bool setState)
 {
 
-  Wire.begin(33, 32, 10000);
+  Wire.begin(33, 32,(uint32_t)10000);
   Wire.setTimeOut(100);
   xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS);
   mm.DetectModules();
+  
   xSemaphoreGive(g_Mutex);
   config.loadAlarms();
   /*gpio_pullup_en(GPIO_NUM_33);
