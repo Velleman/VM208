@@ -12,7 +12,38 @@ function requestSettings() {
                 console.log(t)
             }
         }
-    })
+    });
+    e = $.ajax({
+        type: "GET",
+        url: "/layout",
+        dataType: "text",
+        data: $(this).serialize(),
+        success: function (e) {
+            try {
+                layoutJson = $.parseJSON(e);
+                applyModuleLayout(layoutJson);
+            } catch (t) {
+                console.log(t)
+            }
+        }
+    });
+}
+
+function applyModuleLayout(e){
+    
+    var dropdown = $("#module_dropdown_div");
+    dropdown.empty();
+    var html = '<label for="module_dropdown">Module:</label> \
+    <select id="module_dropdown"><option id="Base">Base</option>';
+    if (e.VM208EX) {
+        html+= "<option value=\"Extention\">Extention</option>";
+    }
+    html += '</select>';
+    dropdown.append(html);
+    $('#module_dropdown').on('change', function () {
+        loadChannels(this.value);
+    });
+    loadChannels("Base");
 }
 
 function isElementVisible(e) {
@@ -23,7 +54,15 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_auth_settings(), update_wlan_creds_settings(), update_network_settings(), update_email_settings(), update_notif_settings(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState(), updateTimeSettings()
+    update_auth_settings(), update_names(),update_wlan_creds_settings(), update_network_settings(), update_email_settings(), update_notif_settings(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState(), updateTimeSettings()
+}
+
+function update_names()
+{
+    $("#name_card").val(json.BOARDNAME);
+    $("#name_mosfet1").val(json.NAME_MOSFET1);
+    $("#name_mosfet2").val(json.NAME_MOSFET2);
+    $("#name_input1").val(json.NAME_INPUT);
 }
 
 function update_auth_settings() {
@@ -269,19 +308,18 @@ function sendWifiCredentials() {
 }
 
 function sendNames() {
-    var interface = parseInt($("#interface_dropdown").val().replace("Interface ", ""));
+    /*var interface = parseInt($("#interface_dropdown").val().replace("Interface ", ""));*/
     var module = 0;
-    if ($("#module_dropdown").val() == "VM208")
+    if ($("#module_dropdown").val() == "Base")
         module = 0;
     else {
-        if ($("#module_dropdown").val() == "VM208EX")
+        if ($("#module_dropdown").val() == "Extention")
             module = 1;
         else
             module = parseInt($("#module_dropdown").val().replace("Module ", ""))-1;
     }
-    var channel = parseInt($("#channel_dropdown").val().replace("Channel ", "")) - 1;
+    var channel = parseInt($("#channel_dropdown").val().replace("Channel ", ""));
     var e = {
-        i: interface,
         m: module,
         c: channel,
         n: $("#name_channel").val(),
@@ -313,14 +351,22 @@ function sliderOnInitialized() {
 }
 
 function requestNames() {
+
+    var payload = {
+        interface: $("#module_dropdown").val() == "Base"? -1:0,
+        socket: 0
+    };
     $.ajax({
         type: "GET",
         url: "/status",
         dataType: "text",
+        data: payload,
         success: function (e) {
             try {
-                generateNameOptions(e);
+                statusJson = $.parseJSON(e);
+                loadChannelName();
             } catch (t) {
+                
                 console.log(t)
             }
         }
@@ -435,87 +481,51 @@ function enableButtons() {
     for (e = 1; 12 >= e; e++) $("#relay" + e + "Status").removeClass("pure-button-disabled"), $("#mosfet" + e + "Status").removeClass("pure-button-disabled"), $("#pulse" + e + "Start").removeClass("pure-button-disabled"), $("#timer" + e + "Start").removeClass("pure-button-disabled")
 }
 var json, notif_select = new Object;
+var layoutJson;
 $(document).ready(function () {
     requestBoardInfo(), requestSettings(), $("#splashscreen").delay(750).fadeOut(500), enableButtons(), updateEthNetworkFieldsState(), updateWifiNetworkFieldState()
 });
 var current_slide = 0;
 var json;
-function generateNameOptions(e) {
-    json = $.parseJSON(e);
-    var dropdown = $("#interface_dropdown_div");
-    dropdown.empty();
-    var html = '<label for="interface_dropdown">Interface:</label> \
-    <select id="interface_dropdown"><option id="Interface0">Interface 0</option>';
-    for (i = 0; i < json.Interfaces.length; i++) {
-        var interfaceNr = i + 1;
-        html += '<option id="Interface' + interfaceNr + '">Interface ' + interfaceNr + ' </option>';
-    }
-    html += '</select>';
-    dropdown.append(html);
-    $('#interface_dropdown').on('change', function () {
-        loadModule(this.value);
-    });
-    loadModule("Interface 0");
-    loadChannels("Interface 0", "VM208");
-}
+var statusJson;
 
-function loadModule(value) {
-    var interface = parseInt(value.replace("Interface ", "")) - 1;
-    if (interface >= 0) { //if it isn't interface 0
-        var dropdown = $("#module_dropdown_div");
-        dropdown.empty(); //clear previous data
-        var html = '<label for="module_dropdown">Module:</label> \
-        <select id="module_dropdown">';
-        for (i = 0; i < json.Interfaces[interface].length; i++) {
-            var moduleNr = i + 1;
-            html += '<option id="Module' + moduleNr + '">Module ' + moduleNr + '</option>';
-        }
-        html += '</select>';
-        dropdown.append(html);
-    }
-    else {
-        var dropdown = $("#module_dropdown_div");
-        dropdown.empty(); //clear previous data
-        var html = '<label for="module_dropdown">Module:</label> \
-        <select id="module_dropdown">';
-
-        html += '<option id="VM208">VM208</option>';
-        if (json.Interface0.length == 2) {
-            html += '<option id="VM208EX">VM208EX</option>';
-        }
-        html += '</select>';
-        dropdown.append(html);
-    }
-    $('#module_dropdown').on('change', function () {
-        loadChannels($("#interface_dropdown").value, this.value);
-    });
-    loadChannels($("#interface_dropdown").value, "Module 1");
-}
-
-function loadChannels(interface, module) {
-    if (interface == "Interface 0") //load 4 channels else 8
+function loadChannels(module) {
+    if (module == "Base") //load 4 channels else 8
     {
         var dropdown = $("#channel_dropdown_div");
         dropdown.empty(); //clear previous data
-        var html = '<label for="channel_dropdown">Module:</label> \
+        var html = '<label for="channel_dropdown">Channel:</label> \
         <select id="channel_dropdown">';
-        for (i = 1; i < 5; i++) {
-            html += '<option id="channel' + i + '">Channel ' + i + '</option>';
+        for (i = 1; i <= 4; i++) {
+            html += '<option id="' + i + '">Channel ' + i + '</option>';
         }
         html += '</select>';
         dropdown.append(html);
     } else {
         var dropdown = $("#channel_dropdown_div");
         dropdown.empty(); //clear previous data
-        var html = '<label for="channel_dropdown">Module:</label> \
+        var html = '<label for="channel_dropdown">Channel:</label> \
         <select id="channel_dropdown">';
-        for (i = 1; i < 9; i++) {
-            html += '<option id="channel' + i + '">Channel ' + i + '</option>';
+        for (i = 1; i <= 8; i++) {
+            html += '<option id="' + i + '">Channel ' + i + '</option>';
         }
         html += '</select>';
         dropdown.append(html);
     }
+    $('#channel_dropdown').on('change', function () {
+        loadChannelName(this.value);
+    });
+    requestNames();
 }
+
+function loadChannelName(id)
+{
+    var id = $("#channel_dropdown :selected").attr('id');
+    var name = statusJson.Channels[parseInt(id)-1].name;
+    $("#name_channel").val(name);
+    console.log($("#name_channel").val())
+}
+
 $(function () {
     $('#interface_dropdown').on('change', function () {
         loadModule(this.value);
@@ -595,7 +605,6 @@ $(function () {
             }
             return false;
         });
-    requestNames();
 });
 
 function sendTimeSettings() {

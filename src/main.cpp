@@ -18,7 +18,7 @@
 #include "network_VM208.hpp"
 #include "time_VM208.hpp"
 #include <DNSServer.h>
-// static const char *TAG = "VM208_MAIN";
+static const char *TAG = "VM208_MAIN";
 
 AsyncUDP udp;
 // Define NTP Client to get time
@@ -38,7 +38,7 @@ bool gotETH_IP;
 bool gotSTA_IP;
 ModuleManager mm;
 String getMacAsString(uint8_t *mac);
-
+EventGroupHandle_t s_wifi_event_group;
 static void checkSheduler(void *pvParameter)
 {
   delay(500); // wait to load all channels
@@ -96,7 +96,7 @@ void setup()
   // start AP for WiFi Config
   WiFi.onEvent(WiFiEvent);
   ESP_LOGI(TAG, "Check Buttons");
-  xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS);
+  if(xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS)){
   if (((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
   {
     Serial.print("It's the first time :");
@@ -113,6 +113,7 @@ void setup()
     mm.getBaseModule()->getChannel(3)->turnLedOff();
     xSemaphoreGive(g_Mutex);
     ESP_LOGI(TAG, "Start AP");
+    Serial.print("Start AP");
     WiFi.softAP("VM208_AP", "VellemanForMakers");
     WiFi.enableSTA(false);
     IPAddress apIP(192, 168, 4, 1);
@@ -132,6 +133,7 @@ void setup()
     {
       startWifi();
     }
+  }
   }
   
 
@@ -199,7 +201,10 @@ void loop()
 {
   if (WiFi.getMode() == WIFI_MODE_AP)
   {
+    //Serial.println("AP Loop");
     dnsServer.processNextRequest();
+    // vTaskDelay(10/portTICK_PERIOD_MS);
+
   }
   else
   {

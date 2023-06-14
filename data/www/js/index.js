@@ -103,13 +103,10 @@ function update_sheduler_state(shedule, relay) {
 }
 
 function update_names() {
-    //var e = $("#name_card").val(json.BOARDNAME);
-    /*for (var i = 1; i <= 12; i++) {
-        $("#Name" + i).html(json.Channels[i - 1].name);
-    }
+    var e = $("#name_card").val(json.BOARDNAME);
     $("#i1Name").html(json.NAME_INPUT);
     $("#m1Name").html(json.NAME_MOSFET1);
-    $("#m2Name").html(json.NAME_MOSFET2);*/
+    $("#m2Name").html(json.NAME_MOSFET2);
 }
 
 
@@ -418,7 +415,6 @@ function openSheduler(e, f) {
     id = f.id;
     id = id.replace('shedule', '');
     id = id.replace('Start', '');
-    selectedInterface
     location.href = "shedule.html?relay=" + id + "&interface=" + selectedInterface + "&socket=" + selectedSocket;
 }
 

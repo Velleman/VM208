@@ -15,6 +15,7 @@ void ModuleManager::DetectModules()
         _baseModule = new VM208();
         _baseModule->initialize();
         _modules.push_back(_baseModule);
+        
         for (int i = 0; i < 4; i++)
         {
             auto name = config.getNameFromChannel(_channelIndex);
