@@ -20,8 +20,8 @@ function requestSettings() {
         data: $(this).serialize(),
         success: function (e) {
             try {
-                json = $.parseJSON(e);
-                applyModuleLayout(json);
+                layoutJson = $.parseJSON(e);
+                applyModuleLayout(layoutJson);
             } catch (t) {
                 console.log(t)
             }
@@ -35,7 +35,7 @@ function applyModuleLayout(e){
     dropdown.empty();
     var html = '<label for="module_dropdown">Module:</label> \
     <select id="module_dropdown"><option id="Base">Base</option>';
-    if (json.VM208EX) {
+    if (e.VM208EX) {
         html+= "<option value=\"Extention\">Extention</option>";
     }
     html += '</select>';
@@ -54,7 +54,15 @@ function isElementVisible(e) {
 }
 
 function update_content() {
-    update_auth_settings(), update_wlan_creds_settings(), update_network_settings(), update_email_settings(), update_notif_settings(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState(), updateTimeSettings()
+    update_auth_settings(), update_names(),update_wlan_creds_settings(), update_network_settings(), update_email_settings(), update_notif_settings(), updateWifiNetworkFieldState(), updateEthNetworkFieldsState(), updateTimeSettings()
+}
+
+function update_names()
+{
+    $("#name_card").val(json.BOARDNAME);
+    $("#name_mosfet1").val(json.NAME_MOSFET1);
+    $("#name_mosfet2").val(json.NAME_MOSFET2);
+    $("#name_input1").val(json.NAME_INPUT);
 }
 
 function update_auth_settings() {
@@ -473,6 +481,7 @@ function enableButtons() {
     for (e = 1; 12 >= e; e++) $("#relay" + e + "Status").removeClass("pure-button-disabled"), $("#mosfet" + e + "Status").removeClass("pure-button-disabled"), $("#pulse" + e + "Start").removeClass("pure-button-disabled"), $("#timer" + e + "Start").removeClass("pure-button-disabled")
 }
 var json, notif_select = new Object;
+var layoutJson;
 $(document).ready(function () {
     requestBoardInfo(), requestSettings(), $("#splashscreen").delay(750).fadeOut(500), enableButtons(), updateEthNetworkFieldsState(), updateWifiNetworkFieldState()
 });

@@ -97,7 +97,7 @@ void Configuration::loadAlarms()
 
         ESP_LOGI(TAG, "file exist");
 
-        //StaticJsonBuffer<300000> jsonBuffer;
+        // StaticJsonBuffer<300000> jsonBuffer;
 
         for (uint16_t i = 0; i < 268; i++)
         {
@@ -112,9 +112,9 @@ void Configuration::loadAlarms()
             auto channel = mm.getChannel(i + 1);
             if (channel != nullptr)
             {
-                Serial.printf("Channel Shedule index: %d\r\n",i);
+                Serial.printf("Channel Shedule index: %d\r\n", i);
                 _cs[i].setChannel(channel);
-                _cs[i].setChannelID(i+1);
+                _cs[i].setChannelID(i + 1);
                 for (uint8_t j = 0; j < 14; j++)
                 {
                     JsonObject &Channels_0_alarms_i = alarms[j];
@@ -125,8 +125,8 @@ void Configuration::loadAlarms()
                     bool onOff = (j < 7);
                     _cs[i].setShedule(dow, hour, minute, onOff, enabled);
                 }
-                xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS);
-                mm.getModuleFromChannelID(i+1)->Disactivate();
+                xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS);
+                mm.getModuleFromChannelID(i + 1)->Disactivate();
                 xSemaphoreGive(g_Mutex);
             }
             file.close();
@@ -218,16 +218,16 @@ void Configuration::load()
     }
     if (SPIFFS.exists(namesPath))
     {
-        ESP_LOGI(TAG, "file exist");
+        ESP_LOGI(TAG, "name file exist");
         File file = loadFile(namesPath);
-        /* while (file.available())
-        {
-            Serial.write(file.read());
-        }*/
         DynamicJsonBuffer jsonBuffer;
         JsonObject &root = jsonBuffer.parseObject(file);
         JsonArray &names = root["names"];
-        if (root.containsKey("names"))
+        for (int i = 0; i < 12; i++)
+        {
+            _names[i] = names[i].as<String>();
+        }
+        /*if (root.containsKey("names"))
         {
             for (int i = 0; i < 268; i++)
             {
@@ -237,7 +237,7 @@ void Configuration::load()
         else
         {
             Serial.println("LOAD NAME CONFIG: FILE IS INVALID");
-        }
+        }*/
         file.close();
         jsonBuffer.clear();
     }
@@ -246,7 +246,7 @@ void Configuration::load()
         ESP_LOGI(TAG, "file doesnt exist");
     }
 
-    //SPIFFS.end();
+    // SPIFFS.end();
 }
 
 ChannelShedule *Configuration::getShedule(uint16_t index)
@@ -270,7 +270,7 @@ void Configuration::saveNames()
     JsonObject &root = jsonBuffer.createObject();
     JsonArray &names = root.createNestedArray("names");
 
-    for (int i = 0; i < 268; i++)
+    for (int i = 0; i < 12; i++)
     {
         names.add(_names[i]);
     }
@@ -285,6 +285,12 @@ void Configuration::saveNames()
 
 void Configuration::setName(uint16_t channelId, String name)
 {
+    Serial.println("Saving name:");
+    Serial.print("channelID: ");
+    Serial.println(channelId);
+    Serial.print("name: ");
+    Serial.println(name);
+
     _names[channelId - 1] = name;
 }
 
@@ -332,24 +338,24 @@ void Configuration::writeEmailSettings()
 
 /*
 {
-	"Channels": [{
-		"name": "Channel1",
-		"alarms": [{
-			"alarm1": [{
-					"dow": "monday",
-					"hour": 12,
-					"minute": 10
-				},
-				{
-					"alarm1": [{
-						"dow": "monday",
-						"hour": 12,
-						"minute": 10
-					}]
-				}
-			]
-		}]
-	}]
+    "Channels": [{
+        "name": "Channel1",
+        "alarms": [{
+            "alarm1": [{
+                    "dow": "monday",
+                    "hour": 12,
+                    "minute": 10
+                },
+                {
+                    "alarm1": [{
+                        "dow": "monday",
+                        "hour": 12,
+                        "minute": 10
+                    }]
+                }
+            ]
+        }]
+    }]
 }
 https://arduinojson.org/v5/assistant/
  */
@@ -403,7 +409,7 @@ void Configuration::writeAlarms()
     DynamicJsonBuffer jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
     JsonArray &Channels = root.createNestedArray("Channels");
-    //VM208TimeChannel *c;
+    // VM208TimeChannel *c;
     Alarm *a;
     for (int i = 0; i < 12; i++)
     {
@@ -423,7 +429,7 @@ void Configuration::writeAlarms()
             Channels_alarms_settings[ALARM_ENABLED_KEY] = a->isEnabled();
         }*/
     }
-    //Write json file
+    // Write json file
     File file = SPIFFS.open(alarmPath, "w");
     root.printTo(file);
     file.close();

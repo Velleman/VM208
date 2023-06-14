@@ -450,8 +450,9 @@ void startServer()
                 config.setMosfet2Name(request->getParam(4)->value());
                 config.setInputName(request->getParam(5)->value());
                 config.setBoardName(request->getParam(6)->value());
-                config.setName(mm.getChannelId(0, module, channelId), name);
+                config.setName((module*4 + channelId), name);
                 config.saveNames();
+                config.save();
                 request->send(200, "text/plain", "OK");
               }
               else

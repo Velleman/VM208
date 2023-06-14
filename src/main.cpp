@@ -203,7 +203,7 @@ void loop()
   {
     //Serial.println("AP Loop");
     dnsServer.processNextRequest();
-    vTaskDelay(10/portTICK_PERIOD_MS);
+    // vTaskDelay(10/portTICK_PERIOD_MS);
 
   }
   else

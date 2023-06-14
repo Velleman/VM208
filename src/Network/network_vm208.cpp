@@ -173,22 +173,23 @@ void got_ip_task(void *pvParameter)
 */
 void WiFiEvent(WiFiEvent_t event)
 {
+  Serial.println("WiFi Event");
   switch (event)
   {
-  case SYSTEM_EVENT_ETH_CONNECTED:
+  case ARDUINO_EVENT_ETH_CONNECTED:
     //WiFi.mode(WIFI_MODE_NULL);
     ESP_LOGI(NETWORK_TAG, "Ethernet Link Up");
     break;
-  case SYSTEM_EVENT_ETH_DISCONNECTED:
+  case ARDUINO_EVENT_ETH_DISCONNECTED:
     gotETH_IP = false;
-    ESP_LOGI(NETWORK_TAG, "Ethernet Link Down");
+    ESP_LOGI(NETWORK_TAG, "VM208 Ethernet Link Down");
     startWifi();
     break;
-  case SYSTEM_EVENT_ETH_START:
+  case ARDUINO_EVENT_ETH_START:
     ESP_LOGI(NETWORK_TAG, "Ethernet Started");
     ETH.setHostname("VM208");
     break;
-  case SYSTEM_EVENT_ETH_GOT_IP:
+  case ARDUINO_EVENT_ETH_GOT_IP:
     /*/memset(&ip, 0, sizeof(tcpip_adapter_ip_info_t));
     ESP_ERROR_CHECK(tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_ETH, &ip));
     ESP_LOGI(TAG, "Ethernet Got IP Addr");
@@ -211,20 +212,20 @@ void WiFiEvent(WiFiEvent_t event)
     gotETH_IP = true;
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;
-  case SYSTEM_EVENT_ETH_STOP:
+  case ARDUINO_EVENT_ETH_STOP:
     ESP_LOGI(NETWORK_TAG, "Ethernet Stopped");
     break;
-  case SYSTEM_EVENT_STA_START:
+  case ARDUINO_EVENT_WIFI_STA_START:
     WiFi.setHostname("VM208");
     break;
-  case SYSTEM_EVENT_STA_GOT_IP:
+  case ARDUINO_EVENT_WIFI_STA_GOT_IP:
     gotSTA_IP = true;
     ESP_LOGI(NETWORK_TAG, "GOT_STA_IP");
     ESP_LOGI(NETWORK_TAG, "got ip:%s", WiFi.localIP());
     xEventGroupSetBits(s_wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(s_wifi_event_group, GOTIP_BIT);
     break;
-  case SYSTEM_EVENT_STA_DISCONNECTED:
+  case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
     xEventGroupClearBits(s_wifi_event_group, CONNECTED_BIT | GOTIP_BIT);
     gotSTA_IP = false;
     if (gotETH_IP == false)
@@ -234,6 +235,7 @@ void WiFiEvent(WiFiEvent_t event)
     }
     break;
   default:
+    Serial.println("Event not recognized");
     break;
   }
   //return ESP_OK;
