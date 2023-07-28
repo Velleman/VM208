@@ -35,7 +35,7 @@ private:
   String _WIFI_SubnetMask;
   String _WIFI_PrimaryDNS;
   String _WIFI_SecondaryDNS;
-  String _version = "1.4.0";
+  String _version = "1.4.1";
   long _timezoneSeconds;
   int _DSTseconds;
   int _timezone_id;

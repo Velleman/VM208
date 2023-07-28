@@ -32,7 +32,12 @@ class CaptiveRequestHandler : public AsyncWebHandler
 {
 public:
   CaptiveRequestHandler() {}
-  virtual ~CaptiveRequestHandler() {}
+  virtual ~CaptiveRequestHandler() {
+       server.onNotFound([](AsyncWebServerRequest *request){
+        AsyncWebServerResponse* response = request->beginResponse(SPIFFS, "/NotFound.html", "text/html");
+        request->send(response);
+       });
+  }
 
   bool canHandle(AsyncWebServerRequest *request)
   {
@@ -452,7 +457,7 @@ void startServer()
                 config.setBoardName(request->getParam(6)->value());
                 config.setName((module*4 + channelId), name);
                 config.saveNames();
-                config.save();
+                //config.save();
                 request->send(200, "text/plain", "OK");
               }
               else
@@ -592,7 +597,7 @@ void startServer()
                       if (ON_AP_VM208_FILTER(nullptr))
                       {
                         //Send index.htm with default content type
-                        request->send(SPIFFS, "/index.htm");
+                        /*request->send(SPIFFS, "/index.html");*/
                       }
                       else
                       {
@@ -981,12 +986,12 @@ bool ON_AP_VM208_FILTER(AsyncWebServerRequest *request)
   wifi_mode_t mode = WiFi.getMode();
   if ((mode == WIFI_MODE_AP) || (mode == WIFI_MODE_APSTA))
   {
-    Serial.println("AP-Filter: true");
+    //Serial.println("AP-Filter: true");
     return true;
   }
   else
   {
-    Serial.println("AP-Filter: false");
+    //Serial.println("AP-Filter: false");
     return false;
   }
 }
@@ -997,12 +1002,12 @@ bool ON_STA_VM208_FILTER(AsyncWebServerRequest *request)
   wifi_mode_t mode = WiFi.getMode();
   if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
   {
-    Serial.println("STA-Filter: false");
+    //Serial.println("STA-Filter: false");
     return false;
   }
   else
   {
-    Serial.println("STA-Filter: true");
+    //Serial.println("STA-Filter: true");
     return true;
   }
 }

@@ -236,6 +236,7 @@ void WiFiEvent(WiFiEvent_t event)
     break;
   default:
     Serial.println("Event not recognized");
+    Serial.print(event);
     break;
   }
   //return ESP_OK;

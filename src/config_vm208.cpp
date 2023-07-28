@@ -167,16 +167,21 @@ void Configuration::load()
             _timezoneSeconds = root[TIMEZONE_KEY].as<long>();
             _DSTseconds = root[DST_KEY].as<int>();
             _firstTime = root[FIRST_TIME_KEY].as<bool>();
-            _name_input = root[NAME_INPUT_KEY].as<String>();
+            /*_name_input = root[NAME_INPUT_KEY].as<String>();
             _mosfet1_name = root[NAME_MOSFET1_KEY].as<String>();
-            _mosfet2_name = root[NAME_MOSFET2_KEY].as<String>();
+            _mosfet2_name = root[NAME_MOSFET2_KEY].as<String>();*/
+            file.close();
+            jsonBuffer.clear();
         }
         else
         {
             Serial.println("LOAD CONFIG: FILE IS INVALID");
+            file.close();
+            jsonBuffer.clear();
+            writeConfig();
+            
         }
-        file.close();
-        jsonBuffer.clear();
+        
     }
     else
     {
@@ -227,17 +232,9 @@ void Configuration::load()
         {
             _names[i] = names[i].as<String>();
         }
-        /*if (root.containsKey("names"))
-        {
-            for (int i = 0; i < 268; i++)
-            {
-                _names[i] = names[i].as<String>();
-            }
-        }
-        else
-        {
-            Serial.println("LOAD NAME CONFIG: FILE IS INVALID");
-        }*/
+        _mosfet1_name = names[12].as<String>();
+        _mosfet2_name = names[13].as<String>();
+        _name_input = names[14].as<String>();
         file.close();
         jsonBuffer.clear();
     }
@@ -274,6 +271,9 @@ void Configuration::saveNames()
     {
         names.add(_names[i]);
     }
+    names.add(_mosfet1_name);
+    names.add(_mosfet2_name);
+    names.add(_name_input);
     File file = SPIFFS.open(namesPath, FILE_WRITE);
     if (root.printTo(file) == 0)
     {
@@ -390,9 +390,9 @@ void Configuration::writeConfig()
     root[TIMEZONE_KEY] = _timezoneSeconds;
     root[DST_KEY] = _DSTseconds;
     root[FIRST_TIME_KEY] = _firstTime;
-    root[NAME_INPUT_KEY] = _name_input;
+    /*root[NAME_INPUT_KEY] = _name_input;
     root[NAME_MOSFET1_KEY] = _mosfet1_name;
-    root[NAME_MOSFET2_KEY] = _mosfet2_name;
+    root[NAME_MOSFET2_KEY] = _mosfet2_name;*/
 
     File file = SPIFFS.open(configPath, FILE_WRITE);
     root.printTo(file);

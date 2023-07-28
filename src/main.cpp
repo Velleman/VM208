@@ -96,46 +96,44 @@ void setup()
   // start AP for WiFi Config
   WiFi.onEvent(WiFiEvent);
   ESP_LOGI(TAG, "Check Buttons");
-  if(xSemaphoreTake(g_Mutex,1000/portTICK_PERIOD_MS)){
-  if (((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
+  if (xSemaphoreTake(g_Mutex, 1000 / portTICK_PERIOD_MS))
   {
-    Serial.print("It's the first time :");
-    mm.getBaseModule()->getChannel(0)->turnLedOn();
-    mm.getBaseModule()->getChannel(3)->turnLedOn();
-    delay(500);
-    mm.getBaseModule()->getChannel(0)->turnLedOff();
-    mm.getBaseModule()->getChannel(3)->turnLedOff();
-    delay(500);
-    mm.getBaseModule()->getChannel(0)->turnLedOn();
-    mm.getBaseModule()->getChannel(3)->turnLedOn();
-    delay(500);
-    mm.getBaseModule()->getChannel(0)->turnLedOff();
-    mm.getBaseModule()->getChannel(3)->turnLedOff();
-    xSemaphoreGive(g_Mutex);
-    ESP_LOGI(TAG, "Start AP");
-    Serial.print("Start AP");
-    WiFi.softAP("VM208_AP", "VellemanForMakers");
-    WiFi.enableSTA(false);
-    IPAddress apIP(192, 168, 4, 1);
-
-    // if DNSServer is started with "*" for domain name, it will reply with
-    // provided IP to all DNS request
-    dnsServer.start(53, "*", WiFi.softAPIP());
-  }
-  else
-  {
-    xSemaphoreGive(g_Mutex);
-    Serial.printf("%s", config.getSSID().c_str());
-    Serial.printf("%s", config.getWifiPassword().c_str());
-
-    
-    if (!startEth()) // No cable inserted
+    if (((mm.getBaseModule()->getChannel(0)->isButtonPressed()) && (mm.getBaseModule()->getChannel(3)->isButtonPressed())) || config.getFirstTime())
     {
-      startWifi();
+      Serial.println("It's the first time :");
+      mm.getBaseModule()->getChannel(0)->turnLedOn();
+      mm.getBaseModule()->getChannel(3)->turnLedOn();
+      delay(500);
+      mm.getBaseModule()->getChannel(0)->turnLedOff();
+      mm.getBaseModule()->getChannel(3)->turnLedOff();
+      delay(500);
+      mm.getBaseModule()->getChannel(0)->turnLedOn();
+      mm.getBaseModule()->getChannel(3)->turnLedOn();
+      delay(500);
+      mm.getBaseModule()->getChannel(0)->turnLedOff();
+      mm.getBaseModule()->getChannel(3)->turnLedOff();
+      xSemaphoreGive(g_Mutex);
+      ESP_LOGI(TAG, "Start AP");
+      Serial.print("Start AP");
+      WiFi.enableSTA(false);
+      WiFi.softAP("VM208_AP", "VellemanForMakers", 6, 0, 4, false);
+      delay(2000);
+      // if DNSServer is started with "*" for domain name, it will reply with
+      // provided IP to all DNS request
+      dnsServer.start(53, "*", WiFi.softAPIP());
+    }
+    else
+    {
+      xSemaphoreGive(g_Mutex);
+      Serial.printf("%s", config.getSSID().c_str());
+      Serial.printf("%s", config.getWifiPassword().c_str());
+
+      if (!startEth()) // No cable inserted
+      {
+        startWifi();
+      }
     }
   }
-  }
-  
 
   if (WiFi.getMode() != WIFI_MODE_AP)
   {
@@ -145,12 +143,14 @@ void setup()
   xTaskCreate(got_ip_task, "got_ip_task", 4096, NULL, (tskIDLE_PRIORITY + 2), NULL);
   // xTaskCreate(time_keeping_task, "time_keeping", 1024, NULL, (tskIDLE_PRIORITY + 2), NULL);
 
-  //#region hide
-  if (udp.listen(30303))
+  // #region hide
+  if (WiFi.getMode() != WIFI_MODE_AP)
   {
+    if (udp.listen(30303))
+    {
 
-    udp.onPacket([](AsyncUDPPacket packet)
-                 {
+      udp.onPacket([](AsyncUDPPacket packet)
+                   {
       Serial.print("UDP Packet Type: ");
       Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
       Serial.print(", From: ");
@@ -174,6 +174,7 @@ void setup()
       esp_read_mac(mac, ESP_MAC_ETH);
       message += getMacAsString(mac);
       packet.print(message); });
+    }
   }
   if (!MDNS.begin("VM208"))
   {
@@ -181,7 +182,7 @@ void setup()
   }
   else
   {
-    //#endregion hide
+    // #endregion hide
     MDNS.addService("http", "tcp", 80);
   }
   //}
@@ -201,10 +202,9 @@ void loop()
 {
   if (WiFi.getMode() == WIFI_MODE_AP)
   {
-    //Serial.println("AP Loop");
+    // Serial.println("AP Loop");
     dnsServer.processNextRequest();
     // vTaskDelay(10/portTICK_PERIOD_MS);
-
   }
   else
   {

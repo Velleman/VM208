@@ -11,6 +11,9 @@
       "RELAY9",
       "RELAY10",
       "RELAY11",
-      "RELAY12"
+      "RELAY12",
+      "MOSFET1",
+      "MOSFET2",
+      "INPUT1"
    ]
 }
